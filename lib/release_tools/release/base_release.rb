@@ -100,7 +100,10 @@ module ReleaseTools
         logger.info('Bumping version', file_name: file_name, version: version)
 
         repository.write_file(file_name, "#{version}\n")
-        repository.commit(file_name, message: "Update #{file_name} to #{version}")
+
+        commit_message = "Update #{file_name} to #{version}\n\n[ci skip]"
+
+        repository.commit(file_name, message: commit_message)
       end
 
       def create_tag(tag, message: nil)

@@ -108,6 +108,24 @@ describe ReleaseTools::Release::GitlabCeRelease do
             expect(ob_repository.tags[ob_version]).not_to be_nil
           end
         end
+
+        it 'includes [ci skip] when bumping version' do
+          commit_message = "Update VERSION to 9.1.24#{suffix}\n\n[ci skip]"
+
+          expect_any_instance_of(ReleaseTools::RemoteRepository)
+            .to receive(:commit)
+            .with('VERSION', message: commit_message)
+
+          allow_any_instance_of(ReleaseTools::Release::OmnibusGitlabRelease)
+            .to receive(:execute)
+            .and_return(nil)
+
+          allow_any_instance_of(ReleaseTools::Release::CNGImageRelease)
+            .to receive(:execute)
+            .and_return(nil)
+
+          described_class.new(version).execute
+        end
       end
 
       context "with an existing 9-1-stable#{suffix} stable branch, releasing a patch" do
@@ -152,6 +170,24 @@ describe ReleaseTools::Release::GitlabCeRelease do
 
           it 'does not fail when running twice' do
             expect { execute(version, branch) }.not_to raise_error
+          end
+
+          it 'includes [ci skip] when bumping version' do
+            commit_message = "Update VERSION to 9.1.24#{suffix}\n\n[ci skip]"
+
+            expect_any_instance_of(ReleaseTools::RemoteRepository)
+              .to receive(:commit)
+              .with('VERSION', message: commit_message)
+
+            allow_any_instance_of(ReleaseTools::Release::OmnibusGitlabRelease)
+              .to receive(:execute)
+              .and_return(nil)
+
+            allow_any_instance_of(ReleaseTools::Release::CNGImageRelease)
+              .to receive(:execute)
+              .and_return(nil)
+
+            described_class.new(version).execute
           end
         end
       end
