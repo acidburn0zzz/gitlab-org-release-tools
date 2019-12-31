@@ -12,11 +12,21 @@ module ReleaseTools
       Project::GitlabWorkhorse.version_file
     ].freeze
 
+    GEMS = [
+      Project::GitlabMailroom.gem_name
+    ].freeze
+
     def self.get(project, commit_id)
       versions = { 'VERSION' => commit_id }
 
       FILES.each_with_object(versions) do |file, memo|
         memo[file] = get_component(project, commit_id, file)
+      end
+
+      GEMS.each_with_object(versions) do |gem_name, memo|
+        memo[gem_name] = client
+          .version_string_from_gemfile(client.file_contents(client.project_path(project), 'Gemfile.lock', commit_id), gem_name)
+          .chomp
       end
 
       logger.info({ project: project }.merge(versions))
