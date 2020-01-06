@@ -14,11 +14,6 @@ module ReleaseTools
       end
 
       def execute
-        if Feature.disabled?(:publish_git)
-          logger.warn('The `publish_git` feature is disabled.')
-          return
-        end
-
         sync_branches(Project::GitlabEe, @version.stable_branch(ee: true))
         sync_branches(Project::GitlabCe, @version.stable_branch(ee: false))
         sync_branches(Project::OmnibusGitlab, *[

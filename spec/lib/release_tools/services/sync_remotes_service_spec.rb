@@ -6,59 +6,38 @@ describe ReleaseTools::Services::SyncRemotesService do
   let(:version) { ReleaseTools::Version.new('1.2.3') }
 
   describe '#execute' do
-    context 'when `publish_git` is disabled' do
-      before do
-        disable_all_features
-      end
+    it 'syncs tags' do
+      service = described_class.new(version)
 
-      it 'does nothing' do
-        disable_feature(:publish_git)
+      allow(service).to receive(:sync_branches).and_return(true)
 
-        service = described_class.new(version)
+      expect(service).to receive(:sync_tags)
+        .with(ReleaseTools::Project::GitlabEe, 'v1.2.3-ee')
+      expect(service).to receive(:sync_tags)
+        .with(ReleaseTools::Project::GitlabCe, 'v1.2.3')
+      expect(service).to receive(:sync_tags)
+        .with(ReleaseTools::Project::OmnibusGitlab, '1.2.3+ee.0', '1.2.3+ce.0')
+      expect(service).to receive(:sync_tags)
+        .with(ReleaseTools::Project::CNGImage, 'v1.2.3', 'v1.2.3-ee', 'v1.2.3-ubi8')
 
-        expect(service.execute).to be_nil
-      end
+      service.execute
     end
 
-    context 'when `publish_git` is enabled' do
-      before do
-        disable_all_features
-        enable_feature(:publish_git)
-      end
+    it 'syncs branches' do
+      service = described_class.new(version)
 
-      it 'syncs tags' do
-        service = described_class.new(version)
+      allow(service).to receive(:sync_tags).and_return(true)
 
-        allow(service).to receive(:sync_branches).and_return(true)
+      expect(service).to receive(:sync_branches)
+        .with(ReleaseTools::Project::GitlabEe, '1-2-stable-ee')
+      expect(service).to receive(:sync_branches)
+        .with(ReleaseTools::Project::GitlabCe, '1-2-stable')
+      expect(service).to receive(:sync_branches)
+        .with(ReleaseTools::Project::OmnibusGitlab, '1-2-stable-ee', '1-2-stable')
+      expect(service).to receive(:sync_branches)
+        .with(ReleaseTools::Project::CNGImage, '1-2-stable', '1-2-stable-ee')
 
-        expect(service).to receive(:sync_tags)
-          .with(ReleaseTools::Project::GitlabEe, 'v1.2.3-ee')
-        expect(service).to receive(:sync_tags)
-          .with(ReleaseTools::Project::GitlabCe, 'v1.2.3')
-        expect(service).to receive(:sync_tags)
-          .with(ReleaseTools::Project::OmnibusGitlab, '1.2.3+ee.0', '1.2.3+ce.0')
-        expect(service).to receive(:sync_tags)
-          .with(ReleaseTools::Project::CNGImage, 'v1.2.3', 'v1.2.3-ee', 'v1.2.3-ubi8')
-
-        service.execute
-      end
-
-      it 'syncs branches' do
-        service = described_class.new(version)
-
-        allow(service).to receive(:sync_tags).and_return(true)
-
-        expect(service).to receive(:sync_branches)
-          .with(ReleaseTools::Project::GitlabEe, '1-2-stable-ee')
-        expect(service).to receive(:sync_branches)
-          .with(ReleaseTools::Project::GitlabCe, '1-2-stable')
-        expect(service).to receive(:sync_branches)
-          .with(ReleaseTools::Project::OmnibusGitlab, '1-2-stable-ee', '1-2-stable')
-        expect(service).to receive(:sync_branches)
-          .with(ReleaseTools::Project::CNGImage, '1-2-stable', '1-2-stable-ee')
-
-        service.execute
-      end
+      service.execute
     end
   end
 
@@ -68,7 +47,6 @@ describe ReleaseTools::Services::SyncRemotesService do
 
     before do
       disable_feature(:security_remote)
-      enable_feature(:publish_git)
     end
 
     context 'with invalid remotes' do
@@ -174,7 +152,6 @@ describe ReleaseTools::Services::SyncRemotesService do
     let(:tag) { 'v1.2.3' }
 
     before do
-      enable_feature(:publish_git)
       disable_feature(:security_remote)
     end
 
