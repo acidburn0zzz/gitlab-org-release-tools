@@ -34,7 +34,9 @@ module ReleaseTools
 
     def trigger_build
       if ref.match?(/\A(?:security\/)?\d+-\d+-auto-deploy-\d+\z/)
-        update_omnibus_for_autodeploy
+        logger.trace('Triggering build', ref: ref)
+        update_cng_for_autodeploy
+        # update_omnibus_for_autodeploy
       else
         trigger_branch_build
       end
@@ -52,18 +54,64 @@ module ReleaseTools
         .map { |component, version| "#{component}: #{version}" }
         .join("\n")
 
-      tag_omnibus(tag_name, tag_message, target_commit)
-      tag_deployer(tag_name, tag_message, 'master')
+      # tag omnibus
+      project = ReleaseTools::Project::OmnibusGitlab
+
+      logger.info('Creating omnibus tag', project: project, name: tag_name)
+
+      client =
+        if SharedStatus.security_release?
+          ReleaseTools::GitlabDevClient
+        else
+          ReleaseTools::GitlabClient
+        end
+
+      client.create_tag(client.project_path(project), tag_name, target_commit.id, tag_message)
+
+      # tag cng
+      project = ReleaseTools::Project::CNGImage
+
+      logger.info('Creating CNG tag', project: project, name: tag_name)
+
+      client =
+        if SharedStatus.security_release?
+          ReleaseTools::GitlabDevClient
+        else
+          ReleaseTools::GitlabClient
+        end
+
+      client.create_tag(client.project_path(project), tag_name, target_commit.id, tag_message)
+      # tag_deployer(tag_name, tag_message, 'master')
     end
 
     private
 
+    def update_cng_for_autodeploy
+      if ReleaseTools::ComponentVersions.cng_version_changes?(ref, @version_map)
+        logger.warn('Changes to component versions')
+        commit = update_cng
+
+        tag(commit)
+      elsif cng_changes?
+        logger.warn('Changes to CNG')
+        commit = ReleaseTools::Commits
+          .new(ReleaseTools::Project::CNGImage, ref: ref)
+          .latest
+
+        tag(commit)
+      else
+        logger.warn('No changes to component versions or CNG, nothing to tag')
+      end
+    end
+
     def update_omnibus_for_autodeploy
       if ReleaseTools::ComponentVersions.omnibus_version_changes?(ref, @version_map)
+        logger.warn('Changes to component versions')
         commit = update_omnibus
 
         tag(commit)
       elsif omnibus_changes?
+        logger.warn('Changes to omnibus')
         commit = ReleaseTools::Commits
           .new(ReleaseTools::Project::OmnibusGitlab, ref: ref)
           .latest
@@ -72,6 +120,16 @@ module ReleaseTools
       else
         logger.warn('No changes to component versions or Omnibus, nothing to tag')
       end
+    end
+
+    def cng_changes?
+      project = ReleaseTools::Project::CNGImage
+      refs = GitlabClient.commit_refs(project, ref)
+
+      # When our auto-deploy branch `ref` has no associated tags, then there
+      # have been changes on the branch since we last tagged it, and should be
+      # considered changed
+      refs.none? { |ref| ref.type == 'tag' }
     end
 
     def omnibus_changes?
@@ -84,6 +142,19 @@ module ReleaseTools
       refs.none? { |ref| ref.type == 'tag' }
     end
 
+    def update_cng
+      commit = ReleaseTools::ComponentVersions.update_cng(ref, @version_map)
+
+      if commit.nil?
+        raise "we failed to update CNG"
+      end
+
+      url = commit_url(ReleaseTools::Project::CNGImage, commit.id)
+      logger.info('Updated CNG versions', commit_url: url)
+
+      commit
+    end
+
     def update_omnibus
       commit = ReleaseTools::ComponentVersions.update_omnibus(ref, @version_map)
 
@@ -93,10 +164,10 @@ module ReleaseTools
       commit
     end
 
-    def tag_omnibus(name, message, commit)
-      project = ReleaseTools::Project::OmnibusGitlab
+    def tag_cng(name, message, commit, omnibus_commit)
+      project = ReleaseTools::Project::CNGImage
 
-      logger.info('Creating project tag', project: project, name: name)
+      logger.info('Creating CNG tag', project: project, name: name)
 
       client =
         if SharedStatus.security_release?
@@ -106,6 +177,23 @@ module ReleaseTools
         end
 
       client.create_tag(client.project_path(project), name, commit.id, message)
+    end
+
+    def tag_omnibus(name, message, commit)
+      project = ReleaseTools::Project::OmnibusGitlab
+
+      logger.info('Creating omnibus tag', project: project, name: name)
+
+      client =
+        if SharedStatus.security_release?
+          ReleaseTools::GitlabDevClient
+        else
+          ReleaseTools::GitlabClient
+        end
+
+      client.create_tag(client.project_path(project), name, commit.id, message)
+
+      commit.id
     end
 
     def tag_deployer(name, message, ref)

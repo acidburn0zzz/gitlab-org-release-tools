@@ -40,6 +40,54 @@ module ReleaseTools
         .chomp
     end
 
+    def self.update_cng(target_branch, version_map)
+      # return if SharedStatus.dry_run?
+
+      variables_file = client.file_contents(
+        client.project_path(ReleaseTools::Project::CNGImage),
+        "ci_files/variables.yml",
+        target_branch
+      ).chomp
+      cng_variables = YAML.safe_load(variables_file)
+      version_map.each do |component, new_version|
+        if component == 'mail_room'
+          component = 'MAILROOM_VERSION'
+        end
+
+        cng_variables['variables'].each do |c, old_version|
+          if component == 'VERSION'
+            cng_variables['variables']['GITLAB_VERSION'] = new_version
+            cng_variables['variables']['GITLAB_REF_SLUG'] = new_version
+            cng_variables['variables']['GITLAB_ASSETS_TAG'] = new_version
+          end
+          next if component != c
+
+          logger.trace('Finding changes', component: component, old_version: old_version, new_version: "v#{new_version}")
+
+          # I don't like this...
+          if component == 'MAILROOM_VERSION'
+            cng_variables['variables'][component] = new_version
+          else
+            cng_variables['variables'][component] = "v#{new_version}"
+          end
+        end
+      end
+
+      actions =
+        {
+          action: 'update',
+          file_path: "ci_files/variables.yml",
+          content: cng_variables.to_yaml
+        }
+
+      client.create_commit(
+        client.project_path(ReleaseTools::Project::CNGImage),
+        target_branch,
+        'Update component versions',
+        [actions]
+      )
+    end
+
     def self.update_omnibus(target_branch, version_map)
       return if SharedStatus.dry_run?
 
@@ -61,12 +109,42 @@ module ReleaseTools
 
     def self.omnibus_version_changes?(target_branch, version_map)
       version_map.any? do |filename, contents|
+        next if filename == 'mail_room'
+
         client.file_contents(
           client.project_path(ReleaseTools::Project::OmnibusGitlab),
           "/#{filename}",
           target_branch
         ).chomp != contents
       end
+    end
+
+    def self.cng_version_changes?(target_branch, version_map)
+      variables_file = client.file_contents(
+        client.project_path(ReleaseTools::Project::CNGImage),
+        "ci_files/variables.yml",
+        target_branch
+      ).chomp
+      cng_variables = YAML.safe_load(variables_file)
+      version_map.each do |component, new_version|
+        if component == 'mail_room'
+          component = 'MAILROOM_VERSION'
+        end
+
+        cng_variables['variables'].each do |c, old_version|
+          next if component != c
+
+          logger.trace('Finding changes', component: component, old_version: old_version, new_version: "v#{new_version}")
+
+          if component == 'MAILROOM_VERSION'
+            next if old_version == new_version
+          end
+
+          return true if old_version != "v#{new_version}"
+        end
+      end
+
+      false
     end
 
     def self.client
