@@ -20,10 +20,14 @@ describe ReleaseTools::ComponentVersions do
         .with(project.path, file, commit_id)
         .and_return("1.2.3\n")
 
+      expect(fake_client).to receive(:version_string_from_gemfile)
+        .and_return("9.8.7\n")
+
       expect(described_class.get(project, commit_id)).to match(
         a_hash_including(
           'VERSION' => commit_id,
-          file => '1.2.3'
+          file => '1.2.3',
+          'mail_room' => '9.8.7'
         )
       )
     end
@@ -38,7 +42,8 @@ describe ReleaseTools::ComponentVersions do
         'GITLAB_PAGES_VERSION' => '1.5.0',
         'GITLAB_SHELL_VERSION' => '9.0.0',
         'GITLAB_WORKHORSE_VERSION' => '8.6.0',
-        'VERSION' => '0cfa69752d82b8e134bdb8e473c185bdae26ccc2'
+        'VERSION' => '0cfa69752d82b8e134bdb8e473c185bdae26ccc2',
+        'mail_room' => '0.10.0'
       }
     end
     let(:commit) { double('commit', id: 'abcd') }
@@ -60,6 +65,17 @@ describe ReleaseTools::ComponentVersions do
           content: "#{version_map['VERSION']}\n"
         )
       )
+
+      expect(fake_client).not_to have_received(:create_commit).with(
+        project.path,
+        'foo-branch',
+        anything,
+        array_including(
+          action: 'update',
+          file_path: '/mail_room',
+          content: "#{version_map['mail_room']}\n"
+        )
+      )
     end
   end
 
@@ -73,6 +89,9 @@ describe ReleaseTools::ComponentVersions do
       expect(fake_client).to receive(:file_contents)
         .with(project.path, "/GITALY_SERVER_VERSION", 'foo-branch')
         .and_return("1.2.3\n")
+
+      expect(fake_client).not_to receive(:file_contents)
+        .with(project.path, "/mail_room", 'foo-branch')
 
       expect(described_class.omnibus_version_changes?('foo-branch', version_map)).to be(true)
     end
