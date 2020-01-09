@@ -14,14 +14,7 @@ module ReleaseTools
     def execute(args)
       commits = ReleaseTools::Commits.new(project, ref: ref)
 
-      commit =
-        if SharedStatus.security_release?
-          # Passing builds on dev are few and far between; for a security
-          # release we'll just use the latest commit on the branch
-          commits.latest
-        else
-          commits.latest_successful_on_build
-        end
+      commit = commits.latest_successful_on_build
 
       if commit.nil?
         raise "Unable to find a passing #{project} build for `#{ref}` on dev"
