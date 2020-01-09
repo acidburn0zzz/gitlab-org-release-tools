@@ -101,11 +101,12 @@ describe ReleaseTools::PassingBuild do
         end
 
         it 'tags' do
+          project = ReleaseTools::Project::OmnibusGitlab
           stub_const('ReleaseTools::Commits', spy(latest: fake_commit))
           expect(ReleaseTools::Commits)
-            .to receive(:new).with(ReleaseTools::Project::OmnibusGitlab, ref: '11-10-auto-deploy-1234')
+            .to receive(:new).with(project, ref: '11-10-auto-deploy-1234')
 
-          expect(service).to receive(:tag).with(fake_commit)
+          expect(service).to receive(:tag_project).with(project, fake_commit)
 
           service.trigger_build
         end
@@ -119,7 +120,7 @@ describe ReleaseTools::PassingBuild do
         end
 
         it 'does nothing' do
-          expect(service).not_to receive(:tag)
+          expect(service).not_to receive(:tag_project)
 
           service.trigger_build
         end
@@ -184,7 +185,7 @@ describe ReleaseTools::PassingBuild do
         .with(tag_name, anything, "master")
         .and_call_original
 
-      service.tag(fake_commit)
+      service.tag_project(fake_commit)
 
       expect(fake_ops_client)
         .to have_received(:create_tag)
