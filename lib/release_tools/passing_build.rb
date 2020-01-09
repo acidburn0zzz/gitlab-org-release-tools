@@ -141,6 +141,10 @@ module ReleaseTools
     def update_omnibus
       commit = ReleaseTools::ComponentVersions.update_omnibus(ref, @version_map)
 
+      if commit.nil?
+        raise "we failed to update omnibus"
+      end
+
       url = commit_url(ReleaseTools::Project::OmnibusGitlab, commit.id)
       logger.info('Updated Omnibus versions', commit_url: url)
 

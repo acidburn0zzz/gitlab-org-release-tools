@@ -41,7 +41,7 @@ module ReleaseTools
     end
 
     def self.update_cng(target_branch, version_map)
-      # return if SharedStatus.dry_run?
+      return if SharedStatus.dry_run?
 
       variables_file = client.file_contents(
         client.project_path(ReleaseTools::Project::CNGImage),
@@ -92,12 +92,15 @@ module ReleaseTools
       return if SharedStatus.dry_run?
 
       actions = version_map.map do |filename, contents|
+        next if filename == 'mail_room'
+
+        logger.trace('Finding changes', filename: filename, content: contents)
         {
           action: 'update',
           file_path: "/#{filename}",
           content: "#{contents}\n"
         }
-      end
+      end.compact
 
       client.create_commit(
         client.project_path(ReleaseTools::Project::OmnibusGitlab),
