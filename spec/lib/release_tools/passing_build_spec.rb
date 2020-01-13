@@ -90,6 +90,16 @@ describe ReleaseTools::PassingBuild do
 
           service.trigger_build
         end
+
+        it 'updates CNG  versions and tags' do
+          expect(ReleaseTools::ComponentVersions)
+            .to receive(:update_cng).with('11-10-auto-deploy-1234', version_map)
+            .and_return(fake_commit)
+
+          expect(service).to receive(:tag).with(fake_commit)
+
+          service.trigger_build
+        end
       end
 
       context 'with Omnibus changes' do
@@ -148,7 +158,7 @@ describe ReleaseTools::PassingBuild do
     end
   end
 
-  describe '#tag' do
+  describe '#tag_project' do
     let(:fake_client) { spy }
     let(:fake_ops_client) { spy }
     let(:tag_name) { 'tag-name' }
