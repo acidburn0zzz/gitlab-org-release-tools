@@ -64,7 +64,7 @@ module ReleaseTools
         end
 
       client.create_tag(client.project_path(project), tag_name, target_commit.id, tag_message)
-      # tag_deployer(tag_name, tag_message, 'master')
+      tag_deployer(tag_name, tag_message, 'master')
     end
 
     private
