@@ -20,14 +20,16 @@ describe ReleaseTools::ComponentVersions do
         .with(project.path, file, commit_id)
         .and_return("1.2.3\n")
 
-      expect(fake_client).to receive(:version_string_from_gemfile)
-        .and_return("9.8.7\n")
+      gemfile_lock = File.read("#{VersionFixture.new.fixture_path}/Gemfile.lock")
+      expect(fake_client).to receive(:file_contents)
+        .with(project.path, 'Gemfile.lock', commit_id)
+        .and_return(gemfile_lock)
 
       expect(described_class.get(project, commit_id)).to match(
         a_hash_including(
           'VERSION' => commit_id,
           file => '1.2.3',
-          'mail_room' => '9.8.7'
+          'mail_room' => '0.9.1'
         )
       )
     end
@@ -178,6 +180,34 @@ describe ReleaseTools::ComponentVersions do
         .and_return("1.33.0\n")
 
       expect(described_class.omnibus_version_changes?('foo-branch', version_map)).to be(false)
+    end
+  end
+
+  describe '#version_string_from_gemfile' do
+    context 'when the Gemfile.lock contains the version we are looking for' do
+      let(:fixture) { VersionFixture.new }
+      let(:gemfile_lock) { File.read("#{fixture.fixture_path}/Gemfile.lock") }
+
+      it 'returns the version' do
+        expect do
+          described_class.version_string_from_gemfile(gemfile_lock, 'mail_room')
+        end.not_to raise_error
+
+        expect(
+          described_class.version_string_from_gemfile(gemfile_lock, 'mail_room')
+        ).to eq('0.9.1')
+      end
+    end
+
+    context 'when the Gemfile.lock does not contain the version we are looking for' do
+      let(:fixture) { VersionFixture.new }
+      let(:gemfile_lock) { File.read("#{fixture.fixture_path}/Gemfile.lock") }
+
+      it 'raises a VersionNotFoundError' do
+        expect do
+          described_class.version_string_from_gemfile(gemfile_lock, 'gem_that_does_not_exist')
+        end.to raise_error(described_class::VersionNotFoundError)
+      end
     end
   end
 end

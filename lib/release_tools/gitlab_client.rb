@@ -2,7 +2,6 @@
 
 module ReleaseTools
   class GitlabClient
-    class VersionNotFoundError < StandardError; end
     DEFAULT_GITLAB_API_ENDPOINT = 'https://gitlab.com/api/v4'
 
     # Some methods get delegated directly to the internal client

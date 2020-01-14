@@ -2,6 +2,8 @@
 
 module ReleaseTools
   class ComponentVersions
+    class VersionNotFoundError < StandardError; end
+
     include ::SemanticLogger::Loggable
 
     FILES = [
@@ -23,10 +25,9 @@ module ReleaseTools
         memo[file] = get_component(project, commit_id, file)
       end
 
+      gemfile_lock = client.file_contents(client.project_path(project), 'Gemfile.lock', commit_id)
       GEMS.each_with_object(versions) do |gem_name, memo|
-        memo[gem_name] = client
-          .version_string_from_gemfile(client.file_contents(client.project_path(project), 'Gemfile.lock', commit_id), gem_name)
-          .chomp
+        memo[gem_name] = version_string_from_gemfile(gemfile_lock, gem_name).chomp
       end
 
       logger.info({ project: project }.merge(versions))
@@ -38,6 +39,19 @@ module ReleaseTools
       client
         .file_contents(client.project_path(project), file, commit_id)
         .chomp
+    end
+
+    def self.version_string_from_gemfile(gemfile_lock, gem_name)
+      lock_parser = Bundler::LockfileParser.new(gemfile_lock)
+      spec = lock_parser.specs.find { |x| x.name == gem_name.to_s }
+
+      raise VersionNotFoundError.new("Unable to find version for gem `#{gem_name}`") if spec.nil?
+
+      version = spec.version.to_s
+
+      logger.trace("#{gem_name} version", version: version)
+
+      version
     end
 
     def self.update_cng(target_branch, version_map)

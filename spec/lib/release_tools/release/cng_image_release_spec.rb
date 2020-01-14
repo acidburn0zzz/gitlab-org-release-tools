@@ -30,18 +30,6 @@ describe ReleaseTools::Release::CNGImageRelease do
         ).to eq('0.9.1')
       end
     end
-
-    context 'when the Gemfile.lock does not contain the version we are looking for' do
-      let(:fixture) { VersionFixture.new }
-      let(:opts) { { gitlab_repo_path: fixture.fixture_path } }
-      let(:release) { described_class.new('1.1.1', opts) }
-
-      it 'raises a VersionNotFoundError' do
-        expect do
-          release.version_string_from_gemfile('foobar')
-        end.to raise_error(described_class::VersionNotFoundError)
-      end
-    end
   end
 
   describe '#tag' do
