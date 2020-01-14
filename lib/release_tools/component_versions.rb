@@ -15,7 +15,7 @@ module ReleaseTools
     ].freeze
 
     GEMS = [
-      Project::GitlabMailroom.gem_name
+      Project::GitlabMailroom
     ].freeze
 
     def self.get(project, commit_id)
@@ -26,8 +26,8 @@ module ReleaseTools
       end
 
       gemfile_lock = client.file_contents(client.project_path(project), 'Gemfile.lock', commit_id)
-      GEMS.each_with_object(versions) do |gem_name, memo|
-        memo[gem_name] = version_string_from_gemfile(gemfile_lock, gem_name).chomp
+      GEMS.each_with_object(versions) do |gem, memo|
+        memo[gem.version_file] = version_string_from_gemfile(gemfile_lock, gem.gem_name).chomp
       end
 
       logger.info({ project: project }.merge(versions))
@@ -64,10 +64,6 @@ module ReleaseTools
       ).chomp
       cng_variables = YAML.safe_load(variables_file)
       version_map.each do |component, new_version|
-        if component == 'mail_room'
-          component = 'MAILROOM_VERSION'
-        end
-
         cng_variables['variables'].each do |c, old_version|
           if component == 'VERSION'
             cng_variables['variables']['GITLAB_VERSION'] = new_version
@@ -106,7 +102,7 @@ module ReleaseTools
       return if SharedStatus.dry_run?
 
       actions = version_map.map do |filename, contents|
-        next if filename == 'mail_room'
+        next if filename == 'MAILROOM_VERSION'
 
         logger.trace('Finding changes', filename: filename, content: contents)
         {
@@ -126,7 +122,7 @@ module ReleaseTools
 
     def self.omnibus_version_changes?(target_branch, version_map)
       version_map.any? do |filename, contents|
-        next if filename == 'mail_room'
+        next if filename == 'MAILROOM_VERSION'
 
         client.file_contents(
           client.project_path(ReleaseTools::Project::OmnibusGitlab),
@@ -143,11 +139,8 @@ module ReleaseTools
         target_branch
       ).chomp
       cng_variables = YAML.safe_load(variables_file)
-      version_map.each do |component, new_version|
-        if component == 'mail_room'
-          component = 'MAILROOM_VERSION'
-        end
 
+      version_map.each do |component, new_version|
         cng_variables['variables'].each do |c, old_version|
           next if component != c
 

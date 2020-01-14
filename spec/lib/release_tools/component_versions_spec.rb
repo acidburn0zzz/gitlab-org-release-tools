@@ -29,7 +29,7 @@ describe ReleaseTools::ComponentVersions do
         a_hash_including(
           'VERSION' => commit_id,
           file => '1.2.3',
-          'mail_room' => '0.9.1'
+          'MAILROOM_VERSION' => '0.9.1'
         )
       )
     end
@@ -45,7 +45,7 @@ describe ReleaseTools::ComponentVersions do
         'GITLAB_SHELL_VERSION' => '9.0.0',
         'GITLAB_WORKHORSE_VERSION' => '8.6.0',
         'VERSION' => '0cfa69752d82b8e134bdb8e473c185bdae26ccc2',
-        'mail_room' => '0.10.0'
+        'MAILROOM_VERSION' => '0.10.0'
       }
     end
     let(:commit) { double('commit', id: 'abcd') }
@@ -91,7 +91,7 @@ describe ReleaseTools::ComponentVersions do
         'GITLAB_SHELL_VERSION' => '9.0.0',
         'GITLAB_WORKHORSE_VERSION' => '8.6.0',
         'VERSION' => '0cfa69752d82b8e134bdb8e473c185bdae26ccc2',
-        'mail_room' => '0.10.0'
+        'MAILROOM_VERSION' => '0.10.0'
       }
     end
     let(:commit) { double('commit', id: 'abcd') }
