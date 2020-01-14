@@ -135,26 +135,32 @@ module ReleaseTools
     def self.cng_version_changes?(target_branch, version_map)
       variables_file = client.file_contents(
         client.project_path(ReleaseTools::Project::CNGImage),
-        "ci_files/variables.yml",
+        "/ci_files/variables.yml",
         target_branch
       ).chomp
       cng_variables = YAML.safe_load(variables_file)
 
-      version_map.each do |component, new_version|
-        cng_variables['variables'].each do |c, old_version|
-          next if component != c
+      helm_compatible_versions = version_map.dup
+      gitlab_version = helm_compatible_versions.delete('VERSION')
 
-          logger.trace('Finding changes', component: component, old_version: old_version, new_version: "v#{new_version}")
-
-          if component == 'MAILROOM_VERSION'
-            next if old_version == new_version
-          end
-
-          return true if old_version != "v#{new_version}"
-        end
+      %w[GITLAB_VERSION GITLAB_REF_SLUG GITLAB_ASSETS_TAG].each do |component|
+        helm_compatible_versions[component] = gitlab_version
       end
 
-      false
+      helm_compatible_versions.any? do |component, new_version|
+        chart_component_version = cng_variables['variables'][component]
+
+        if component == 'MAILROOM_VERSION'
+          new_version != chart_component_version
+        else
+          new_chart_component_version = ReleaseTools::Version.new(new_version)
+          if new_chart_component_version.valid?
+            new_chart_component_version.tag != chart_component_version
+          else
+            new_chart_component_version != chart_component_version
+          end
+        end
+      end
     end
 
     def self.client
