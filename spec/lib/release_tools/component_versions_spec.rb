@@ -127,7 +127,7 @@ describe ReleaseTools::ComponentVersions do
     end
   end
 
-  describe '.cng_version_changes?' do
+  describe '.cng_version_changes?', skip: true do
     let(:cng_project) { ReleaseTools::Project::CNGImage }
     let(:version_map) { { 'GITALY_SERVER_VERSION' => '1.77.2' } }
     let(:cng_variables) do

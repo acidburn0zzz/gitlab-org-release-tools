@@ -51,7 +51,7 @@ describe ReleaseTools::PassingBuild do
     end
   end
 
-  describe '#trigger_build', skip: true do
+  describe '#trigger_build' do
     let(:fake_client) { spy }
     let(:fake_ops_client) { spy }
     let(:project) { ReleaseTools::Project::GitlabCe }
@@ -75,7 +75,7 @@ describe ReleaseTools::PassingBuild do
         stub_const('ReleaseTools::GitlabOpsClient', fake_ops_client)
       end
 
-      context 'with component changes' do
+      context 'with component changes', skip: true do
         before do
           allow(ReleaseTools::ComponentVersions)
             .to receive(:omnibus_version_changes?).and_return(true)
@@ -102,7 +102,7 @@ describe ReleaseTools::PassingBuild do
         end
       end
 
-      context 'with Omnibus changes' do
+      context 'with Omnibus changes', skip: true do
         before do
           allow(ReleaseTools::ComponentVersions)
             .to receive(:omnibus_version_changes?).and_return(false)
@@ -126,7 +126,12 @@ describe ReleaseTools::PassingBuild do
         before do
           allow(ReleaseTools::ComponentVersions)
             .to receive(:omnibus_version_changes?).and_return(false)
+
+          allow(ReleaseTools::ComponentVersions)
+            .to receive(:cng_version_changes?).and_return(false)
+
           allow(service).to receive(:omnibus_changes?).and_return(false)
+          allow(service).to receive(:cng_changes?).and_return(false)
         end
 
         it 'does nothing' do
