@@ -102,12 +102,16 @@ describe ReleaseTools::PassingBuild do
         end
       end
 
-      context 'with Omnibus changes', skip: true do
+      context 'with Omnibus changes' do
         before do
           allow(ReleaseTools::ComponentVersions)
             .to receive(:omnibus_version_changes?).and_return(false)
 
+          allow(ReleaseTools::ComponentVersions)
+            .to receive(:cng_version_changes?).and_return(false)
+
           allow(service).to receive(:omnibus_changes?).and_return(true)
+          allow(service).to receive(:cng_changes?).and_return(false)
         end
 
         it 'tags' do
