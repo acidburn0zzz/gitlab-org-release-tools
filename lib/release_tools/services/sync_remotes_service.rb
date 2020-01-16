@@ -8,6 +8,8 @@ module ReleaseTools
       include ::SemanticLogger::Loggable
       include ReleaseTools::Support::UbiHelper
 
+      MASTER_BRANCH = 'master'
+
       def initialize(version)
         @version = version.to_ce
         @omnibus = OmnibusGitlabVersion.new(@version.to_omnibus)
@@ -19,10 +21,22 @@ module ReleaseTools
           return
         end
 
-        sync_branches(Project::GitlabEe, @version.stable_branch(ee: true))
-        sync_branches(Project::GitlabCe, @version.stable_branch(ee: false))
+        sync_branches(
+          Project::GitlabEe,
+          @version.stable_branch(ee: true),
+          ReleaseTools::AutoDeployBranch.current,
+          MASTER_BRANCH
+        )
+        sync_branches(
+          Project::GitlabCe,
+          @version.stable_branch(ee: false),
+          MASTER_BRANCH
+        )
         sync_branches(Project::OmnibusGitlab, *[
-          @omnibus.to_ee.stable_branch, @omnibus.to_ce.stable_branch
+          @omnibus.to_ee.stable_branch,
+          @omnibus.to_ce.stable_branch,
+          ReleaseTools::AutoDeployBranch.current,
+          MASTER_BRANCH
         ].uniq) # Omnibus uses a single branch post-12.2
 
         # There's no need for a separate CNG UBI stable branch. It is the same as EE branch.

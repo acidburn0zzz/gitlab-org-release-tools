@@ -5,6 +5,12 @@ require 'spec_helper'
 describe ReleaseTools::Services::SyncRemotesService do
   let(:version) { ReleaseTools::Version.new('1.2.3') }
 
+  around do |ex|
+    ClimateControl.modify(AUTO_DEPLOY_BRANCH: '1-2-auto-deploy-20200101') do
+      ex.run
+    end
+  end
+
   describe '#execute' do
     context 'when `publish_git` is disabled' do
       before do
@@ -45,15 +51,16 @@ describe ReleaseTools::Services::SyncRemotesService do
 
       it 'syncs branches' do
         service = described_class.new(version)
+        branches = [ReleaseTools::AutoDeployBranch.current, 'master']
 
         allow(service).to receive(:sync_tags).and_return(true)
 
         expect(service).to receive(:sync_branches)
-          .with(ReleaseTools::Project::GitlabEe, '1-2-stable-ee')
+          .with(ReleaseTools::Project::GitlabEe, '1-2-stable-ee', *branches)
         expect(service).to receive(:sync_branches)
-          .with(ReleaseTools::Project::GitlabCe, '1-2-stable')
+          .with(ReleaseTools::Project::GitlabCe, '1-2-stable', 'master')
         expect(service).to receive(:sync_branches)
-          .with(ReleaseTools::Project::OmnibusGitlab, '1-2-stable-ee', '1-2-stable')
+          .with(ReleaseTools::Project::OmnibusGitlab, '1-2-stable-ee', '1-2-stable', *branches)
         expect(service).to receive(:sync_branches)
           .with(ReleaseTools::Project::CNGImage, '1-2-stable', '1-2-stable-ee')
 
