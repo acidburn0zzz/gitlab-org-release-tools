@@ -118,7 +118,7 @@ EOS
             .and_return(cng_project.path)
 
           allow(fake_client).to receive(:file_contents)
-            .with(cng_project.path, "ci_files/variables.yml", '11-10-auto-deploy-1234')
+            .with(cng_project.path, "/ci_files/variables.yml", '11-10-auto-deploy-1234')
             .and_return(cng_variables)
           allow(ReleaseTools::ComponentVersions)
             .to receive(:omnibus_version_changes?).and_return(true)
