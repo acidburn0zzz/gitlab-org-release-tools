@@ -35,7 +35,7 @@ describe ReleaseTools::ComponentVersions do
     end
   end
 
-  describe '.update_cng', skip: 'loop :-(' do
+  describe '.update_cng' do
     let(:project) { ReleaseTools::Project::CNGImage }
     let(:version_map) do
       {
@@ -48,36 +48,61 @@ describe ReleaseTools::ComponentVersions do
         'MAILROOM_VERSION' => '0.10.0'
       }
     end
+    let(:cng_variables) do
+      {
+        'variables' => {
+          'GITALY_SERVER_VERSION' => '1.33.0',
+          'GITLAB_ELASTICSEARCH_INDEXER_VERSION' => '1.3.0',
+          'GITLAB_PAGES_VERSION' => '1.5.0',
+          'GITLAB_SHELL_VERSION' => '9.0.0',
+          'GITLAB_WORKHORSE_VERSION' => '8.6.0',
+          'GITLAB_VERSION' => 'v12.7.0',
+          'GITLAB_REF_SLAG' => 'v12.7.0',
+          'GITLAB_ASSETS_TAG' => 'v12.7.0',
+          'MAILROOM_VERSION' => '0.10.0'
+        }
+      }
+    end
     let(:commit) { double('commit', id: 'abcd') }
 
     it 'commits version updates for the specified ref' do
       allow(fake_client).to receive(:project_path).and_return(project.path)
+      allow(described_class).to receive(:get_cng_variables).and_return(cng_variables)
+
+      expected_commit_content = <<EOS
+---
+variables:
+  GITALY_SERVER_VERSION: 1.33.0
+  GITLAB_ELASTICSEARCH_INDEXER_VERSION: 1.3.0
+  GITLAB_PAGES_VERSION: 1.5.0
+  GITLAB_SHELL_VERSION: 9.0.0
+  GITLAB_WORKHORSE_VERSION: 8.6.0
+  GITLAB_VERSION: 0cfa69752d82b8e134bdb8e473c185bdae26ccc2
+  GITLAB_REF_SLAG: 0cfa69752d82b8e134bdb8e473c185bdae26ccc2
+  GITLAB_ASSETS_TAG: 0cfa69752d82b8e134bdb8e473c185bdae26ccc2
+  MAILROOM_VERSION: 0.10.0
+EOS
+
+      expect(fake_client).to receive(:create_commit) do |path, branch, msg, actions|
+        expect(path).to eq(project.path)
+        expect(branch).to eq('foo-branch')
+        expect(msg).to eq('Update component versions')
+
+        expect(actions.length).to eq(1)
+        action = actions[0]
+
+        expect(action).to match(action: 'update', file_path: '/ci_files/variables.yml', content: String)
+
+        committed_variables = YAML.safe_load(action[:content])
+        expect(committed_variables['variables']).to match(YAML.safe_load(expected_commit_content)['variables'])
+      end
 
       without_dry_run do
         described_class.update_cng('foo-branch', version_map)
       end
 
-      expect(fake_client).to have_received(:create_commit).with(
-        project.path,
-        'foo-branch',
-        anything,
-        array_including(
-          action: 'update',
-          file_path: '/VERSION',
-          content: "#{version_map['VERSION']}\n"
-        )
-      )
 
-      expect(fake_client).to have_received(:create_commit).with(
-        project.path,
-        'foo-branch',
-        anything,
-        array_including(
-          action: 'update',
-          file_path: '/mail_room',
-          content: "#{version_map['mail_room']}\n"
-        )
-      )
+      expect(described_class).to have_received(:get_cng_variables).with('foo-branch')
     end
   end
 
@@ -127,9 +152,8 @@ describe ReleaseTools::ComponentVersions do
     end
   end
 
-  describe '.cng_version_changes?', skip: true do
+  describe '.cng_version_changes?' do
     let(:cng_project) { ReleaseTools::Project::CNGImage }
-    let(:version_map) { { 'GITALY_SERVER_VERSION' => '1.77.2' } }
     let(:cng_variables) do
       <<EOS
 ---
@@ -175,21 +199,44 @@ EOS
         .and_return(cng_variables)
     end
 
-    context 'when nothing changes' do
-      let(:version_map) do
-        {
-           'GITALY_SERVER_VERSION' => '1.77.1',
-           'VERSION' => '12.6.3',
-           'MAILROOM_VERSION' => '0.10.0'
-        }
-      end
+    it 'returns false when nothing changes' do
+      version_map = {
+        'GITALY_SERVER_VERSION' => '1.77.1',
+        'VERSION' => '12.6.3',
+        'MAILROOM_VERSION' => '0.10.0'
+      }
 
-      it 'returns false' do
-        expect(described_class.cng_version_changes?('foo-branch', version_map)).to be(false)
-      end
+      expect(described_class.cng_version_changes?('foo-branch', version_map)).to be(false)
     end
 
-    it 'keeps cng versions that have changed' do
+    it 'return true when gitlab changes' do
+      gitlab_version = '8e956a0cb9f07c7fb7f91dd7886eb470e4feae84'
+      version_map = {
+        'GITALY_SERVER_VERSION' => '1.77.1',
+        'VERSION' => gitlab_version,
+        'MAILROOM_VERSION' => '0.10.0'
+      }
+
+      expect(described_class.cng_version_changes?('foo-branch', version_map)).to be(true)
+    end
+
+    it 'returns true when a component changes' do
+      version_map = {
+        'GITALY_SERVER_VERSION' => '1.77.2',
+        'VERSION' => '12.6.3',
+        'MAILROOM_VERSION' => '0.10.0'
+      }
+
+      expect(described_class.cng_version_changes?('foo-branch', version_map)).to be(true)
+    end
+
+    it 'returns true when a gem changes' do
+      version_map = {
+        'GITALY_SERVER_VERSION' => '1.77.1',
+        'VERSION' => '12.6.3',
+        'MAILROOM_VERSION' => '0.10.1'
+      }
+
       expect(described_class.cng_version_changes?('foo-branch', version_map)).to be(true)
     end
   end
