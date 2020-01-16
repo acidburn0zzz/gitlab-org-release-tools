@@ -77,39 +77,40 @@ describe ReleaseTools::PassingBuild do
 
       context 'with component changes' do
         let(:cng_project) { ReleaseTools::Project::CNGImage }
-        foo = <<EOS
+        let(:cng_variables) do
+          <<EOS
 ---
 variables:
-GITLAB_ELASTICSEARCH_INDEXER_VERSION: v1.5.0
-GITLAB_VERSION: v12.6.3
-GITLAB_REF_SLUG: v12.6.3
-GITLAB_ASSETS_TAG: v12.6.3
-GITLAB_EXPORTER_VERSION: 5.1.0
-GITLAB_SHELL_VERSION: v10.3.0
-GITLAB_WORKHORSE_VERSION: v8.18.0
-GITLAB_CONTAINER_REGISTRY_VERSION: v2.7.6-gitlab
-GITALY_VERSION: master
-GIT_VERSION: 2.24.1
-GO_VERSION: 1.12.13
-KUBECTL_VERSION: 1.13.12
-PG_VERSION: '10.9'
-MAILROOM_VERSION: 0.10.0
-ALPINE_VERSION: '3.10'
-CFSSL_VERSION: '1.2'
-DOCKER_DRIVER: overlay2
-DOCKER_HOST: tcp://docker:2375
-DOCKER_TLS_CERTDIR: ''
-ASSETS_IMAGE_PREFIX: gitlab-assets
-ASSETS_IMAGE_REGISTRY_PREFIX: registry.gitlab.com/gitlab-org
-GITLAB_NAMESPACE: gitlab-org
-CE_PROJECT: gitlab-foss
-EE_PROJECT: gitlab
-COMPILE_ASSETS: 'false'
-S3CMD_VERSION: 2.0.1
-PYTHON_VERSION: 3.7.3
-GITALY_SERVER_VERSION: v1.77.1
+  GITLAB_ELASTICSEARCH_INDEXER_VERSION: v1.5.0
+  GITLAB_VERSION: v12.6.3
+  GITLAB_REF_SLUG: v12.6.3
+  GITLAB_ASSETS_TAG: v12.6.3
+  GITLAB_EXPORTER_VERSION: 5.1.0
+  GITLAB_SHELL_VERSION: v10.3.0
+  GITLAB_WORKHORSE_VERSION: v8.18.0
+  GITLAB_CONTAINER_REGISTRY_VERSION: v2.7.6-gitlab
+  GITALY_VERSION: master
+  GIT_VERSION: 2.24.1
+  GO_VERSION: 1.12.13
+  KUBECTL_VERSION: 1.13.12
+  PG_VERSION: '10.9'
+  MAILROOM_VERSION: 0.10.0
+  ALPINE_VERSION: '3.10'
+  CFSSL_VERSION: '1.2'
+  DOCKER_DRIVER: overlay2
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ''
+  ASSETS_IMAGE_PREFIX: gitlab-assets
+  ASSETS_IMAGE_REGISTRY_PREFIX: registry.gitlab.com/gitlab-org
+  GITLAB_NAMESPACE: gitlab-org
+  CE_PROJECT: gitlab-foss
+  EE_PROJECT: gitlab
+  COMPILE_ASSETS: 'false'
+  S3CMD_VERSION: 2.0.1
+  PYTHON_VERSION: 3.7.3
+  GITALY_SERVER_VERSION: v1.77.1
 EOS
-        let(:cng_variables) { YAML.safe_load(foo) }
+        end
 
         before do
           allow(fake_client).to receive(:project_path)
