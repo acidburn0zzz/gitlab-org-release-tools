@@ -14,9 +14,10 @@ describe ReleaseTools::PassingBuild do
 
     before do
       stub_const('ReleaseTools::Commits', fake_commits)
+      enable_feature(:auto_deploy_successful_build)
     end
 
-    it 'raises an error without a dev commit' do
+    it 'raises an error without a build commit' do
       expect(fake_commits).to receive(:latest_successful_on_build)
         .and_return(nil)
 
@@ -48,6 +49,22 @@ describe ReleaseTools::PassingBuild do
       expect(service).to receive(:trigger_build)
 
       service.execute(double(trigger_build: true))
+    end
+
+    # See https://gitlab.com/gitlab-com/gl-infra/delivery/issues/625#note_270408652
+    context 'when `auto_deploy_successful_build` is disabled' do
+      before do
+        disable_feature(:auto_deploy_successful_build)
+      end
+
+      it 'uses the latest commit' do
+        expect(fake_commits).to receive(:latest).and_return(fake_commit)
+
+        stub_const('ReleaseTools::ComponentVersions', spy)
+        expect(service).to receive(:trigger_build)
+
+        service.execute(double(trigger_build: true))
+      end
     end
   end
 

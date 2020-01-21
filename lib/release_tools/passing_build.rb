@@ -14,7 +14,12 @@ module ReleaseTools
     def execute(args)
       commits = ReleaseTools::Commits.new(project, ref: ref)
 
-      commit = commits.latest_successful_on_build
+      commit =
+        if Feature.enabled?(:auto_deploy_successful_build)
+          commits.latest_successful_on_build
+        else
+          commits.latest
+        end
 
       if commit.nil?
         raise "Unable to find a passing #{project} build for `#{ref}` on dev"
