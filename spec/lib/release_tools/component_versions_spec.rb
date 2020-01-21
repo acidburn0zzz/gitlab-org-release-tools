@@ -69,19 +69,19 @@ describe ReleaseTools::ComponentVersions do
       allow(fake_client).to receive(:project_path).and_return(project.path)
       allow(described_class).to receive(:get_cng_variables).and_return(cng_variables)
 
-      expected_commit_content = <<EOS
----
-variables:
-  GITALY_SERVER_VERSION: v1.33.0
-  GITLAB_ELASTICSEARCH_INDEXER_VERSION: v1.3.0
-  GITLAB_PAGES_VERSION: v1.5.0
-  GITLAB_SHELL_VERSION: v9.0.0
-  GITLAB_WORKHORSE_VERSION: v8.6.0
-  GITLAB_VERSION: 0cfa69752d82b8e134bdb8e473c185bdae26ccc2
-  GITLAB_REF_SLUG: 0cfa69752d82b8e134bdb8e473c185bdae26ccc2
-  GITLAB_ASSETS_TAG: 0cfa69752d82b8e134bdb8e473c185bdae26ccc2
-  MAILROOM_VERSION: 0.10.0
-EOS
+      expected_commit_content = <<~EOS
+        ---
+        variables:
+          GITALY_SERVER_VERSION: v1.33.0
+          GITLAB_ELASTICSEARCH_INDEXER_VERSION: v1.3.0
+          GITLAB_PAGES_VERSION: v1.5.0
+          GITLAB_SHELL_VERSION: v9.0.0
+          GITLAB_WORKHORSE_VERSION: v8.6.0
+          GITLAB_VERSION: 0cfa69752d82b8e134bdb8e473c185bdae26ccc2
+          GITLAB_REF_SLUG: 0cfa69752d82b8e134bdb8e473c185bdae26ccc2
+          GITLAB_ASSETS_TAG: 0cfa69752d82b8e134bdb8e473c185bdae26ccc2
+          MAILROOM_VERSION: 0.10.0
+      EOS
 
       expect(fake_client).to receive(:create_commit) do |path, branch, msg, actions|
         expect(path).to eq(project.path)
@@ -100,7 +100,6 @@ EOS
       without_dry_run do
         described_class.update_cng('foo-branch', version_map)
       end
-
 
       expect(described_class).to have_received(:get_cng_variables).with('foo-branch')
     end
@@ -155,38 +154,38 @@ EOS
   describe '.cng_version_changes?' do
     let(:cng_project) { ReleaseTools::Project::CNGImage }
     let(:cng_variables) do
-      <<EOS
----
-variables:
-  GITLAB_ELASTICSEARCH_INDEXER_VERSION: v1.5.0
-  GITLAB_VERSION: v12.6.3
-  GITLAB_REF_SLUG: v12.6.3
-  GITLAB_ASSETS_TAG: v12.6.3
-  GITLAB_EXPORTER_VERSION: 5.1.0
-  GITLAB_SHELL_VERSION: v10.3.0
-  GITLAB_WORKHORSE_VERSION: v8.18.0
-  GITLAB_CONTAINER_REGISTRY_VERSION: v2.7.6-gitlab
-  GITALY_VERSION: master
-  GIT_VERSION: 2.24.1
-  GO_VERSION: 1.12.13
-  KUBECTL_VERSION: 1.13.12
-  PG_VERSION: '10.9'
-  MAILROOM_VERSION: 0.10.0
-  ALPINE_VERSION: '3.10'
-  CFSSL_VERSION: '1.2'
-  DOCKER_DRIVER: overlay2
-  DOCKER_HOST: tcp://docker:2375
-  DOCKER_TLS_CERTDIR: ''
-  ASSETS_IMAGE_PREFIX: gitlab-assets
-  ASSETS_IMAGE_REGISTRY_PREFIX: registry.gitlab.com/gitlab-org
-  GITLAB_NAMESPACE: gitlab-org
-  CE_PROJECT: gitlab-foss
-  EE_PROJECT: gitlab
-  COMPILE_ASSETS: 'false'
-  S3CMD_VERSION: 2.0.1
-  PYTHON_VERSION: 3.7.3
-  GITALY_SERVER_VERSION: v1.77.1
-EOS
+      <<~EOS
+        ---
+        variables:
+          GITLAB_ELASTICSEARCH_INDEXER_VERSION: v1.5.0
+          GITLAB_VERSION: v12.6.3
+          GITLAB_REF_SLUG: v12.6.3
+          GITLAB_ASSETS_TAG: v12.6.3
+          GITLAB_EXPORTER_VERSION: 5.1.0
+          GITLAB_SHELL_VERSION: v10.3.0
+          GITLAB_WORKHORSE_VERSION: v8.18.0
+          GITLAB_CONTAINER_REGISTRY_VERSION: v2.7.6-gitlab
+          GITALY_VERSION: master
+          GIT_VERSION: 2.24.1
+          GO_VERSION: 1.12.13
+          KUBECTL_VERSION: 1.13.12
+          PG_VERSION: '10.9'
+          MAILROOM_VERSION: 0.10.0
+          ALPINE_VERSION: '3.10'
+          CFSSL_VERSION: '1.2'
+          DOCKER_DRIVER: overlay2
+          DOCKER_HOST: tcp://docker:2375
+          DOCKER_TLS_CERTDIR: ''
+          ASSETS_IMAGE_PREFIX: gitlab-assets
+          ASSETS_IMAGE_REGISTRY_PREFIX: registry.gitlab.com/gitlab-org
+          GITLAB_NAMESPACE: gitlab-org
+          CE_PROJECT: gitlab-foss
+          EE_PROJECT: gitlab
+          COMPILE_ASSETS: 'false'
+          S3CMD_VERSION: 2.0.1
+          PYTHON_VERSION: 3.7.3
+          GITALY_SERVER_VERSION: v1.77.1
+      EOS
     end
 
     before do

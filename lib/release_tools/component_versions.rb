@@ -82,7 +82,6 @@ module ReleaseTools
       actions = version_map.map do |filename, contents|
         next if filename == 'MAILROOM_VERSION'
 
-        logger.trace('Finding changes', filename: filename, content: contents)
         {
           action: 'update',
           file_path: "/#{filename}",
@@ -144,11 +143,8 @@ module ReleaseTools
         next if component == 'MAILROOM_VERSION'
 
         parsed_version = ReleaseTools::Version.new(version)
-        if parsed_version.valid?
-          cng_variables[component] = parsed_version.tag
-        else
-          cng_variables[component] = version
-        end
+
+        cng_variables[component] = parsed_version.valid? ? parsed_version.tag : version
       end
     end
 
