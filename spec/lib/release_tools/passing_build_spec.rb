@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'pry'
 
 describe ReleaseTools::PassingBuild do
   let(:project) { ReleaseTools::Project::GitlabCe }
@@ -84,6 +85,10 @@ describe ReleaseTools::PassingBuild do
             .with(cng_project)
             .and_return(cng_project.path)
 
+          allow(fake_client).to receive(:project_path)
+            .with(omnibus_project)
+            .and_return(omnibus_project.path)
+
           allow(ReleaseTools::ComponentVersions)
             .to receive(:update_omnibus).with('11-10-auto-deploy-1234', version_map)
             .and_return(fake_commit)
@@ -93,18 +98,17 @@ describe ReleaseTools::PassingBuild do
             .and_return(fake_commit)
 
           allow(ReleaseTools::ComponentVersions)
-            .to receive(:omnibus_version_changes?).and_return(false)
+            .to receive(:omnibus_version_changes?).and_return(true)
 
           allow(ReleaseTools::ComponentVersions)
-            .to receive(:cng_version_changes?).and_return(false)
+            .to receive(:cng_version_changes?).and_return(true)
         end
 
         it 'updates Omnibus versions and tags' do
           expect(service).to receive(:tag_project).with(omnibus_project, fake_commit)
-        end
-
-        it 'updates CNG versions and tags' do
           expect(service).to receive(:tag_project).with(cng_project, fake_commit)
+
+          service.trigger_build
         end
       end
 
