@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'pry'
 
 describe ReleaseTools::ComponentVersions do
   let(:fake_client) { spy }
@@ -67,7 +68,7 @@ describe ReleaseTools::ComponentVersions do
 
     it 'commits version updates for the specified ref' do
       allow(fake_client).to receive(:project_path).and_return(project.path)
-      allow(described_class).to receive(:get_cng_variables).and_return(cng_variables)
+      allow(described_class).to receive(:cng_variables).and_return(cng_variables)
 
       expected_commit_content = <<~EOS
         ---
@@ -101,7 +102,7 @@ describe ReleaseTools::ComponentVersions do
         described_class.update_cng('foo-branch', version_map)
       end
 
-      expect(described_class).to have_received(:get_cng_variables).with('foo-branch')
+      expect(described_class).to have_received(:cng_variables).with('foo-branch')
     end
   end
 
@@ -237,6 +238,50 @@ describe ReleaseTools::ComponentVersions do
       }
 
       expect(described_class.cng_version_changes?('foo-branch', version_map)).to be(true)
+    end
+  end
+
+  describe '.versions_to_cng_variables' do
+    let(:version_map) do
+      {
+        'GITALY_SERVER_VERSION' => '1.77.1',
+        'VERSION' => '12.6.3',
+        'MAILROOM_VERSION' => '0.10.0'
+      }
+    end
+
+    let(:output) do
+      {
+        'MAILROOM_VERSION' => '0.10.0',
+        'GITLAB_VERSION' => 'v12.6.3',
+        'GITLAB_REF_SLUG' => 'v12.6.3',
+        'GITLAB_ASSETS_TAG' => 'v12.6.3',
+        'GITALY_VERSION' => 'v1.77.1'
+      }
+    end
+
+    subject { described_class.versions_to_cng_variables(version_map) }
+
+    it 'returns the correct output' do
+      expect(subject).to eq(output)
+    end
+
+    it 'removes the VERSION' do
+      expect(subject.keys).not_to include('VERSION')
+    end
+
+    it 'includes gitlab keys' do
+      expect(subject.keys).to match_array(%w[GITLAB_VERSION GITLAB_REF_SLUG GITLAB_ASSETS_TAG GITALY_VERSION MAILROOM_VERSION])
+    end
+
+    it 'sets gitlab keys based on VERSION' do
+      expect(subject['GITLAB_VERSION']).to eq('v12.6.3')
+      expect(subject['GITLAB_REF_SLUG']).to eq('v12.6.3')
+      expect(subject['GITLAB_ASSETS_TAG']).to eq('v12.6.3')
+    end
+
+    it 'transforms GITALY_SERVER_VERSION to GITALY_VERSION' do
+      expect(subject['GITALY_VERSION']).to be_present
     end
   end
 

@@ -57,15 +57,15 @@ module ReleaseTools
     def self.update_cng(target_branch, version_map)
       return if SharedStatus.dry_run?
 
-      cng_variables = get_cng_variables(target_branch)
+      variables = cng_variables(target_branch)
       helm_compatible_versions = versions_to_cng_variables(version_map)
-      cng_variables['variables'].merge!(helm_compatible_versions)
+      variables['variables'].merge!(helm_compatible_versions)
 
       action =
         {
           action: 'update',
           file_path: '/ci_files/variables.yml',
-          content: cng_variables.to_yaml
+          content: variables.to_yaml
         }
 
       client.create_commit(
@@ -110,29 +110,20 @@ module ReleaseTools
     end
 
     def self.cng_version_changes?(target_branch, version_map)
-      cng_variables = get_cng_variables(target_branch)
+      variables = cng_variables(target_branch).fetch('variables', {})
 
       helm_compatible_versions = versions_to_cng_variables(version_map)
 
       helm_compatible_versions.any? do |component, new_version|
-        chart_component_version = cng_variables['variables'][component]
+        chart_component_version = variables[component]
 
         chart_component_version != new_version
       end
     end
 
-    def self.get_cng_variables(target_branch)
-      variables_file = client.file_contents(
-        client.project_path(ReleaseTools::Project::CNGImage),
-        "/ci_files/variables.yml",
-        target_branch
-      ).chomp
-
-      YAML.safe_load(variables_file)
-    end
-
     def self.versions_to_cng_variables(version_map)
       cng_variables = version_map.dup
+      cng_variables['GITALY_VERSION'] = cng_variables.delete('GITALY_SERVER_VERSION')
       gitlab_version = cng_variables.delete('VERSION')
 
       %w[GITLAB_VERSION GITLAB_REF_SLUG GITLAB_ASSETS_TAG].each do |component|
@@ -154,6 +145,16 @@ module ReleaseTools
       else
         ReleaseTools::GitlabClient
       end
+    end
+
+    def self.cng_variables(target_branch)
+      variables_file = client.file_contents(
+        client.project_path(ReleaseTools::Project::CNGImage),
+        "/ci_files/variables.yml",
+        target_branch
+      ).chomp
+
+      YAML.safe_load(variables_file)
     end
   end
 end
