@@ -112,6 +112,30 @@ describe ReleaseTools::PassingBuild do
         end
       end
 
+      context 'with CNG changes' do
+        before do
+          allow(ReleaseTools::ComponentVersions)
+            .to receive(:omnibus_version_changes?).and_return(false)
+
+          allow(ReleaseTools::ComponentVersions)
+            .to receive(:cng_version_changes?).and_return(false)
+
+          allow(service).to receive(:omnibus_changes?).and_return(false)
+          allow(service).to receive(:cng_changes?).and_return(true)
+        end
+
+        it 'tags' do
+          project = ReleaseTools::Project::CNGImage
+          stub_const('ReleaseTools::Commits', spy(latest: fake_commit))
+          expect(ReleaseTools::Commits)
+            .to receive(:new).with(project, ref: '11-10-auto-deploy-1234')
+
+          expect(service).to receive(:tag_project).with(project, fake_commit)
+
+          service.trigger_build
+        end
+      end
+
       context 'with Omnibus changes' do
         before do
           allow(ReleaseTools::ComponentVersions)
