@@ -139,6 +139,17 @@ describe ReleaseTools::ComponentVersions do
         )
       )
 
+      expect(fake_client).to have_received(:create_commit).with(
+        project.path,
+        'foo-branch',
+        anything,
+        array_including(
+          action: 'update',
+          file_path: '/GITALY_SERVER_VERSION',
+          content: "#{version_map['GITALY_SERVER_VERSION']}\n"
+        )
+      )
+
       expect(fake_client).not_to have_received(:create_commit).with(
         project.path,
         'foo-branch',
