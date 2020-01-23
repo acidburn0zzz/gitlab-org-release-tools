@@ -52,7 +52,7 @@ describe ReleaseTools::ComponentVersions do
     let(:cng_variables) do
       {
         'variables' => {
-          'GITALY_SERVER_VERSION' => '1.33.0',
+          'GITALY_VERSION' => 'v1.33.0',
           'GITLAB_ELASTICSEARCH_INDEXER_VERSION' => '1.3.0',
           'GITLAB_PAGES_VERSION' => '1.5.0',
           'GITLAB_SHELL_VERSION' => '9.0.0',
@@ -73,7 +73,7 @@ describe ReleaseTools::ComponentVersions do
       expected_commit_content = <<~EOS
         ---
         variables:
-          GITALY_SERVER_VERSION: v1.33.0
+          GITALY_VERSION: v1.33.0
           GITLAB_ELASTICSEARCH_INDEXER_VERSION: v1.3.0
           GITLAB_PAGES_VERSION: v1.5.0
           GITLAB_SHELL_VERSION: v9.0.0
@@ -166,7 +166,7 @@ describe ReleaseTools::ComponentVersions do
           GITLAB_SHELL_VERSION: v10.3.0
           GITLAB_WORKHORSE_VERSION: v8.18.0
           GITLAB_CONTAINER_REGISTRY_VERSION: v2.7.6-gitlab
-          GITALY_VERSION: master
+          GITALY_VERSION: v1.77.1
           GIT_VERSION: 2.24.1
           GO_VERSION: 1.12.13
           KUBECTL_VERSION: 1.13.12
