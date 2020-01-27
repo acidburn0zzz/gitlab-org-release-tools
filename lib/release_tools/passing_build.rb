@@ -72,12 +72,12 @@ module ReleaseTools
     def update_cng_for_autodeploy
       project = ReleaseTools::Project::CNGImage
       if ReleaseTools::ComponentVersions.cng_version_changes?(ref, @version_map)
-        logger.warn('Changes to component versions')
+        logger.info('Changes to component versions')
         commit = update_cng
 
         tag_project(project, commit)
       elsif project_changes?(project)
-        logger.warn('Changes to CNG')
+        logger.info('Changes to CNG')
         commit = ReleaseTools::Commits
           .new(project, ref: ref)
           .latest
@@ -91,12 +91,12 @@ module ReleaseTools
     def update_omnibus_for_autodeploy
       project = ReleaseTools::Project::OmnibusGitlab
       if ReleaseTools::ComponentVersions.omnibus_version_changes?(ref, @version_map)
-        logger.warn('Changes to component versions')
+        logger.info('Changes to component versions')
         commit = update_omnibus
 
         tag_project(project, commit)
       elsif project_changes?(project)
-        logger.warn('Changes to omnibus')
+        logger.info('Changes to omnibus')
         commit = ReleaseTools::Commits
           .new(project, ref: ref)
           .latest
