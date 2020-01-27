@@ -15,7 +15,7 @@ module ReleaseTools
     ].freeze
 
     GEMS = [
-      Project::GitlabMailroom
+      Project::GitlabEe::Components::Mailroom
     ].freeze
 
     def self.get(project, commit_id)
