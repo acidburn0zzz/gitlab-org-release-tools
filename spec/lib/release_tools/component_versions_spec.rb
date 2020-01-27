@@ -329,7 +329,6 @@ describe ReleaseTools::ComponentVersions do
     let(:gemfile_lock) { File.read("#{fixture.fixture_path}/Gemfile.lock") }
 
     context 'when the Gemfile.lock contains the version we are looking for' do
-
       it 'returns the version' do
         expect do
           described_class.version_string_from_gemfile(gemfile_lock, 'mail_room')
