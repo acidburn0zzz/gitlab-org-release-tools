@@ -43,7 +43,7 @@ module ReleaseTools
 
     def self.version_string_from_gemfile(gemfile_lock, gem_name)
       lock_parser = Bundler::LockfileParser.new(gemfile_lock)
-      spec = lock_parser.specs.find { |x| x.name == gem_name.to_s }
+      spec = lock_parser.specs.find { |x| x.name == gem_name }
 
       raise VersionNotFoundError.new("Unable to find version for gem `#{gem_name}`") if spec.nil?
 
