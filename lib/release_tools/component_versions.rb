@@ -2,7 +2,11 @@
 
 module ReleaseTools
   class ComponentVersions
-    class VersionNotFoundError < StandardError; end
+    class VersionNotFoundError < StandardError
+      def initialize(gem_name)
+        super("Unable to find a version for gem #{gem_name}")
+      end
+    end
 
     include ::SemanticLogger::Loggable
 
@@ -45,7 +49,7 @@ module ReleaseTools
     def self.version_string_from_gemfile(parser, gem_name)
       spec = parser.specs.find { |x| x.name == gem_name }
 
-      raise VersionNotFoundError.new("Unable to find version for gem `#{gem_name}`") if spec.nil?
+      raise VersionNotFoundError, gem_name if spec.nil?
 
       version = spec.version.to_s
 

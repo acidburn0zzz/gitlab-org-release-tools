@@ -328,6 +328,7 @@ describe ReleaseTools::ComponentVersions do
     let(:fixture) { VersionFixture.new }
     let(:gemfile_lock) { File.read("#{fixture.fixture_path}/Gemfile.lock") }
     let(:parser) { Bundler::LockfileParser.new(gemfile_lock) }
+
     context 'when the Gemfile.lock contains the version we are looking for' do
       it 'returns the version' do
         expect do
