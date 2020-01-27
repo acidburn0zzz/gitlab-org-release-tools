@@ -49,7 +49,7 @@ module ReleaseTools
 
       version = spec.version.to_s
 
-      logger.trace("#{gem_name} version", version: version)
+      logger.trace('Version from Gemfile.lock', gem: gem_name, version: version)
 
       version
     end
