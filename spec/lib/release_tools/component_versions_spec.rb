@@ -323,18 +323,18 @@ describe ReleaseTools::ComponentVersions do
     end
   end
 
-  describe '#version_string_from_gemfile' do
+  describe '#version_from_gemfile' do
     let(:fixture) { VersionFixture.new }
     let(:gemfile_lock) { File.read("#{fixture.fixture_path}/Gemfile.lock") }
 
     context 'when the Gemfile.lock contains the version we are looking for' do
       it 'returns the version' do
         expect do
-          described_class.version_string_from_gemfile(gemfile_lock, 'mail_room')
+          described_class.version_from_gemfile(gemfile_lock, 'mail_room')
         end.not_to raise_error
 
         expect(
-          described_class.version_string_from_gemfile(gemfile_lock, 'mail_room')
+          described_class.version_from_gemfile(gemfile_lock, 'mail_room')
         ).to eq('0.9.1')
       end
     end
@@ -345,7 +345,7 @@ describe ReleaseTools::ComponentVersions do
 
       it 'raises a VersionNotFoundError' do
         expect do
-          described_class.version_string_from_gemfile(gemfile_lock, 'gem_that_does_not_exist')
+          described_class.version_from_gemfile(gemfile_lock, 'gem_that_does_not_exist')
         end.to raise_error(described_class::VersionNotFoundError)
       end
     end

@@ -379,17 +379,6 @@ module ReleaseTools
         }
       )
     end
-
     # rubocop: enable Metrics/ParameterLists
-    def self.version_string_from_gemfile(file, gem_name)
-      lock_parser = Bundler::LockfileParser.new(file)
-      spec = lock_parser.specs.find { |x| x.name == gem_name.to_s }
-
-      raise VersionNotFoundError.new("Unable to find version for gem `#{gem_name}`") if spec.nil?
-
-      version = spec.version.to_s
-
-      version
-    end
   end
 end

@@ -17,7 +17,7 @@ module ReleaseTools
 
         ensure_version_file_exists!(gem_file)
 
-        ComponentVersions.version_string_from_gemfile(Bundler.read_file(gem_file), gem_name)
+        ComponentVersions.version_from_gemfile(Bundler.read_file(gem_file), gem_name)
       end
 
       def tag
