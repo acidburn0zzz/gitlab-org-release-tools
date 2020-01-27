@@ -70,53 +70,44 @@ module ReleaseTools
     private
 
     def update_cng_for_autodeploy
+      project = ReleaseTools::Project::CNGImage
       if ReleaseTools::ComponentVersions.cng_version_changes?(ref, @version_map)
         logger.warn('Changes to component versions')
         commit = update_cng
 
-        tag_project(ReleaseTools::Project::CNGImage, commit)
-      elsif cng_changes?
+        tag_project(project, commit)
+      elsif project_changes?(project)
         logger.warn('Changes to CNG')
         commit = ReleaseTools::Commits
-          .new(ReleaseTools::Project::CNGImage, ref: ref)
+          .new(project, ref: ref)
           .latest
 
-        tag_project(ReleaseTools::Project::CNGImage, commit)
+        tag_project(project, commit)
       else
         logger.warn('No changes to component versions or CNG, nothing to tag')
       end
     end
 
     def update_omnibus_for_autodeploy
+      project = ReleaseTools::Project::OmnibusGitlab
       if ReleaseTools::ComponentVersions.omnibus_version_changes?(ref, @version_map)
         logger.warn('Changes to component versions')
         commit = update_omnibus
 
-        tag_project(ReleaseTools::Project::OmnibusGitlab, commit)
-      elsif omnibus_changes?
+        tag_project(project, commit)
+      elsif project_changes?(project)
         logger.warn('Changes to omnibus')
         commit = ReleaseTools::Commits
-          .new(ReleaseTools::Project::OmnibusGitlab, ref: ref)
+          .new(project, ref: ref)
           .latest
 
-        tag_project(ReleaseTools::Project::OmnibusGitlab, commit)
+        tag_project(project, commit)
       else
         logger.warn('No changes to component versions or Omnibus, nothing to tag')
       end
     end
 
-    def cng_changes?
-      project = ReleaseTools::Project::CNGImage
-      refs = GitlabClient.commit_refs(project, ref)
-
-      # When our auto-deploy branch `ref` has no associated tags, then there
-      # have been changes on the branch since we last tagged it, and should be
-      # considered changed
-      refs.none? { |ref| ref.type == 'tag' }
-    end
-
-    def omnibus_changes?
-      project = ReleaseTools::Project::OmnibusGitlab
+    def project_changes?(project)
       refs = GitlabClient.commit_refs(project, ref)
 
       # When our auto-deploy branch `ref` has no associated tags, then there

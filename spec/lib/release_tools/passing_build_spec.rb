@@ -5,6 +5,8 @@ require 'pry'
 
 describe ReleaseTools::PassingBuild do
   let(:project) { ReleaseTools::Project::GitlabCe }
+  let(:cng_project) { ReleaseTools::Project::CNGImage }
+  let(:omnibus_project) { ReleaseTools::Project::OmnibusGitlab }
   let(:fake_commit) { double('Commit', id: SecureRandom.hex(20), created_at: Time.now.to_s) }
   let(:version_map) { { 'VERSION' => '1.2.3' } }
 
@@ -77,9 +79,6 @@ describe ReleaseTools::PassingBuild do
       end
 
       context 'with component changes' do
-        let(:cng_project) { ReleaseTools::Project::CNGImage }
-        let(:omnibus_project) { ReleaseTools::Project::OmnibusGitlab }
-
         before do
           allow(fake_client).to receive(:project_path)
             .with(cng_project)
@@ -120,17 +119,16 @@ describe ReleaseTools::PassingBuild do
           allow(ReleaseTools::ComponentVersions)
             .to receive(:cng_version_changes?).and_return(false)
 
-          allow(service).to receive(:omnibus_changes?).and_return(false)
-          allow(service).to receive(:cng_changes?).and_return(true)
+          allow(service).to receive(:project_changes?).with(omnibus_project).and_return(false)
+          allow(service).to receive(:project_changes?).with(cng_project).and_return(true)
         end
 
         it 'tags' do
-          project = ReleaseTools::Project::CNGImage
           stub_const('ReleaseTools::Commits', spy(latest: fake_commit))
           expect(ReleaseTools::Commits)
             .to receive(:new).with(project, ref: '11-10-auto-deploy-1234')
 
-          expect(service).to receive(:tag_project).with(project, fake_commit)
+          expect(service).to receive(:tag_project).with(cng_project, fake_commit)
 
           service.trigger_build
         end
@@ -144,17 +142,16 @@ describe ReleaseTools::PassingBuild do
           allow(ReleaseTools::ComponentVersions)
             .to receive(:cng_version_changes?).and_return(false)
 
-          allow(service).to receive(:omnibus_changes?).and_return(true)
-          allow(service).to receive(:cng_changes?).and_return(false)
+          allow(service).to receive(:project_changes?).with(omnibus_project).and_return(true)
+          allow(service).to receive(:project_changes?).with(cng_project).and_return(false)
         end
 
         it 'tags' do
-          project = ReleaseTools::Project::OmnibusGitlab
           stub_const('ReleaseTools::Commits', spy(latest: fake_commit))
           expect(ReleaseTools::Commits)
             .to receive(:new).with(project, ref: '11-10-auto-deploy-1234')
 
-          expect(service).to receive(:tag_project).with(project, fake_commit)
+          expect(service).to receive(:tag_project).with(omnibus_project, fake_commit)
 
           service.trigger_build
         end
@@ -168,8 +165,8 @@ describe ReleaseTools::PassingBuild do
           allow(ReleaseTools::ComponentVersions)
             .to receive(:cng_version_changes?).and_return(false)
 
-          allow(service).to receive(:omnibus_changes?).and_return(false)
-          allow(service).to receive(:cng_changes?).and_return(false)
+          allow(service).to receive(:project_changes?).with(omnibus_project).and_return(false)
+          allow(service).to receive(:project_changes?).with(cng_project).and_return(false)
         end
 
         it 'does nothing' do
