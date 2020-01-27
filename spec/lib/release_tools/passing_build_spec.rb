@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'pry'
 
 describe ReleaseTools::PassingBuild do
   let(:project) { ReleaseTools::Project::GitlabCe }
