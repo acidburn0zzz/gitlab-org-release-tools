@@ -126,7 +126,7 @@ describe ReleaseTools::PassingBuild do
         it 'tags' do
           stub_const('ReleaseTools::Commits', spy(latest: fake_commit))
           expect(ReleaseTools::Commits)
-            .to receive(:new).with(project, ref: '11-10-auto-deploy-1234')
+            .to receive(:new).with(cng_project, ref: '11-10-auto-deploy-1234')
 
           expect(service).to receive(:tag_project).with(cng_project, fake_commit)
 
@@ -149,7 +149,7 @@ describe ReleaseTools::PassingBuild do
         it 'tags' do
           stub_const('ReleaseTools::Commits', spy(latest: fake_commit))
           expect(ReleaseTools::Commits)
-            .to receive(:new).with(project, ref: '11-10-auto-deploy-1234')
+            .to receive(:new).with(omnibus_project, ref: '11-10-auto-deploy-1234')
 
           expect(service).to receive(:tag_project).with(omnibus_project, fake_commit)
 
