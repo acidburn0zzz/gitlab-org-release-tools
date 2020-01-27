@@ -26,8 +26,9 @@ module ReleaseTools
       end
 
       gemfile_lock = client.file_contents(client.project_path(project), 'Gemfile.lock', commit_id)
+      parser = Bundler::LockfileParser.new(gemfile_lock)
       GEMS.each_with_object(versions) do |gem, memo|
-        memo[gem.version_file] = version_string_from_gemfile(gemfile_lock, gem.gem_name).chomp
+        memo[gem.version_file] = version_string_from_gemfile(parser, gem.gem_name).chomp
       end
 
       logger.info({ project: project }.merge(versions))
@@ -41,9 +42,8 @@ module ReleaseTools
         .chomp
     end
 
-    def self.version_string_from_gemfile(gemfile_lock, gem_name)
-      lock_parser = Bundler::LockfileParser.new(gemfile_lock)
-      spec = lock_parser.specs.find { |x| x.name == gem_name }
+    def self.version_string_from_gemfile(parser, gem_name)
+      spec = parser.specs.find { |x| x.name == gem_name }
 
       raise VersionNotFoundError.new("Unable to find version for gem `#{gem_name}`") if spec.nil?
 
