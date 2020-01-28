@@ -28,6 +28,9 @@ module ReleaseTools
       end
 
       @omnibus_version_map = ReleaseTools::ComponentVersions.get_omnibus_versions(project, commit.id)
+
+      # FIXME: `get_cng_versions` immediately calls `get_omnibus_versions`, so
+      # we're doing that work twice
       @cng_version_map = ReleaseTools::ComponentVersions.get_cng_versions(project, commit.id)
 
       trigger_build if args.trigger_build
@@ -43,7 +46,9 @@ module ReleaseTools
       end
     end
 
-    def tag_project(project, target_commit)
+    def tag_omnibus(target_commit)
+      project = ReleaseTools::Project::OmnibusGitlab
+
       tag_name = ReleaseTools::AutoDeploy::Naming.tag(
         timestamp: target_commit.created_at.to_s,
         omnibus_ref: target_commit.id,
@@ -68,22 +73,48 @@ module ReleaseTools
       tag_deployer(tag_name, tag_message, 'master')
     end
 
+    def tag_cng(target_commit)
+      project = ReleaseTools::Project::CNGImage
+
+      # FIXME: Omnibus-specific; target_commit will not be an Omnibus commit!
+      tag_name = ReleaseTools::AutoDeploy::Naming.tag(
+        timestamp: target_commit.created_at.to_s,
+        omnibus_ref: target_commit.id,
+        ee_ref: @cng_version_map['GITLAB_VERSION']
+      )
+
+      tag_message = +"Auto-deploy #{tag_name}\n\n"
+      tag_message << @cng_version_map
+        .map { |component, version| "#{component}: #{version}" }
+        .join("\n")
+
+      logger.info('Creating tag', project: project, name: tag_name)
+
+      # NOTE: We tag CNG but _not_ the Deployer
+      client = ReleaseTools::GitlabClient
+      client.create_tag(client.project_path(project), tag_name, target_commit.id, tag_message)
+    end
+
     private
 
     def update_cng_for_autodeploy
       project = ReleaseTools::Project::CNGImage
+
       if ReleaseTools::ComponentVersions.cng_version_changes?(ref, @cng_version_map)
         logger.info('Changes to component versions')
+
+        # FIXME: This method and `cng_version_changes?` call `cng_variables`, so
+        # we're fetching the variables file twice
         commit = update_cng
 
-        tag_project(project, commit)
+        tag_cng(commit)
       elsif project_changes?(project)
         logger.info('Changes to CNG')
         commit = ReleaseTools::Commits
           .new(project, ref: ref)
           .latest
 
-        tag_project(project, commit)
+        tag_cng(commit)
       else
         logger.warn('No changes to component versions or CNG, nothing to tag')
       end
@@ -95,14 +126,14 @@ module ReleaseTools
         logger.info('Changes to component versions')
         commit = update_omnibus
 
-        tag_project(project, commit)
+        tag_omnibus(commit)
       elsif project_changes?(project)
         logger.info('Changes to omnibus')
         commit = ReleaseTools::Commits
           .new(project, ref: ref)
           .latest
 
-        tag_project(project, commit)
+        tag_omnibus(commit)
       else
         logger.warn('No changes to component versions or Omnibus, nothing to tag')
       end
