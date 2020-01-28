@@ -4,6 +4,10 @@ require_relative '../support/ubi_helper'
 
 module ReleaseTools
   module Services
+    # After a release, sync branches and tags across all remotes
+    #
+    # If the `security_remote` feature flag is enabled, it will push to Security
+    # in addition to Canonical and Build.
     class SyncRemotesService
       include ::SemanticLogger::Loggable
       include ReleaseTools::Support::UbiHelper
@@ -48,16 +52,13 @@ module ReleaseTools
         sync_tags(Project::CNGImage, @version.to_ce.tag, @version.to_ee.tag, ubi_tag(@version.to_ee))
       end
 
-      # Sync project stable branches across all remotes.
+      # Sync project release branches across all remotes
       #
-      # If security_remote is enabled it uses all the project remotes
-      # (Canonical, Dev and Security), if not it only uses Canonical and Dev.
-      #
-      # Iterates over stable branches and for each of them:
-      # 1. It clones from Canonical.
-      # 2. Fetches stable branch from Dev
-      # 3. Merges Dev stable branch into Canonical
-      # 4. If the merge is successful pushes the changes to all remotes.
+      # For each branch name in `branches`, it will:
+      #   1. Clone the branch from Canonical
+      #   2. Fetch the branch from Build
+      #   3. Merge Dev into Canonical
+      #   4. Push changes to all remotes if the merge is successful
       def sync_branches(project, *branches)
         sync_remotes = remotes_to_sync(project).fetch(:remotes)
         remotes_size = remotes_to_sync(project).fetch(:size)
