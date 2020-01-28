@@ -7,7 +7,8 @@ describe ReleaseTools::PassingBuild do
   let(:cng_project) { ReleaseTools::Project::CNGImage }
   let(:omnibus_project) { ReleaseTools::Project::OmnibusGitlab }
   let(:fake_commit) { double('Commit', id: SecureRandom.hex(20), created_at: Time.now.to_s) }
-  let(:version_map) { { 'VERSION' => '1.2.3' } }
+  let(:omnibus_version_map) { { 'VERSION' => '1.2.3' } }
+  let(:cng_version_map) { { 'VERSION' => '1.2.3', 'MAILROOM_VERSION' => '0.10.0' } }
 
   subject(:service) { described_class.new(project, 'master') }
 
@@ -26,13 +27,26 @@ describe ReleaseTools::PassingBuild do
         .to raise_error(/Unable to find a passing/)
     end
 
-    it 'fetches component versions' do
+    it 'fetches omnibus component versions' do
       expect(fake_commits).to receive(:latest_successful_on_build)
         .and_return(fake_commit)
 
       expect(ReleaseTools::ComponentVersions)
-        .to receive(:get).with(project, fake_commit.id)
-        .and_return(version_map)
+        .to receive(:get_omnibus_versions).with(project, fake_commit.id)
+        .and_return(omnibus_version_map)
+
+      expect(service).not_to receive(:trigger_build)
+
+      service.execute(double(trigger_build: false))
+    end
+
+    it 'fetches cng component versions' do
+      expect(fake_commits).to receive(:latest_successful_on_build)
+        .and_return(fake_commit)
+
+      expect(ReleaseTools::ComponentVersions)
+        .to receive(:get_cng_versions).with(project, fake_commit.id)
+        .and_return(cng_version_map)
 
       expect(service).not_to receive(:trigger_build)
 
@@ -44,8 +58,8 @@ describe ReleaseTools::PassingBuild do
         .and_return(fake_commit)
 
       expect(ReleaseTools::ComponentVersions)
-        .to receive(:get).with(project, fake_commit.id)
-        .and_return(version_map)
+        .to receive(:get_omnibus_versions).with(project, fake_commit.id)
+        .and_return(omnibus_version_map)
 
       expect(service).to receive(:trigger_build)
 
@@ -57,11 +71,11 @@ describe ReleaseTools::PassingBuild do
     let(:fake_client) { spy }
     let(:fake_ops_client) { spy }
     let(:project) { ReleaseTools::Project::GitlabCe }
-    let(:version_map) { { 'VERSION' => '1.2.3' } }
 
     before do
       # Normally this gets set by `execute`, but we're bypassing that in specs
-      service.instance_variable_set(:@version_map, version_map)
+      service.instance_variable_set(:@omnibus_version_map, omnibus_version_map)
+      service.instance_variable_set(:@cng_version_map, cng_version_map)
     end
 
     context 'when using auto-deploy' do
@@ -88,11 +102,11 @@ describe ReleaseTools::PassingBuild do
             .and_return(omnibus_project.path)
 
           allow(ReleaseTools::ComponentVersions)
-            .to receive(:update_omnibus).with('11-10-auto-deploy-1234', version_map)
+            .to receive(:update_omnibus).with('11-10-auto-deploy-1234', omnibus_version_map)
             .and_return(fake_commit)
 
           allow(ReleaseTools::ComponentVersions)
-            .to receive(:update_cng).with('11-10-auto-deploy-1234', version_map)
+            .to receive(:update_cng).with('11-10-auto-deploy-1234', cng_version_map)
             .and_return(fake_commit)
 
           allow(ReleaseTools::ComponentVersions)
@@ -184,7 +198,7 @@ describe ReleaseTools::PassingBuild do
           expect(ReleaseTools::GitlabDevClient)
             .to receive(:create_branch).with("master-1234", 'master', project)
           expect(ReleaseTools::Pipeline)
-            .to receive(:new).with(project, 'master', version_map)
+            .to receive(:new).with(project, 'master', omnibus_version_map)
             .and_return(double(trigger: true))
           expect(ReleaseTools::GitlabDevClient)
             .to receive(:delete_branch).with("master-1234", project)
@@ -206,7 +220,8 @@ describe ReleaseTools::PassingBuild do
       allow(ReleaseTools::AutoDeploy::Naming).to receive(:tag)
         .and_return(tag_name)
 
-      service.instance_variable_set(:@version_map, version_map)
+      service.instance_variable_set(:@omnibus_version_map, omnibus_version_map)
+      service.instance_variable_set(:@cng_version_map, cng_version_map)
 
       stub_const('ReleaseTools::GitlabClient', fake_client)
       stub_const('ReleaseTools::GitlabOpsClient', fake_ops_client)

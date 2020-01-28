@@ -22,12 +22,20 @@ module ReleaseTools
       Project::GitlabEe::Components::Mailroom
     ].freeze
 
-    def self.get(project, commit_id)
+    def self.get_omnibus_versions(project, commit_id)
       versions = { 'VERSION' => commit_id }
 
       FILES.each_with_object(versions) do |file, memo|
         memo[file] = get_component(project, commit_id, file)
       end
+
+      logger.info({ project: project }.merge(versions))
+
+      versions
+    end
+
+    def self.get_cng_versions(project, commit_id)
+      versions = get_omnibus_versions(project, commit_id)
 
       gemfile_lock = client.file_contents(client.project_path(project), 'Gemfile.lock', commit_id)
       GEMS.each_with_object(versions) do |gem, memo|
@@ -84,8 +92,6 @@ module ReleaseTools
       return if SharedStatus.dry_run?
 
       actions = version_map.map do |filename, contents|
-        next if filename == 'MAILROOM_VERSION'
-
         {
           action: 'update',
           file_path: "/#{filename}",
@@ -103,8 +109,6 @@ module ReleaseTools
 
     def self.omnibus_version_changes?(target_branch, version_map)
       version_map.any? do |filename, contents|
-        next if filename == 'MAILROOM_VERSION'
-
         client.file_contents(
           client.project_path(ReleaseTools::Project::OmnibusGitlab),
           "/#{filename}",
@@ -135,8 +139,6 @@ module ReleaseTools
       end
 
       cng_variables.each do |component, version|
-        next if component == 'MAILROOM_VERSION'
-
         parsed_version = ReleaseTools::Version.new(version)
 
         cng_variables[component] = parsed_version.valid? ? parsed_version.tag : version
