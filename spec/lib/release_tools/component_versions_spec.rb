@@ -9,27 +9,7 @@ describe ReleaseTools::ComponentVersions do
     stub_const('ReleaseTools::GitlabClient', fake_client)
   end
 
-  describe '.get_omnibus_versions' do
-    it 'returns a Hash of component versions' do
-      project = ReleaseTools::Project::GitlabEe
-      commit_id = 'abcdefg'
-      file = described_class::FILES.sample
-
-      allow(fake_client).to receive(:project_path).and_return(project.path)
-      expect(fake_client).to receive(:file_contents)
-        .with(project.path, file, commit_id)
-        .and_return("1.2.3\n")
-
-      expect(described_class.get_omnibus_versions(project, commit_id)).to match(
-        a_hash_including(
-          'VERSION' => commit_id,
-          file => '1.2.3'
-        )
-      )
-    end
-  end
-
-  describe '.get_cng_versions' do
+  describe '.get' do
     it 'returns a Hash of component versions' do
       project = ReleaseTools::Project::GitlabEe
       commit_id = 'abcdefg'
@@ -45,7 +25,7 @@ describe ReleaseTools::ComponentVersions do
         .with(project.path, 'Gemfile.lock', commit_id)
         .and_return(gemfile_lock)
 
-      expect(described_class.get_cng_versions(project, commit_id)).to match(
+      expect(described_class.get(project, commit_id)).to match(
         a_hash_including(
           'VERSION' => commit_id,
           file => '1.2.3',

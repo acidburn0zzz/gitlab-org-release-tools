@@ -27,8 +27,7 @@ module ReleaseTools
         raise "Unable to find a passing #{project} build for `#{ref}` on dev"
       end
 
-      @omnibus_version_map = ReleaseTools::ComponentVersions.get_omnibus_versions(project, commit.id)
-      @cng_version_map = ReleaseTools::ComponentVersions.get_cng_versions(project, commit.id)
+      @version_map = ReleaseTools::ComponentVersions.get(project, commit.id)
 
       trigger_build if args.trigger_build
     end
@@ -47,11 +46,11 @@ module ReleaseTools
       tag_name = ReleaseTools::AutoDeploy::Naming.tag(
         timestamp: target_commit.created_at.to_s,
         omnibus_ref: target_commit.id,
-        ee_ref: @omnibus_version_map['VERSION']
+        ee_ref: @version_map['VERSION']
       )
 
       tag_message = +"Auto-deploy #{tag_name}\n\n"
-      tag_message << @omnibus_version_map
+      tag_message << @version_map
         .map { |component, version| "#{component}: #{version}" }
         .join("\n")
 
@@ -72,7 +71,7 @@ module ReleaseTools
 
     def update_cng_for_autodeploy
       project = ReleaseTools::Project::CNGImage
-      if ReleaseTools::ComponentVersions.cng_version_changes?(ref, @cng_version_map)
+      if ReleaseTools::ComponentVersions.cng_version_changes?(ref, @version_map)
         logger.info('Changes to component versions')
         commit = update_cng
 
@@ -91,7 +90,7 @@ module ReleaseTools
 
     def update_omnibus_for_autodeploy
       project = ReleaseTools::Project::OmnibusGitlab
-      if ReleaseTools::ComponentVersions.omnibus_version_changes?(ref, @omnibus_version_map)
+      if ReleaseTools::ComponentVersions.omnibus_version_changes?(ref, @version_map)
         logger.info('Changes to component versions')
         commit = update_omnibus
 
@@ -118,7 +117,7 @@ module ReleaseTools
     end
 
     def update_cng
-      commit = ReleaseTools::ComponentVersions.update_cng(ref, @cng_version_map)
+      commit = ReleaseTools::ComponentVersions.update_cng(ref, @version_map)
 
       url = commit_url(ReleaseTools::Project::CNGImage, commit.id)
       logger.info('Updated CNG versions', commit_url: url)
@@ -127,7 +126,7 @@ module ReleaseTools
     end
 
     def update_omnibus
-      commit = ReleaseTools::ComponentVersions.update_omnibus(ref, @omnibus_version_map)
+      commit = ReleaseTools::ComponentVersions.update_omnibus(ref, @version_map)
 
       url = commit_url(ReleaseTools::Project::OmnibusGitlab, commit.id)
       logger.info('Updated Omnibus versions', commit_url: url)
@@ -155,7 +154,7 @@ module ReleaseTools
       ReleaseTools::Pipeline.new(
         project,
         ref,
-        @omnibus_version_map
+        @version_map
       ).trigger
 
       logger.info('Deleting project branch', project: project, name: branch_name)
