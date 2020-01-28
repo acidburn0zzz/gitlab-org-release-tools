@@ -33,7 +33,7 @@ describe ReleaseTools::ComponentVersions do
     it 'returns a Hash of component versions' do
       project = ReleaseTools::Project::GitlabEe
       commit_id = 'abcdefg'
-      file = described_class::FILES.sample
+      file = ReleaseTools::Project::Gitaly.version_file
 
       allow(fake_client).to receive(:project_path).and_return(project.path)
       expect(fake_client).to receive(:file_contents)
@@ -45,13 +45,23 @@ describe ReleaseTools::ComponentVersions do
         .with(project.path, 'Gemfile.lock', commit_id)
         .and_return(gemfile_lock)
 
-      expect(described_class.get_cng_versions(project, commit_id)).to match(
+      versions = described_class.get_cng_versions(project, commit_id)
+
+      # This verifies a few things:
+      #
+      # 1. Omnibus `VERSION` migrates to 'GITLAB_VERSION' and `GITLAB_ASSETS_TAG`
+      # 2. Omnibus `GITALY_SERVER_VERSION` migrates to `GITALY_VERSION`
+      # 3. SemVer strings map to tags prefixed with `v`
+      # 4. Specific Gemfile definitions map to `*_VERSION` variables
+      expect(versions).to match(
         a_hash_including(
-          'VERSION' => commit_id,
-          file => '1.2.3',
-          'MAILROOM_VERSION' => '0.9.1'
+          'GITLAB_VERSION' => commit_id,
+          'GITLAB_ASSETS_TAG' => commit_id,
+          'MAILROOM_VERSION' => '0.9.1',
+          'GITALY_VERSION' => 'v1.2.3'
         )
       )
+      expect(versions.keys).not_to include('VERSION', 'GITALY_SERVER_VERSION')
     end
   end
 
@@ -59,27 +69,26 @@ describe ReleaseTools::ComponentVersions do
     let(:project) { ReleaseTools::Project::CNGImage }
     let(:version_map) do
       {
-        'GITALY_SERVER_VERSION' => '1.33.0',
-        'GITLAB_ELASTICSEARCH_INDEXER_VERSION' => '1.3.0',
-        'GITLAB_PAGES_VERSION' => '1.5.0',
-        'GITLAB_SHELL_VERSION' => '9.0.0',
-        'GITLAB_WORKHORSE_VERSION' => '8.6.0',
-        'VERSION' => '0cfa69752d82b8e134bdb8e473c185bdae26ccc2',
+        'GITALY_VERSION' => 'v1.33.0',
+        'GITLAB_ELASTICSEARCH_INDEXER_VERSION' => 'v1.3.0',
+        'GITLAB_PAGES_VERSION' => 'v1.5.0',
+        'GITLAB_SHELL_VERSION' => 'v9.0.0',
+        'GITLAB_WORKHORSE_VERSION' => 'v8.6.0',
+        'GITLAB_VERSION' => '0cfa69752d82b8e134bdb8e473c185bdae26ccc2',
+        'GITLAB_ASSETS_TAG' => '0cfa69752d82b8e134bdb8e473c185bdae26ccc2',
         'MAILROOM_VERSION' => '0.10.0'
       }
     end
     let(:cng_variables) do
       {
-        'variables' => {
-          'GITALY_VERSION' => 'v1.33.0',
-          'GITLAB_ELASTICSEARCH_INDEXER_VERSION' => '1.3.0',
-          'GITLAB_PAGES_VERSION' => '1.5.0',
-          'GITLAB_SHELL_VERSION' => '9.0.0',
-          'GITLAB_WORKHORSE_VERSION' => '8.6.0',
-          'GITLAB_VERSION' => 'v12.7.0',
-          'GITLAB_ASSETS_TAG' => 'v12.7.0',
-          'MAILROOM_VERSION' => '0.10.0'
-        }
+        'GITALY_VERSION' => 'v1.33.0',
+        'GITLAB_ELASTICSEARCH_INDEXER_VERSION' => '1.3.0',
+        'GITLAB_PAGES_VERSION' => '1.5.0',
+        'GITLAB_SHELL_VERSION' => '9.0.0',
+        'GITLAB_WORKHORSE_VERSION' => '8.6.0',
+        'GITLAB_VERSION' => 'v12.7.0',
+        'GITLAB_ASSETS_TAG' => 'v12.7.0',
+        'MAILROOM_VERSION' => '0.10.0'
       }
     end
     let(:commit) { double('commit', id: 'abcd') }
@@ -107,8 +116,8 @@ describe ReleaseTools::ComponentVersions do
         expect(msg).to eq('Update component versions')
 
         expect(actions.length).to eq(1)
-        action = actions[0]
 
+        action = actions[0]
         expect(action).to match(action: 'update', file_path: '/ci_files/variables.yml', content: String)
 
         committed_variables = YAML.safe_load(action[:content])
@@ -212,7 +221,6 @@ describe ReleaseTools::ComponentVersions do
           COMPILE_ASSETS: 'false'
           S3CMD_VERSION: 2.0.1
           PYTHON_VERSION: 3.7.3
-          GITALY_SERVER_VERSION: v1.77.1
       EOS
     end
 
@@ -228,8 +236,8 @@ describe ReleaseTools::ComponentVersions do
 
     it 'returns false when nothing changes' do
       version_map = {
-        'GITALY_SERVER_VERSION' => '1.77.1',
-        'VERSION' => '12.6.3',
+        'GITALY_VERSION' => 'v1.77.1',
+        'GITLAB_VERSION' => 'v12.6.3',
         'MAILROOM_VERSION' => '0.10.0'
       }
 
@@ -237,10 +245,9 @@ describe ReleaseTools::ComponentVersions do
     end
 
     it 'return true when gitlab changes' do
-      gitlab_version = '8e956a0cb9f07c7fb7f91dd7886eb470e4feae84'
       version_map = {
-        'GITALY_SERVER_VERSION' => '1.77.1',
-        'VERSION' => gitlab_version,
+        'GITALY_VERSION' => 'v1.77.1',
+        'GITLAB_VERSION' => '8e956a0cb9f07c7fb7f91dd7886eb470e4feae84',
         'MAILROOM_VERSION' => '0.10.0'
       }
 
@@ -249,8 +256,8 @@ describe ReleaseTools::ComponentVersions do
 
     it 'returns true when a component changes' do
       version_map = {
-        'GITALY_SERVER_VERSION' => '1.77.2',
-        'VERSION' => '12.6.3',
+        'GITALY_VERSION' => 'v1.77.2',
+        'GITLAB_VERSION' => 'v12.6.3',
         'MAILROOM_VERSION' => '0.10.0'
       }
 
@@ -259,54 +266,12 @@ describe ReleaseTools::ComponentVersions do
 
     it 'returns true when a gem changes' do
       version_map = {
-        'GITALY_SERVER_VERSION' => '1.77.1',
-        'VERSION' => '12.6.3',
+        'GITALY_VERSION' => 'v1.77.1',
+        'GITLAB_VERSION' => 'v12.6.3',
         'MAILROOM_VERSION' => '0.10.1'
       }
 
       expect(described_class.cng_version_changes?('foo-branch', version_map)).to be(true)
-    end
-  end
-
-  describe '.versions_to_cng_variables' do
-    let(:version_map) do
-      {
-        'GITALY_SERVER_VERSION' => '1.77.1',
-        'VERSION' => '12.6.3',
-        'MAILROOM_VERSION' => '0.10.0'
-      }
-    end
-
-    let(:output) do
-      {
-        'MAILROOM_VERSION' => '0.10.0',
-        'GITLAB_VERSION' => 'v12.6.3',
-        'GITLAB_ASSETS_TAG' => 'v12.6.3',
-        'GITALY_VERSION' => 'v1.77.1'
-      }
-    end
-
-    subject { described_class.versions_to_cng_variables(version_map) }
-
-    it 'returns the correct output' do
-      expect(subject).to eq(output)
-    end
-
-    it 'removes the VERSION' do
-      expect(subject.keys).not_to include('VERSION')
-    end
-
-    it 'includes gitlab keys' do
-      expect(subject.keys).to match_array(%w[GITLAB_VERSION GITLAB_ASSETS_TAG GITALY_VERSION MAILROOM_VERSION])
-    end
-
-    it 'sets gitlab keys based on VERSION' do
-      expect(subject['GITLAB_VERSION']).to eq('v12.6.3')
-      expect(subject['GITLAB_ASSETS_TAG']).to eq('v12.6.3')
-    end
-
-    it 'transforms GITALY_SERVER_VERSION to GITALY_VERSION' do
-      expect(subject['GITALY_VERSION']).to be_present
     end
   end
 
