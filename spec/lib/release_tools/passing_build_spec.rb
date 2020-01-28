@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe ReleaseTools::PassingBuild do
-  let(:project) { ReleaseTools::Project::GitlabCe }
+  let(:project) { ReleaseTools::Project::GitlabEe }
   let(:cng_project) { ReleaseTools::Project::CNGImage }
   let(:omnibus_project) { ReleaseTools::Project::OmnibusGitlab }
   let(:fake_commit) { double('Commit', id: SecureRandom.hex(20), created_at: Time.now.to_s) }
@@ -27,22 +27,13 @@ describe ReleaseTools::PassingBuild do
         .to raise_error(/Unable to find a passing/)
     end
 
-    it 'fetches omnibus component versions' do
+    it 'fetches all component versions' do
       expect(fake_commits).to receive(:latest_successful_on_build)
         .and_return(fake_commit)
 
       expect(ReleaseTools::ComponentVersions)
         .to receive(:get_omnibus_versions).with(project, fake_commit.id)
         .and_return(omnibus_version_map)
-
-      expect(service).not_to receive(:trigger_build)
-
-      service.execute(double(trigger_build: false))
-    end
-
-    it 'fetches cng component versions' do
-      expect(fake_commits).to receive(:latest_successful_on_build)
-        .and_return(fake_commit)
 
       expect(ReleaseTools::ComponentVersions)
         .to receive(:get_cng_versions).with(project, fake_commit.id)
@@ -60,6 +51,10 @@ describe ReleaseTools::PassingBuild do
       expect(ReleaseTools::ComponentVersions)
         .to receive(:get_omnibus_versions).with(project, fake_commit.id)
         .and_return(omnibus_version_map)
+
+      expect(ReleaseTools::ComponentVersions)
+        .to receive(:get_cng_versions).with(project, fake_commit.id)
+        .and_return(cng_version_map)
 
       expect(service).to receive(:trigger_build)
 

@@ -77,7 +77,6 @@ describe ReleaseTools::ComponentVersions do
           'GITLAB_SHELL_VERSION' => '9.0.0',
           'GITLAB_WORKHORSE_VERSION' => '8.6.0',
           'GITLAB_VERSION' => 'v12.7.0',
-          'GITLAB_REF_SLUG' => 'v12.7.0',
           'GITLAB_ASSETS_TAG' => 'v12.7.0',
           'MAILROOM_VERSION' => '0.10.0'
         }
@@ -98,7 +97,6 @@ describe ReleaseTools::ComponentVersions do
           GITLAB_SHELL_VERSION: v9.0.0
           GITLAB_WORKHORSE_VERSION: v8.6.0
           GITLAB_VERSION: 0cfa69752d82b8e134bdb8e473c185bdae26ccc2
-          GITLAB_REF_SLUG: 0cfa69752d82b8e134bdb8e473c185bdae26ccc2
           GITLAB_ASSETS_TAG: 0cfa69752d82b8e134bdb8e473c185bdae26ccc2
           MAILROOM_VERSION: 0.10.0
       EOS
@@ -190,7 +188,6 @@ describe ReleaseTools::ComponentVersions do
         variables:
           GITLAB_ELASTICSEARCH_INDEXER_VERSION: v1.5.0
           GITLAB_VERSION: v12.6.3
-          GITLAB_REF_SLUG: v12.6.3
           GITLAB_ASSETS_TAG: v12.6.3
           GITLAB_EXPORTER_VERSION: 5.1.0
           GITLAB_SHELL_VERSION: v10.3.0
@@ -284,7 +281,6 @@ describe ReleaseTools::ComponentVersions do
       {
         'MAILROOM_VERSION' => '0.10.0',
         'GITLAB_VERSION' => 'v12.6.3',
-        'GITLAB_REF_SLUG' => 'v12.6.3',
         'GITLAB_ASSETS_TAG' => 'v12.6.3',
         'GITALY_VERSION' => 'v1.77.1'
       }
@@ -301,12 +297,11 @@ describe ReleaseTools::ComponentVersions do
     end
 
     it 'includes gitlab keys' do
-      expect(subject.keys).to match_array(%w[GITLAB_VERSION GITLAB_REF_SLUG GITLAB_ASSETS_TAG GITALY_VERSION MAILROOM_VERSION])
+      expect(subject.keys).to match_array(%w[GITLAB_VERSION GITLAB_ASSETS_TAG GITALY_VERSION MAILROOM_VERSION])
     end
 
     it 'sets gitlab keys based on VERSION' do
       expect(subject['GITLAB_VERSION']).to eq('v12.6.3')
-      expect(subject['GITLAB_REF_SLUG']).to eq('v12.6.3')
       expect(subject['GITLAB_ASSETS_TAG']).to eq('v12.6.3')
     end
 

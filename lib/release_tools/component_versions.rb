@@ -54,7 +54,7 @@ module ReleaseTools
     end
 
     def self.version_from_gemfile(gemfile_lock, gem_name)
-      lock_parser = Bundler::LockfileParser.new(gemfile_lock)
+      lock_parser = ::Bundler::LockfileParser.new(gemfile_lock)
       spec = lock_parser.specs.find { |x| x.name == gem_name }
 
       raise VersionNotFoundError, gem_name if spec.nil?
@@ -134,14 +134,21 @@ module ReleaseTools
       cng_variables['GITALY_VERSION'] = cng_variables.delete('GITALY_SERVER_VERSION')
       gitlab_version = cng_variables.delete('VERSION')
 
-      %w[GITLAB_VERSION GITLAB_REF_SLUG GITLAB_ASSETS_TAG].each do |component|
+      %w[GITLAB_VERSION GITLAB_ASSETS_TAG].each do |component|
         cng_variables[component] = gitlab_version
       end
 
+      gem_files = GEMS.collect(&:version_file)
       cng_variables.each do |component, version|
-        parsed_version = ReleaseTools::Version.new(version)
+        # Gem versions go in as-is
+        next if gem_files.include?(component)
 
-        cng_variables[component] = parsed_version.valid? ? parsed_version.tag : version
+        # Assume a tag when it's semver
+        if version.match?(/\A\d+\.\d+\.\d+\z/)
+          cng_variables[component] = "v#{version}"
+        else
+          cng_variables[component] = version
+        end
       end
     end
 

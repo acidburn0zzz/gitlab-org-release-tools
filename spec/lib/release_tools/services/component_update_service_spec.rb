@@ -25,7 +25,7 @@ describe ReleaseTools::Services::ComponentUpdateService do
   before do
     enable_all_features
     allow(service).to receive(:gitlab_client).and_return(internal_client)
-    allow(ReleaseTools::ComponentVersions).to receive(:get)
+    allow(ReleaseTools::ComponentVersions).to receive(:get_omnibus_versions)
                                                 .with(ReleaseTools::Project::GitlabEe, target_branch)
                                                 .and_return(component_versions)
   end
