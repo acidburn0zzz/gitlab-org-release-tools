@@ -90,8 +90,14 @@ module ReleaseTools
 
       logger.info('Creating tag', project: project, name: tag_name)
 
+      client =
+        if SharedStatus.security_release?
+          ReleaseTools::GitlabDevClient
+        else
+          ReleaseTools::GitlabClient
+        end
+
       # NOTE: We tag CNG but _not_ the Deployer
-      client = ReleaseTools::GitlabClient
       client.create_tag(client.project_path(project), tag_name, target_commit.id, tag_message)
     end
 
