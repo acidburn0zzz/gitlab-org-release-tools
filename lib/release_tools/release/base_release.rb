@@ -39,8 +39,13 @@ module ReleaseTools
         logger.info("Preparing repository...")
 
         repository.pull_from_all_remotes(master_branch)
-        repository.ensure_branch_exists(stable_branch, base: master_branch)
+        repository.ensure_branch_exists(stable_branch, base: stable_branch_base)
         repository.pull_from_all_remotes(stable_branch)
+      end
+
+      # Overridable
+      def stable_branch_base
+        master_branch
       end
 
       # Overridable
