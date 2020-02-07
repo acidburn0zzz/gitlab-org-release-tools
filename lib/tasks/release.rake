@@ -152,7 +152,7 @@ namespace :release do
     task :tag, [:version] do |_, args|
       version = get_version(args)
 
-      ReleaseTools::Release::GitalyRelease.new(version).execute
+      ReleaseTools::Release::GitalyRelease.new(version, tag_from_master_head: true).execute
     end
   end
 

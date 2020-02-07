@@ -10,6 +10,7 @@ module ReleaseTools
       end
 
       def before_execute_hook
+        tag_gitaly if ReleaseTools::Feature.enabled?(:gitaly_tagging)
         compile_changelog
 
         super
@@ -57,6 +58,17 @@ module ReleaseTools
         next_minor_pre_tag = "v#{version.next_minor}.pre"
         create_tag(next_minor_pre_tag)
         push_ref('tag', next_minor_pre_tag)
+      end
+
+      def tag_gitaly
+        gitaly_version = version.to_ce
+
+        Release::GitalyRelease.new(
+          gitaly_version,
+          options.merge(gitlab_repo_path: repository.path)
+        ).execute
+
+        bump_version(ReleaseTools::Project::Gitaly.version_file, gitaly_version)
       end
     end
   end

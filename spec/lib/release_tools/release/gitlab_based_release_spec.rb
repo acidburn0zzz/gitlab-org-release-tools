@@ -4,8 +4,8 @@ require 'spec_helper'
 
 describe ReleaseTools::Release::GitlabBasedRelease do
   describe '.new' do
-    let(:version) { 'v1.0.0' }
-    let(:options) { { gitlab_repo_path: '/tmp' } }
+    let(:version) { '1.0.0' }
+    let(:options) { { gitlab_repo_path: Dir.tmpdir } }
 
     subject { described_class.new(version, options) }
 
@@ -16,14 +16,14 @@ describe ReleaseTools::Release::GitlabBasedRelease do
     context 'when the options hash has no gitlab_repo_path' do
       let(:options) { {} }
 
-      it 'does not raise errors' do
+      it 'does raise an error' do
         expect { subject }.to raise_error ArgumentError, "missing gitlab_repo_path"
       end
     end
   end
 
   describe '#version_string' do
-    let(:release) { described_class.new('v1.0.0', gitlab_repo_path: '/tmp') }
+    let(:release) { described_class.new('1.0.0', gitlab_repo_path: Dir.tmpdir) }
 
     def version_string(version)
       release.version_string(version)
