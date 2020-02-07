@@ -72,19 +72,6 @@ module ReleaseTools
 
         components
       end
-
-      def version_string(version)
-        # If it looks like SemVer, prepend `v` to use a Git tag
-        if /\A\d+\.\d+\.\d+(-rc\d+)?(-ee)?\z/.match?(version)
-          "v#{version}"
-        else
-          version
-        end
-      end
-
-      def version_string_from_file(file_name)
-        version_string(read_file_from_gitlab_repo(file_name))
-      end
     end
   end
 end
