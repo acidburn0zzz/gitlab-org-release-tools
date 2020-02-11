@@ -175,7 +175,10 @@ chatops:
     - source scripts/setup_git.sh
     - ./bin/chatops $TASK
   only:
-    - triggers
+    refs:
+      - triggers
+    variables:
+      - $TASK
   cache:
     <<: *global-cache
     policy: pull
