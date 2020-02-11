@@ -12,15 +12,7 @@ module ReleaseTools
       Project::GitlabWorkhorse.version_file
     ].freeze
 
-    GEMS = [
-      Project::GitlabEe::Components::Mailroom
-    ].freeze
-
     def self.get(project, commit_id)
-      get_omnibus_compat_versions(project, commit_id)
-    end
-
-    def self.get_omnibus_compat_versions(project, commit_id)
       versions = { 'VERSION' => commit_id }
 
       FILES.each_with_object(versions) do |file, memo|
@@ -28,19 +20,6 @@ module ReleaseTools
       end
 
       logger.info({ project: project }.merge(versions))
-
-      versions
-    end
-
-    def self.sanitize_cng_versions(versions)
-      versions['GITLAB_VERSION'] = versions['GITLAB_ASSETS_TAG'] = versions.delete('VERSION')
-
-      versions.each_pair do |component, version|
-        # If it looks like SemVer, assume it's a tag, which we prepend with `v`
-        if version.match?(/\A\d+\.\d+\.\d+\z/)
-          versions[component] = "v#{version}"
-        end
-      end
 
       versions
     end

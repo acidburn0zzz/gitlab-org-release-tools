@@ -29,26 +29,6 @@ describe ReleaseTools::ComponentVersions do
     end
   end
 
-  describe '.sanitize_cng_versions' do
-    it 'returns a Hash of component versions' do
-      commit_id = 'abcdefg'
-      versions = {
-        'VERSION' => commit_id,
-        'GITALY_SERVER_VERSION' => '1.2.3'
-      }
-
-      described_class.sanitize_cng_versions(versions)
-
-      expect(versions).to match(
-        a_hash_including(
-          'GITLAB_VERSION' => commit_id,
-          'GITLAB_ASSETS_TAG' => commit_id,
-          'GITALY_SERVER_VERSION' => 'v1.2.3'
-        )
-      )
-    end
-  end
-
   describe '.update_omnibus' do
     let(:project) { ReleaseTools::Project::OmnibusGitlab }
     let(:version_map) do
