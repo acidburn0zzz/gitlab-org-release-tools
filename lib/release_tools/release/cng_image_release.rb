@@ -7,8 +7,27 @@ module ReleaseTools
     class CNGImageRelease < GitlabBasedRelease
       include ReleaseTools::Support::UbiHelper
 
+      class VersionFileDoesNotExistError < StandardError; end
+      class VersionNotFoundError < StandardError; end
       def remotes
         Project::CNGImage.remotes
+      end
+
+      def version_string_from_gemfile(gem_name)
+        gem_file = File.join(options[:gitlab_repo_path], 'Gemfile.lock')
+
+        ensure_version_file_exists!(gem_file)
+
+        lock_parser = Bundler::LockfileParser.new(Bundler.read_file(gem_file))
+        spec = lock_parser.specs.find { |x| x.name == gem_name.to_s }
+
+        raise VersionNotFoundError.new("Unable to find version for gem `#{gem_name}`") if spec.nil?
+
+        version = spec.version.to_s
+
+        logger.trace("#{gem_name} version", version: version)
+
+        version
       end
 
       def tag
@@ -56,7 +75,7 @@ module ReleaseTools
         {
           mail_room: "MAILROOM_VERSION"
         }
-        .each { |key, value| components[value] = ReleaseTools::ComponentVersions::GemVersion.get_from_file(options[:gitlab_repo_path], key) }
+        .each { |key, value| components[value] = version_string_from_gemfile(key) }
 
         logger.trace('components', components: components)
 
@@ -72,6 +91,10 @@ module ReleaseTools
 
       def version_string_from_file(file_name)
         version_string(read_file_from_gitlab_repo(file_name))
+      end
+
+      def ensure_version_file_exists!(filename)
+        raise VersionFileDoesNotExistError.new(filename) unless File.exist?(filename)
       end
     end
   end
