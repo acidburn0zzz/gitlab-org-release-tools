@@ -104,7 +104,11 @@ module ReleaseTools
       status.success? || raise(CannotCommitError.new(output))
     end
 
-    def merge(commits, no_ff: false)
+    def merge(commits, into: nil, no_ff: false)
+      if into
+        checkout_branch(into) || raise(CannotCheckoutBranchError.new(into))
+      end
+
       cmd = %w[merge --no-edit --no-log]
       cmd << '--no-ff' if no_ff
       cmd += Array(commits)
