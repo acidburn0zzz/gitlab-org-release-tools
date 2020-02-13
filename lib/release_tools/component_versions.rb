@@ -13,6 +13,10 @@ module ReleaseTools
     ].freeze
 
     def self.get(project, commit_id)
+      get_omnibus_compat_versions(project, commit_id)
+    end
+
+    def self.get_omnibus_compat_versions(project, commit_id)
       versions = { 'VERSION' => commit_id }
 
       FILES.each_with_object(versions) do |file, memo|

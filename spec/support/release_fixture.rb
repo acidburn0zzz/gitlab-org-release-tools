@@ -12,6 +12,7 @@ class ReleaseFixture
     'release'
   end
 
+  # rubocop: disable Metrics/MethodLength
   def build_fixture(options = {})
     commit_blob(
       path:    'README.md',
@@ -20,6 +21,13 @@ class ReleaseFixture
     )
 
     create_prefixed_master
+
+    gemfile = File.join(VersionFixture.new.default_fixture_path, 'Gemfile.lock')
+    commit_blob(
+      path:    'Gemfile.lock',
+      content: File.read(gemfile),
+      message: 'Add Gemfile.lock'
+    )
 
     commit_blobs(
       'GITLAB_SHELL_VERSION'                 => "2.2.2\n",
@@ -61,6 +69,7 @@ class ReleaseFixture
 
     repository.checkout("#{branch_prefix}master")
   end
+  # rubocop: enable Metrics/MethodLength
 end
 
 class OmnibusReleaseFixture
