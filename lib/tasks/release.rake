@@ -160,6 +160,18 @@ namespace :release do
     end
   end
 
+  desc 'Tags a release candidate if needed'
+  task :tag_scheduled_rc do
+    unless ReleaseTools::Feature.enabled?(:tag_scheduled_rc)
+      ReleaseTools.logger.info('Automatic tagging of RCs is not enabled')
+      next
+    end
+
+    version = ReleaseTools::AutomaticReleaseCandidate.new.prepare
+
+    Rake::Task['release:tag'].invoke(version)
+  end
+
   namespace :gitaly do
     desc 'Tag a new release'
     task :tag, [:version] do |_, args|

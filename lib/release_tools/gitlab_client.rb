@@ -24,6 +24,7 @@ module ReleaseTools
       def_delegator :client, :create_tag
 
       def_delegator :client, :cancel_pipeline
+      def_delegator :client, :version
     end
 
     class MissingMilestone

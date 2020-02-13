@@ -15,7 +15,7 @@ module ReleaseTools
     end
 
     def assignees
-      ReleaseManagers::Schedule.new(version).ids
+      ReleaseManagers::Schedule.new.ids_for_version(version)
     rescue ReleaseManagers::Schedule::VersionNotFoundError
       nil
     end

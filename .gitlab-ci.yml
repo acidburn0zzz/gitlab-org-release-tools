@@ -162,6 +162,17 @@ track-deployment:
     variables:
       - $TRACK_DEPLOYMENT == "true"
 
+release:tag_scheduled_rc:
+  <<: *with-bundle
+  stage: automation
+  script:
+    - bundle exec rake 'release:tag_scheduled_rc'
+  only:
+    refs:
+      - schedules
+    variables:
+      - $TAG_SCHEDULED_RC == "true"
+
 # chatops ---------------------------------------------------------------------
 
 chatops:

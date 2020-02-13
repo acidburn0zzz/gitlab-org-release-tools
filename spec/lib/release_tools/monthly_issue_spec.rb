@@ -46,11 +46,11 @@ describe ReleaseTools::MonthlyIssue do
 
       allow(ReleaseTools::ReleaseManagers::Schedule)
         .to receive(:new)
-        .with(issue.version)
         .and_return(schedule)
 
       allow(schedule)
-        .to receive(:ids)
+        .to receive(:ids_for_version)
+        .with(issue.version)
         .and_return([1, 2])
 
       expect(issue.assignees).to eq([1, 2])

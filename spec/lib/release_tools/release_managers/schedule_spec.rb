@@ -3,7 +3,8 @@
 require 'spec_helper'
 
 describe ReleaseTools::ReleaseManagers::Schedule do
-  let(:schedule) { described_class.new(ReleaseTools::Version.new('11.8')) }
+  let(:schedule) { described_class.new }
+  let(:version) { ReleaseTools::Version.new('11.8') }
 
   let(:yaml) do
     <<~YAML
@@ -16,7 +17,35 @@ describe ReleaseTools::ReleaseManagers::Schedule do
     YAML
   end
 
-  describe '#ids' do
+  describe '#version_for_month' do
+    context 'when there are releases scheduled' do
+      before do
+        allow(schedule)
+          .to receive(:schedule_yaml)
+          .and_return(YAML.safe_load(yaml))
+      end
+
+      it 'returns the version for the date' do
+        expect(schedule.version_for_date(Date.new(2019, 2, 2))).to eq(version)
+      end
+
+      it 'returns nil when there is no matching release' do
+        expect(schedule.version_for_date(Date.new(2005, 2, 2))).to be_nil
+      end
+    end
+
+    context 'when there are no releases scheduled at all' do
+      it 'returns nil' do
+        allow(schedule)
+          .to receive(:schedule_yaml)
+          .and_return([])
+
+        expect(schedule.version_for_date(Date.new(2019, 2, 2))).to be_nil
+      end
+    end
+  end
+
+  describe '#ids_for_version' do
     it 'returns the IDs of the release managers' do
       allow(schedule)
         .to receive(:authorized_manager_ids)
@@ -26,7 +55,7 @@ describe ReleaseTools::ReleaseManagers::Schedule do
         .to receive(:release_manager_names_from_yaml)
         .and_return(['Robert Speicher', 'Yorick Peterse'])
 
-      expect(schedule.ids).to eq([1, 2])
+      expect(schedule.ids_for_version(version)).to eq([1, 2])
     end
   end
 
@@ -54,10 +83,10 @@ describe ReleaseTools::ReleaseManagers::Schedule do
     context 'when no release manager data is available' do
       it 'returns an empty Array' do
         allow(schedule)
-          .to receive(:download_release_manager_names)
+          .to receive(:schedule_yaml)
           .and_return([])
 
-        expect { schedule.release_manager_names_from_yaml }
+        expect { schedule.release_manager_names_from_yaml(version) }
           .to raise_error(described_class::VersionNotFoundError)
       end
     end
@@ -65,16 +94,16 @@ describe ReleaseTools::ReleaseManagers::Schedule do
     context 'when release manager data is present' do
       it 'returns the names of the release managers' do
         allow(schedule)
-          .to receive(:download_release_manager_names)
+          .to receive(:schedule_yaml)
           .and_return(YAML.safe_load(yaml))
 
-        expect(schedule.release_manager_names_from_yaml)
+        expect(schedule.release_manager_names_from_yaml(version))
           .to eq(['Robert Speicher', 'Yorick Peterse'])
       end
     end
   end
 
-  describe '#download_release_manager_names' do
+  describe '#schedule_yaml' do
     context 'when the download succeeds' do
       it 'returns the release manager data' do
         response = double(:response, to_s: yaml)
@@ -83,7 +112,7 @@ describe ReleaseTools::ReleaseManagers::Schedule do
           .to receive(:get)
           .and_return(response)
 
-        expect(schedule.download_release_manager_names.length).to eq(1)
+        expect(schedule.schedule_yaml.length).to eq(1)
       end
     end
 
@@ -93,7 +122,7 @@ describe ReleaseTools::ReleaseManagers::Schedule do
           .to receive(:get)
           .and_raise(Errno::ENOENT)
 
-        expect(schedule.download_release_manager_names).to be_empty
+        expect(schedule.schedule_yaml).to be_empty
       end
     end
   end
