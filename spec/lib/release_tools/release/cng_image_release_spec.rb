@@ -5,47 +5,6 @@ require 'spec_helper'
 describe ReleaseTools::Release::CNGImageRelease do
   required_opts = { gitlab_repo_path: '/tmp' }
 
-  describe '#version_string_from_gemfile' do
-    context 'when the Gemfile.lock file does not exist' do
-      let(:opts) { { gitlab_repo_path: '' } }
-      let(:release) { described_class.new('1.1.1', opts) }
-
-      it 'raises a VersionFileDoesNotExistError' do
-        expect do
-          release.version_string_from_gemfile('mail_room')
-        end.to raise_error(described_class::VersionFileDoesNotExistError)
-      end
-    end
-
-    context 'when the Gemfile.lock contains the version we are looking for' do
-      let(:fixture) { VersionFixture.new }
-      let(:opts) { { gitlab_repo_path: fixture.fixture_path } }
-      let(:release) { described_class.new('1.1.1', opts) }
-
-      it 'returns the version' do
-        expect do
-          release.version_string_from_gemfile('mail_room')
-        end.not_to raise_error
-
-        expect(
-          release.version_string_from_gemfile('mail_room')
-        ).to eq('0.9.1')
-      end
-    end
-
-    context 'when the Gemfile.lock does not contain the version we are looking for' do
-      let(:fixture) { VersionFixture.new }
-      let(:opts) { { gitlab_repo_path: fixture.fixture_path } }
-      let(:release) { described_class.new('1.1.1', opts) }
-
-      it 'raises a VersionNotFoundError' do
-        expect do
-          release.version_string_from_gemfile('foobar')
-        end.to raise_error(described_class::VersionNotFoundError)
-      end
-    end
-  end
-
   describe '#tag' do
     context 'when CE and UBI is enabled' do
       let(:opts) { { ubi: true }.merge(required_opts) }
@@ -81,6 +40,32 @@ describe ReleaseTools::Release::CNGImageRelease do
       it 'returns the specified UBI tag' do
         expect(release.tag).to eq 'v1.1.1-ubi7'
       end
+    end
+  end
+
+  describe '#component_versions' do
+    def component_versions(version)
+      fixture = ReleaseFixture.new
+      fixture.rebuild_fixture!
+
+      release = described_class.new(version, gitlab_repo_path: fixture.repository.workdir)
+
+      release.__send__(:component_versions)
+    end
+
+    it 'finds all the component versions' do
+      version = '1.1.1-ee'
+
+      expect(component_versions(version)).to include(
+        'GITLAB_ASSETS_TAG' => "v#{version}",
+        'GITLAB_REF_SLUG' => "v#{version}",
+        'GITLAB_VERSION' => "v#{version}",
+        'MAILROOM_VERSION' => '0.9.1',
+        'GITALY_SERVER_VERSION' => 'v5.6.0',
+        'GITLAB_ELASTICSEARCH_INDEXER_VERSION' => 'v9.9.9',
+        'GITLAB_SHELL_VERSION' => 'v2.3.0',
+        'GITLAB_WORKHORSE_VERSION' => 'v3.4.0'
+      )
     end
   end
 end
