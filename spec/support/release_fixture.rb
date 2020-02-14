@@ -12,12 +12,16 @@ class ReleaseFixture
     'release'
   end
 
+  DEFAULT_OPTIONS = { gitaly_version: '5.6.0' }.freeze
+
   # rubocop: disable Metrics/MethodLength
   def build_fixture(options = {})
+    options = DEFAULT_OPTIONS.merge(options)
+
     commit_blob(
       path:    'README.md',
       content: 'Sample README.md',
-      message: 'Add empty README.md'
+      message: 'Add a simple README.md'
     )
 
     create_prefixed_master
@@ -32,7 +36,7 @@ class ReleaseFixture
     commit_blobs(
       'GITLAB_SHELL_VERSION'                 => "2.2.2\n",
       'GITLAB_WORKHORSE_VERSION'             => "3.3.3\n",
-      'GITALY_SERVER_VERSION'                => "5.5.5\n",
+      'GITALY_SERVER_VERSION'                => "1.1.1\n",
       'GITLAB_ELASTICSEARCH_INDEXER_VERSION' => "6.6.6\n",
       'VERSION'                              => "1.1.1\n"
     )
@@ -59,7 +63,7 @@ class ReleaseFixture
 
     # Bump the versions in master
     commit_blobs(
-      'GITALY_SERVER_VERSION'                => "5.6.0\n",
+      'GITALY_SERVER_VERSION'                => "#{options[:gitaly_version]}\n",
       'GITLAB_PAGES_VERSION'                 => "4.5.0\n",
       'GITLAB_SHELL_VERSION'                 => "2.3.0\n",
       'GITLAB_WORKHORSE_VERSION'             => "3.4.0\n",
@@ -160,6 +164,50 @@ class HelmReleaseFixture
     EOS
 
     commit_blob(path: 'Chart.yaml', content: chart_data, message: 'Update chart yaml to master')
+  end
+end
+
+class GitalyReleaseFixture
+  include RepositoryFixture
+
+  def self.repository_name
+    'gitaly-release'
+  end
+
+  def build_fixture(options = {})
+    commit_blob(path: 'README.md', content: 'Sample README.md', message: 'Add empty README.md')
+
+    create_prefixed_master
+
+    commit_blob(path: 'VERSION', content: "1.1.1\n", message: 'Version bumping')
+
+    repository.checkout("#{branch_prefix}master")
+
+    # Create a basic branch
+    repository.branches.create("#{branch_prefix}branch-1", 'HEAD')
+
+    # Create old stable branches
+    repository.branches.create("#{branch_prefix}1-9-stable",    'HEAD')
+
+    repository.tags.create('v1.9.0', 'HEAD', message: 'Gitaly Version 1.9.0')
+
+    # Create new stable branches
+    repository.branches.create("#{branch_prefix}9-1-stable",    'HEAD')
+    repository.branches.create("#{branch_prefix}9-1-stable-ee", 'HEAD')
+
+    repository.tags.create('v9.1.0', 'HEAD', message: 'Gitaly Version 9.1.0')
+
+    # Bump the versions in master
+    commit_blob(path: 'VERSION', content: "1.2.0\n", message: 'Version bumping')
+
+    # add an extra commit on master head
+    commit_blob(
+      path:    'on_master_head',
+      content: 'an extra file only available on master HEAD',
+      message: 'Add a file'
+    )
+
+    repository.checkout("#{branch_prefix}master")
   end
 end
 

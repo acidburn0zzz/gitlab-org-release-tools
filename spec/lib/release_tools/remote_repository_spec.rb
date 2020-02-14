@@ -319,6 +319,21 @@ describe ReleaseTools::RemoteRepository do
       expect(File.read(File.join(repo_path, 'foo'))).to eq 'bar'
       expect(log).to start_with("Merge branches 'branch-1' and 'branch-2' into branch-3\n")
     end
+
+    context 'when a target branch is specified' do
+      it 'checkout into the given branch' do
+        expect(subject.merge('branch-2', into: 'master', no_ff: true).status).to be_success
+
+        expect(rugged_repo).to have_head('master')
+        expect(rugged_repo).to have_commit_title("Merge branch 'branch-2'")
+        expect(rugged_repo).to have_blob('README.md').with('Nice')
+      end
+
+      it 'raises an error if the branch does not exist' do
+        expect { subject.merge('branch-2', into: 'not-existing-branch') }
+          .to raise_error(ReleaseTools::RemoteRepository::CannotCheckoutBranchError)
+      end
+    end
   end
 
   describe '#tags' do

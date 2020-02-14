@@ -40,12 +40,12 @@ module ReleaseTools
         @params = params
       end
 
-      def release(version, stable_branch: version.stable_branch)
+      def release(version, stable_branch: version.stable_branch, skip_master: false)
         @unreleased_entries = nil
         @version = version
 
         perform_release(prefixed_branch(stable_branch))
-        perform_release(prefixed_branch('master'))
+        perform_release(prefixed_branch('master')) unless skip_master
 
         # Recurse to perform the CE release if we're on EE
         if version.ee?
