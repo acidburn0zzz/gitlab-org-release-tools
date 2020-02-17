@@ -40,16 +40,12 @@ module ReleaseTools
           return []
         end
 
-        shas = GitlabClient
+        current, previous = GitlabClient
           .deployments(Project::GitlabEe, @environment)
           .first(2)
           .map(&:sha)
 
-        return shas if shas.length == 2
-
-        # The first time we deploy to an environment we won't have a previous
-        # SHA to compare to.
-        [nil, shas.first]
+        [previous, current]
       end
 
       def track

@@ -20,7 +20,7 @@ describe ReleaseTools::Deployments::MergeRequestUpdater do
       deploy = ReleaseTools::Deployments::DeploymentTracker::Deployment
         .new(ReleaseTools::Project::GitlabEe, 1, 'success')
 
-      mr1 = double(:merge_request, project_id: 2, iid: 3)
+      mr1 = double(:merge_request, project_id: 2, iid: 3, web_url: 'foo')
       page = Gitlab::PaginatedResponse.new([mr1])
 
       expect(ReleaseTools::GitlabClient)
@@ -47,8 +47,8 @@ describe ReleaseTools::Deployments::MergeRequestUpdater do
       page1_raised = false
       page2_raised = false
 
-      mr1 = double(:merge_request, project_id: 2, iid: 3, labels: %w[foo])
-      mr2 = double(:merge_request, project_id: 2, iid: 4, labels: %w[bar])
+      mr1 = double(:mr, project_id: 2, iid: 3, labels: %w[foo], web_url: 'foo')
+      mr2 = double(:mr, project_id: 2, iid: 4, labels: %w[bar], web_url: 'foo')
 
       page1 = Gitlab::PaginatedResponse.new([mr1])
       page2 = Gitlab::PaginatedResponse.new([mr2])
@@ -82,6 +82,27 @@ describe ReleaseTools::Deployments::MergeRequestUpdater do
         .with(2, 4, 'foo')
 
       described_class.new([deploy]).add_comment('foo')
+    end
+  end
+
+  describe '#add_label' do
+    it 'adds the label to every merge request' do
+      deploy = ReleaseTools::Deployments::DeploymentTracker::Deployment
+        .new(ReleaseTools::Project::GitlabEe, 1, 'success')
+
+      mr1 = double(:mr, project_id: 2, iid: 3, web_url: 'foo', labels: %w[foo])
+      page = Gitlab::PaginatedResponse.new([mr1])
+
+      expect(ReleaseTools::GitlabClient)
+        .to receive(:deployed_merge_requests)
+        .with(deploy.project, deploy.id)
+        .and_return(page)
+
+      expect(ReleaseTools::GitlabClient)
+        .to receive(:update_merge_request)
+        .with(2, 3, labels: 'bar,foo')
+
+      described_class.new([deploy]).add_label('bar')
     end
   end
 end

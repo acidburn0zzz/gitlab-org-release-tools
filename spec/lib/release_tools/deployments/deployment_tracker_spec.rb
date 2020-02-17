@@ -21,8 +21,8 @@ describe ReleaseTools::Deployments::DeploymentTracker do
         allow(ReleaseTools::GitlabClient)
           .to receive(:deployments)
           .and_return([
-            double(:deployment, sha: 'foo'),
-            double(:deployment, sha: 'bar')
+            double(:deployment, sha: 'bar'),
+            double(:deployment, sha: 'foo')
           ])
 
         expect(tracker.qa_commit_range).to eq(%w[foo bar])

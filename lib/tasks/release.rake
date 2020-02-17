@@ -136,13 +136,17 @@ namespace :release do
     end
 
     Raven.capture do
-      ReleaseTools::Deployments::ReleaseNotifier
-        .notify(environment, deployments, version)
+      ReleaseTools::Deployments::ReleasedMergeRequestNotifier
+        .notify(env, deployments, version)
     end
 
     previous, latest = tracker.qa_commit_range
 
     if previous && latest
+      ReleaseTools
+        .logger
+        .info('Attempting to create QA issue', from: previous, until: latest)
+
       build_qa_issue(get_version(version: version), previous, latest)
     end
   end
