@@ -13,6 +13,7 @@ module ReleaseTools
 
       def_delegator :client, :create_group_label
       def_delegator :client, :create_merge_request_comment
+      def_delegator :client, :update_merge_request
       def_delegator :client, :create_variable
       def_delegator :client, :update_variable
 
@@ -386,10 +387,12 @@ module ReleaseTools
 
       client.get(
         "/projects/#{project_path}/deployments",
-        environment: environment,
-        status: status,
-        order_by: order_by,
-        sort: sort
+        query: {
+          environment: environment,
+          status: status,
+          order_by: order_by,
+          sort: sort
+        }
       )
     end
 

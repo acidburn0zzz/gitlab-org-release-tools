@@ -24,7 +24,7 @@ describe ReleaseTools::Deployments::MergeRequestLabeler do
           .new(ReleaseTools::Project::GitlabEe, 1, 'success')
 
         merge_request =
-          double(:merge_request, project_id: 2, iid: 3, labels: %w[foo])
+          double(:mr, project_id: 2, iid: 3, labels: %w[foo], web_url: 'foo')
 
         page = Gitlab::PaginatedResponse.new([merge_request])
 
@@ -34,8 +34,8 @@ describe ReleaseTools::Deployments::MergeRequestLabeler do
           .and_return(page)
 
         expect(ReleaseTools::GitlabClient)
-          .to receive(:create_merge_request_comment)
-          .with(2, 3, '/label ~"workflow::staging"')
+          .to receive(:update_merge_request)
+          .with(2, 3, labels: 'workflow::staging,foo')
 
         labeler.label_merge_requests('gstg', [deploy])
       end

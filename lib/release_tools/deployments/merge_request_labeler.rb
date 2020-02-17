@@ -39,7 +39,7 @@ module ReleaseTools
 
         MergeRequestUpdater
           .for_successful_deployments(deployments)
-          .add_comment("/label ~#{workflow_label.inspect}")
+          .add_label(workflow_label)
       end
     end
   end

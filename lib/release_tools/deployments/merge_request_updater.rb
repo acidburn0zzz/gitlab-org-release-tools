@@ -7,6 +7,8 @@ module ReleaseTools
     # This class can be used to update deployed merge requests in parallel, such
     # as by adding a merge request comment and/or adding labels.
     class MergeRequestUpdater
+      include ::SemanticLogger::Loggable
+
       # The base interval for retrying operations that failed, in seconds.
       RETRY_INTERVAL = 5
 
@@ -26,8 +28,30 @@ module ReleaseTools
       def add_comment(comment)
         each_merge_request do |mr|
           with_retries do
+            logger.info("Adding comment to merge request #{mr.web_url}")
+
             GitlabClient
               .create_merge_request_comment(mr.project_id, mr.iid, comment)
+          end
+        end
+      end
+
+      # Adds the label to all merge requests.
+      #
+      # This does not use slash commands, as comments that _only_ include slash
+      # commands are rejected by our API.
+      def add_label(label)
+        each_merge_request do |mr|
+          with_retries do
+            logger.info(
+              "Adding label #{label.inspect} to merge request #{mr.web_url}"
+            )
+
+            GitlabClient.update_merge_request(
+              mr.project_id,
+              mr.iid,
+              labels: [label, *mr.labels].join(',')
+            )
           end
         end
       end
