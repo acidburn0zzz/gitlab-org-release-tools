@@ -160,7 +160,7 @@ track-deployment:
   <<: *with-bundle
   stage: automation
   script:
-    - bundle exec rake 'release:track_deployment[$DEPLOY_ENVIRONMENT, $DEPLOY_STATUS, $DEPLOY_VERSION]'
+    - bundle exec rake "release:track_deployment[$DEPLOY_ENVIRONMENT, $DEPLOY_STATUS, $DEPLOY_VERSION]"
   only:
     variables:
       - $TRACK_DEPLOYMENT == "true"
