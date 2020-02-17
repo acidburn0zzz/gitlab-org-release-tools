@@ -406,5 +406,13 @@ module ReleaseTools
         "/projects/#{project_path}/deployments/#{deployment_id}/merge_requests"
       )
     end
+
+    def self.related_merge_requests(project, issue_iid)
+      project_path = client.url_encode(project_path(project))
+
+      client.get(
+        "/projects/#{project_path}/issues/#{issue_iid}/related_merge_requests"
+      )
+    end
   end
 end
