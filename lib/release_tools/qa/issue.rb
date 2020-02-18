@@ -17,7 +17,9 @@ module ReleaseTools
       end
 
       def link!
-        ReleaseTools::GitlabClient.link_issues(self, parent_issue)
+        parent = parent_issue
+
+        ReleaseTools::GitlabClient.link_issues(self, parent) if parent.exists?
       end
 
       def create?
@@ -30,6 +32,13 @@ module ReleaseTools
         auto_deploy_version? ? 'https://staging.gitlab.com' : 'https://pre.gitlab.com'
       end
 
+      def parent_issue
+        # For auto-deploy QA issues we can't use the raw version, as there is no
+        # monthly release issue for auto-deploy versions. To handle this we
+        # always convert the input version to a MAJOR.MINOR version.
+        ReleaseTools::PatchIssue.new(version: Version.new(version.to_minor))
+      end
+
       protected
 
       def template_path
@@ -39,10 +48,6 @@ module ReleaseTools
       def issue_presenter
         ReleaseTools::Qa::IssuePresenter
           .new(merge_requests, self, version)
-      end
-
-      def parent_issue
-        ReleaseTools::PatchIssue.new(version: version)
       end
 
       def auto_deploy_version?
