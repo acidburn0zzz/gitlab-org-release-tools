@@ -125,26 +125,6 @@ describe ReleaseTools::PassingBuild do
         end
       end
     end
-
-    context 'when not using auto-deploy' do
-      subject(:service) { described_class.new(project, 'master') }
-
-      it 'triggers a pipeline build' do
-        ClimateControl.modify(CI_PIPELINE_ID: '1234', OMNIBUS_BUILD_TRIGGER_TOKEN: 'token') do
-          expect(ReleaseTools::GitlabDevClient)
-            .to receive(:create_branch).with("master-1234", 'master', project)
-          expect(ReleaseTools::Pipeline)
-            .to receive(:new).with(project, 'master', version_map)
-            .and_return(double(trigger: true))
-          expect(ReleaseTools::GitlabDevClient)
-            .to receive(:delete_branch).with("master-1234", project)
-
-          VCR.use_cassette('pipeline/trigger') do
-            service.trigger_build
-          end
-        end
-      end
-    end
   end
 
   describe '#tag' do

@@ -36,7 +36,7 @@ module ReleaseTools
       if ref.match?(/\A(?:security\/)?\d+-\d+-auto-deploy-\d+\z/)
         update_omnibus_for_autodeploy
       else
-        trigger_branch_build
+        logger.fatal('Invalid ref for passing build trigger', ref: ref)
       end
     end
 
@@ -115,24 +115,6 @@ module ReleaseTools
 
       ReleaseTools::GitlabOpsClient
         .create_tag(project.path, name, ref, message)
-    end
-
-    def trigger_branch_build
-      pipeline_id = ENV.fetch('CI_PIPELINE_ID', 'pipeline_id_unset')
-      branch_name = "#{ref}-#{pipeline_id}"
-
-      logger.info('Creating project branch', project: project, name: branch_name)
-      ReleaseTools::GitlabDevClient.create_branch(branch_name, ref, project)
-
-      # NOTE: `trigger` always happens on dev here
-      ReleaseTools::Pipeline.new(
-        project,
-        ref,
-        @version_map
-      ).trigger
-
-      logger.info('Deleting project branch', project: project, name: branch_name)
-      ReleaseTools::GitlabDevClient.delete_branch(branch_name, project)
     end
 
     # See https://gitlab.com/gitlab-org/gitlab-foss/issues/25392
