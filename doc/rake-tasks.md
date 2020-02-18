@@ -125,9 +125,34 @@ Tasks in this namespace largely mirror their [`release`
 counterparts](#release-tasks), but with additional safeguards in place for
 performing a security release of GitLab.
 
-### `security:issue[version]`
+### `security:prepare[version]`
 
-Create a confidential task issue for the specified version.
+Create a security issue for an upcoming security release. One issue is created
+for all backported releases.
+
+For example, if the current patch versions of the last three minor releases are
+`11.9.1`, `11.8.3`, and `11.7.6`, it will create one confidential task issue for
+`11.9.2`, `11.8.4`, and `11.7.7`.
+
+ChatOps command to create a regular security release:
+
+```
+/chatops run release prepare --security
+```
+
+ChatOps command to create a critical security release:
+
+```
+/chatops run release prepare --security --critical
+```
+
+### `security:validate`
+
+This task is executed via CI schedule. It validates security merge requests
+on different remotes.
+
+- If `security_remote` is enabled, validates merge requests on Security and Dev.
+- If `security_remote` is disabled, validates merge requests only on Dev.
 
 ### `security:merge[merge_master]`
 
@@ -136,23 +161,29 @@ Merge validated merge requests in the security repositories for GitLab projects.
 If `merge_master` is truthy, it will also merge security MRs targeting `master`
 (default: `false`).
 
-### `security:prepare[version]`
+ChatOps command:
 
-Create security issues for an upcoming security release. One issue is created
-for each of the backported releases.
+```
+/chatops run release merge --security
+```
 
-For example, if the current patch versions of the last three minor releases are
-`11.9.1`, `11.8.3`, and `11.7.6`, it will create confidential task issues for
-`11.9.2`, `11.8.4`, and `11.7.7`.
+### `security:tag[version]`
+
+Tag the specified version as a security release.
+
+ChatOps command:
+
+```
+/chatops run release tag --security 12.7.6
+```
 
 ### `security:qa[from,to]`
 
 Create a confidential QA issue, listing changes between `from` and `to` in order
 to verify changes in a release.
 
-### `security:tag[version]`
-
-Tag the specified version as a security release.
+QA issue is automatically created by the deployer pipeline if the deploy to staging
+was successful.
 
 ## `passing_build:ee[ref, trigger_build]`
 
@@ -171,14 +202,6 @@ start a package build for that SHA.
 # Trigger a build
 % bundle exec rake 'passing_build:ee[master, true]'
 ```
-
-### `security:validate`
-
-This task is executed via CI schedule. It validates security merge requests
-on different remotes.
-
-- If `security_remote` is enabled, validates merge requests on Security and Dev.
-- If `security_remote` is disabled, validates merge requests only on Dev
 
 ## `publish[version]`
 
