@@ -168,10 +168,42 @@ describe ReleaseTools::Qa::Issue do
     it 'links to its parent issue' do
       issue = described_class.new(version: version)
 
-      allow(issue).to receive(:parent_issue).and_return('parent')
-      expect(ReleaseTools::GitlabClient).to receive(:link_issues).with(issue, 'parent')
+      parent = ReleaseTools::PatchIssue
+        .new(version: ReleaseTools::Version.new(issue.version.to_minor))
+
+      allow(issue).to receive(:parent_issue).and_return(parent)
+      allow(parent).to receive(:exists?).and_return(true)
+
+      expect(ReleaseTools::GitlabClient)
+        .to receive(:link_issues)
+        .with(issue, parent)
 
       issue.link!
+    end
+
+    it 'does not link the parent issue if it does not exist' do
+      issue = described_class.new(version: version)
+
+      parent = ReleaseTools::PatchIssue
+        .new(version: ReleaseTools::Version.new(issue.version.to_minor))
+
+      allow(issue).to receive(:parent_issue).and_return(parent)
+      allow(parent).to receive(:exists?).and_return(false)
+
+      expect(ReleaseTools::GitlabClient)
+        .not_to receive(:link_issues)
+
+      issue.link!
+    end
+  end
+
+  describe '#parent_issue' do
+    it 'returns an issue using the major.minor version' do
+      issue = described_class.new(
+        version: ReleaseTools::Version.new('12.9.202002181205-672677036cb.7875146729a')
+      )
+
+      expect(issue.parent_issue.version).to eq('12.9.0')
     end
   end
 
