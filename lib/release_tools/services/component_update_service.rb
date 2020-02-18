@@ -37,7 +37,7 @@ module ReleaseTools
       end
 
       def versions_changed?(versions)
-        component_versions = ComponentVersions.get(Project::GitlabEe, target_branch)
+        component_versions = ComponentVersions.get_omnibus_compat_versions(Project::GitlabEe, target_branch)
 
         versions.any? do |filename, version|
           component_versions[filename].chomp != version

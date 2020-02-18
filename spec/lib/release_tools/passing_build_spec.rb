@@ -5,7 +5,13 @@ require 'spec_helper'
 describe ReleaseTools::PassingBuild do
   let(:project) { ReleaseTools::Project::GitlabCe }
   let(:fake_commit) { double('Commit', id: SecureRandom.hex(20), created_at: Time.now.to_s) }
-  let(:version_map) { { 'VERSION' => '1.2.3' } }
+  let(:omnibus_version_map) { { 'VERSION' => '1.2.3' } }
+  let(:cng_version_map) do
+    {
+      'GITLAB_VERSION' => '1.2.3',
+      'MAILROOM_VERSION' => '1.1.1'
+    }
+  end
 
   subject(:service) { described_class.new(project, 'master') }
 
@@ -29,8 +35,12 @@ describe ReleaseTools::PassingBuild do
         .and_return(fake_commit)
 
       expect(ReleaseTools::ComponentVersions)
-        .to receive(:get).with(project, fake_commit.id)
-        .and_return(version_map)
+        .to receive(:get_omnibus_compat_versions).with(project, fake_commit.id)
+        .and_return(omnibus_version_map)
+
+      expect(ReleaseTools::ComponentVersions)
+        .to receive(:get_cng_compat_versions).with(project, fake_commit.id)
+        .and_return(cng_version_map)
 
       expect(service).not_to receive(:trigger_build)
 
@@ -42,8 +52,12 @@ describe ReleaseTools::PassingBuild do
         .and_return(fake_commit)
 
       expect(ReleaseTools::ComponentVersions)
-        .to receive(:get).with(project, fake_commit.id)
-        .and_return(version_map)
+        .to receive(:get_omnibus_compat_versions).with(project, fake_commit.id)
+        .and_return(omnibus_version_map)
+
+      expect(ReleaseTools::ComponentVersions)
+        .to receive(:get_cng_compat_versions).with(project, fake_commit.id)
+        .and_return(cng_version_map)
 
       expect(service).to receive(:trigger_build)
 
@@ -54,12 +68,14 @@ describe ReleaseTools::PassingBuild do
   describe '#trigger_build' do
     let(:fake_client) { spy }
     let(:fake_ops_client) { spy }
-    let(:project) { ReleaseTools::Project::GitlabCe }
-    let(:version_map) { { 'VERSION' => '1.2.3' } }
+    let(:project) { ReleaseTools::Project::GitlabEe }
+    let(:cng_project) { ReleaseTools::Project::CNGImage }
+    let(:omnibus_project) { ReleaseTools::Project::OmnibusGitlab }
 
     before do
       # Normally this gets set by `execute`, but we're bypassing that in specs
-      service.instance_variable_set(:@version_map, version_map)
+      service.instance_variable_set(:@omnibus_version_map, omnibus_version_map)
+      service.instance_variable_set(:@cng_version_map, cng_version_map)
     end
 
     context 'when using auto-deploy' do
@@ -75,37 +91,114 @@ describe ReleaseTools::PassingBuild do
         stub_const('ReleaseTools::GitlabOpsClient', fake_ops_client)
       end
 
-      context 'with component changes' do
+      context 'with CNG component changes' do
         before do
           allow(ReleaseTools::ComponentVersions)
-            .to receive(:omnibus_version_changes?).and_return(true)
+            .to receive(:cng_version_changes?).and_return(true)
+
+          allow(ReleaseTools::ComponentVersions)
+            .to receive(:omnibus_version_changes?).and_return(false)
+
+          allow(service).to receive(:project_changes?)
+            .with(omnibus_project)
+            .and_return(false)
         end
 
-        it 'updates Omnibus versions and tags' do
-          expect(ReleaseTools::ComponentVersions)
-            .to receive(:update_omnibus).with('11-10-auto-deploy-1234', version_map)
-            .and_return(fake_commit)
-
-          expect(service).to receive(:tag).with(fake_commit)
+        it 'updates CNG component versions' do
+          expect(service).to receive(:update_cng_versions)
+          expect(service).not_to receive(:update_omnibus_versions)
+          expect(service).not_to receive(:tag)
 
           service.trigger_build
         end
       end
 
-      context 'with Omnibus changes' do
+      context 'with Omnibus component changes' do
+        let(:cng_fake_commit) { double('Commit', id: SecureRandom.hex(20), created_at: Time.now.to_s) }
+        let(:omnibus_fake_commit) { double('Commit', id: SecureRandom.hex(20), created_at: Time.now.to_s) }
+
         before do
+          allow(ReleaseTools::ComponentVersions)
+            .to receive(:cng_version_changes?).and_return(false)
+
+          allow(ReleaseTools::ComponentVersions)
+            .to receive(:omnibus_version_changes?).and_return(true)
+        end
+
+        it 'updates Omnibus component versions and tags' do
+          stub_const('ReleaseTools::Commits', spy(latest: omnibus_fake_commit))
+
+          expect(ReleaseTools::ComponentVersions)
+            .not_to receive(:update_cng).with('11-10-auto-deploy-1234', cng_version_map)
+
+          expect(ReleaseTools::ComponentVersions)
+            .to receive(:update_omnibus).with('11-10-auto-deploy-1234', omnibus_version_map)
+            .and_return(omnibus_fake_commit)
+
+          expect(service).to receive(:tag).with(omnibus_fake_commit)
+
+          service.trigger_build
+        end
+      end
+
+      context 'with Omnibus project changes' do
+        before do
+          allow(fake_client).to receive(:project_path)
+            .with(cng_project)
+            .and_return(cng_project.path)
+
+          allow(fake_client).to receive(:project_path)
+            .with(omnibus_project)
+            .and_return(omnibus_project.path)
+
           allow(ReleaseTools::ComponentVersions)
             .to receive(:omnibus_version_changes?).and_return(false)
 
-          allow(service).to receive(:omnibus_changes?).and_return(true)
+          allow(ReleaseTools::ComponentVersions)
+            .to receive(:cng_version_changes?).and_return(false)
+
+          allow(service).to receive(:project_changes?)
+            .with(omnibus_project)
+            .and_return(true)
         end
 
         it 'tags' do
           stub_const('ReleaseTools::Commits', spy(latest: fake_commit))
           expect(ReleaseTools::Commits)
-            .to receive(:new).with(ReleaseTools::Project::OmnibusGitlab, ref: '11-10-auto-deploy-1234')
+            .to receive(:new).with(omnibus_project, ref: '11-10-auto-deploy-1234')
 
           expect(service).to receive(:tag).with(fake_commit)
+
+          expect(ReleaseTools::Commits)
+            .not_to receive(:new).with(cng_project, ref: '11-10-auto-deploy-1234')
+
+          service.trigger_build
+        end
+      end
+
+      context 'with CNG changes' do
+        before do
+          allow(ReleaseTools::ComponentVersions)
+            .to receive(:omnibus_version_changes?).and_return(false)
+
+          allow(ReleaseTools::ComponentVersions)
+            .to receive(:cng_version_changes?).and_return(false)
+
+          allow(service).to receive(:project_changes?)
+            .with(cng_project)
+            .and_return(true)
+
+          allow(service).to receive(:project_changes?)
+            .with(omnibus_project)
+            .and_return(false)
+        end
+
+        it 'does not tag' do
+          stub_const('ReleaseTools::Commits', spy(latest: fake_commit))
+          expect(ReleaseTools::Commits)
+            .not_to receive(:new).with(cng_project, ref: '11-10-auto-deploy-1234')
+
+          expect(service).not_to receive(:tag)
 
           service.trigger_build
         end
@@ -115,7 +208,11 @@ describe ReleaseTools::PassingBuild do
         before do
           allow(ReleaseTools::ComponentVersions)
             .to receive(:omnibus_version_changes?).and_return(false)
-          allow(service).to receive(:omnibus_changes?).and_return(false)
+
+          allow(ReleaseTools::ComponentVersions)
+            .to receive(:cng_version_changes?).and_return(false)
+
+          allow(service).to receive(:project_changes?).and_return(false)
         end
 
         it 'does nothing' do
@@ -136,7 +233,7 @@ describe ReleaseTools::PassingBuild do
       allow(ReleaseTools::AutoDeploy::Naming).to receive(:tag)
         .and_return(tag_name)
 
-      service.instance_variable_set(:@version_map, version_map)
+      service.instance_variable_set(:@omnibus_version_map, omnibus_version_map)
 
       stub_const('ReleaseTools::GitlabClient', fake_client)
       stub_const('ReleaseTools::GitlabOpsClient', fake_ops_client)

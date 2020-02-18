@@ -4,27 +4,20 @@ module ReleaseTools
   class GemfileParser
     include ::SemanticLogger::Loggable
 
-    class LockfileNotFoundError < StandardError
-      def initialize(file_name)
-        super("Unable to find file `#{file_name}`")
-      end
-    end
-
     class VersionNotFoundError < StandardError
       def initialize(gem_name)
         super("Unable to find a version for gem `#{gem_name}`")
       end
     end
 
-    def initialize(lockfile)
-      raise LockfileNotFoundError, lockfile unless File.exist?(lockfile)
+    def initialize(filecontent)
+      @filecontent = filecontent
 
-      @lockfile = lockfile
-      @parsed_file = Bundler::LockfileParser.new(Bundler.read_file(@lockfile))
+      @parsed_file = Bundler::LockfileParser.new(@filecontent)
     end
 
     def gem_version(gem_name)
-      spec = @parsed_file.specs.find { |x| x.name == gem_name }
+      spec = @parsed_file.specs.find { |x| x.name == gem_name.to_s }
 
       raise VersionNotFoundError, gem_name if spec.nil?
 
