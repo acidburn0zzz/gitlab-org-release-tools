@@ -4,18 +4,12 @@ require 'spec_helper'
 require 'pry'
 
 describe ReleaseTools::GemfileParser do
-  context 'with non-existent file' do
-    it 'raises a LockfileNotFoundError' do
-      expect { described_class.new('/foobar.lock') }
-        .to raise_error(described_class::LockfileNotFoundError)
-    end
-  end
-
   describe '#gem_version' do
     let(:fixture) { VersionFixture.new }
     let(:lockfile) { "#{fixture.fixture_path}/Gemfile.lock" }
+    let(:filecontent) { Bundler.read_file(lockfile) }
 
-    subject(:parser) { described_class.new(lockfile) }
+    subject(:parser) { described_class.new(filecontent) }
 
     it 'returns the version for a known dependency' do
       expect(parser.gem_version('mail_room')).to eq('0.9.1')

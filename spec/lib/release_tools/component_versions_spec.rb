@@ -9,7 +9,7 @@ describe ReleaseTools::ComponentVersions do
     stub_const('ReleaseTools::GitlabClient', fake_client)
   end
 
-  describe '.get' do
+  describe '.get_omnibus_compat_versions' do
     it 'returns a Hash of component versions' do
       project = ReleaseTools::Project::GitlabEe
       commit_id = 'abcdefg'
@@ -20,10 +20,60 @@ describe ReleaseTools::ComponentVersions do
         .with(project.path, file, commit_id)
         .and_return("1.2.3\n")
 
-      expect(described_class.get(project, commit_id)).to match(
+      expect(described_class.get_omnibus_compat_versions(project, commit_id)).to match(
         a_hash_including(
           'VERSION' => commit_id,
           file => '1.2.3'
+        )
+      )
+    end
+  end
+
+  describe '.get_cng_compat_versions' do
+    let(:gemfile_fixture) do
+      File.read(File.join(VersionFixture.new.fixture_path, 'Gemfile.lock'))
+    end
+
+    it 'returns a Hash of component versions' do
+      project = ReleaseTools::Project::GitlabEe
+      commit_id = 'abcdefg'
+      file = described_class::FILES.sample
+
+      allow(fake_client).to receive(:project_path).and_return(project.path)
+      expect(fake_client).to receive(:file_contents)
+        .with(project.path, file, commit_id)
+        .and_return("1.2.3\n")
+      expect(fake_client).to receive(:file_contents)
+        .with(project.path, 'Gemfile.lock', commit_id)
+        .and_return(gemfile_fixture)
+
+      versions = described_class.get_cng_compat_versions(project, commit_id)
+
+      expect(versions).to match(
+        a_hash_including(
+          'GITLAB_VERSION' => commit_id,
+          file => 'v1.2.3',
+          'MAILROOM_VERSION' => '0.9.1'
+        )
+      )
+    end
+  end
+
+  describe '.sanitize_cng_versions' do
+    it 'returns a Hash of component versions' do
+      commit_id = 'abcdefg'
+      versions = {
+        'VERSION' => commit_id,
+        'GITALY_SERVER_VERSION' => '1.2.3'
+      }
+
+      described_class.sanitize_cng_versions(versions)
+
+      expect(versions).to match(
+        a_hash_including(
+          'GITLAB_VERSION' => commit_id,
+          'GITLAB_ASSETS_TAG' => commit_id,
+          'GITALY_SERVER_VERSION' => 'v1.2.3'
         )
       )
     end
@@ -60,6 +110,59 @@ describe ReleaseTools::ComponentVersions do
           content: "#{version_map['VERSION']}\n"
         )
       )
+    end
+  end
+
+  describe '.cng_version_changes?' do
+    let(:cng_project) { ReleaseTools::Project::CNGImage }
+    let(:changed_version_map) do
+      {
+        'GITALY_SERVER_VERSION' => 'v1.80.0',
+        'GITLAB_VERSION' => 'v12.7.0',
+        'GITLAB_ASSETS_TAG' => 'v12.7.0',
+        'MAILROOM_VERSION' => '0.10.1'
+      }
+    end
+    let(:unchanged_version_map) do
+      {
+        'GITALY_SERVER_VERSION' => 'v1.77.1',
+        'GITLAB_VERSION' => 'v12.6.3',
+        'GITLAB_ASSETS_TAG' => 'v12.6.3',
+        'MAILROOM_VERSION' => '0.10.0'
+      }
+    end
+    let(:cng_variables) do
+      <<~EOS
+        variables:
+          GITLAB_ELASTICSEARCH_INDEXER_VERSION: v1.5.0
+          GITLAB_VERSION: v12.6.3
+          GITLAB_REF_SLUG: v12.6.3
+          GITLAB_ASSETS_TAG: v12.6.3
+          GITLAB_EXPORTER_VERSION: 5.1.0
+          GITLAB_SHELL_VERSION: v10.3.0
+          GITLAB_WORKHORSE_VERSION: v8.18.0
+          GITLAB_CONTAINER_REGISTRY_VERSION: v2.7.6-gitlab
+          GITALY_SERVER_VERSION: v1.77.1
+          MAILROOM_VERSION: 0.10.0
+      EOS
+    end
+
+    before do
+      allow(fake_client).to receive(:project_path)
+        .with(cng_project)
+        .and_return(cng_project.path)
+
+      allow(fake_client).to receive(:file_contents)
+        .with(cng_project.path, '/ci_files/variables.yml', 'foo-branch')
+        .and_return(cng_variables)
+    end
+
+    it 'keeps cng versions that have changed' do
+      expect(described_class.cng_version_changes?('foo-branch', changed_version_map)).to be(true)
+    end
+
+    it 'rejects cng versions that have not changed' do
+      expect(described_class.cng_version_changes?('foo-branch', unchanged_version_map)).to be(false)
     end
   end
 

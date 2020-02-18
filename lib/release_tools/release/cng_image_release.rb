@@ -22,8 +22,9 @@ module ReleaseTools
       private
 
       def gemfile
-        @gemfile ||= ReleaseTools::GemfileParser
-          .new(File.join(options[:gitlab_repo_path], 'Gemfile.lock'))
+        @gemfile ||= ReleaseTools::GemfileParser.new(
+          File.read(File.join(options[:gitlab_repo_path], 'Gemfile.lock'))
+        )
       end
 
       def bump_versions
