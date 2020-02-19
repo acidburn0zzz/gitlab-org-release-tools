@@ -185,24 +185,6 @@ to verify changes in a release.
 QA issue is automatically created by the deployer pipeline if the deploy to staging
 was successful.
 
-## `passing_build:ee[ref, trigger_build]`
-
-This task will show us the SHA from `ref` that had a successful pipeline run
-_and exists on dev.gitlab.org_.
-
-When `trigger_build` is `true`, it will send the signal to `omnibus-gitlab` to
-start a package build for that SHA.
-
-### Examples
-
-```sh
-# Information gathering only
-% bundle exec rake 'passing_build:ee[11-10-stable]'
-
-# Trigger a build
-% bundle exec rake 'passing_build:ee[master, true]'
-```
-
 ## `publish[version]`
 
 This task will publish all available CE and EE packages for a specified version.
