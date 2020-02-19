@@ -11,16 +11,14 @@ describe ReleaseTools::ComponentVersions do
 
   describe '.get_omnibus_compat_versions' do
     it 'returns a Hash of component versions' do
-      project = ReleaseTools::Project::GitlabEe
       commit_id = 'abcdefg'
       file = described_class::FILES.sample
 
-      allow(fake_client).to receive(:project_path).and_return(project.path)
       expect(fake_client).to receive(:file_contents)
-        .with(project.path, file, commit_id)
+        .with(described_class::SOURCE_PROJECT, file, commit_id)
         .and_return("1.2.3\n")
 
-      expect(described_class.get_omnibus_compat_versions(project, commit_id)).to match(
+      expect(described_class.get_omnibus_compat_versions(commit_id)).to match(
         a_hash_including(
           'VERSION' => commit_id,
           file => '1.2.3'
@@ -35,19 +33,17 @@ describe ReleaseTools::ComponentVersions do
     end
 
     it 'returns a Hash of component versions' do
-      project = ReleaseTools::Project::GitlabEe
       commit_id = 'abcdefg'
       file = described_class::FILES.sample
 
-      allow(fake_client).to receive(:project_path).and_return(project.path)
       expect(fake_client).to receive(:file_contents)
-        .with(project.path, file, commit_id)
+        .with(described_class::SOURCE_PROJECT, file, commit_id)
         .and_return("1.2.3\n")
       expect(fake_client).to receive(:file_contents)
-        .with(project.path, 'Gemfile.lock', commit_id)
+        .with(described_class::SOURCE_PROJECT, 'Gemfile.lock', commit_id)
         .and_return(gemfile_fixture)
 
-      versions = described_class.get_cng_compat_versions(project, commit_id)
+      versions = described_class.get_cng_compat_versions(commit_id)
 
       expect(versions).to match(
         a_hash_including(
@@ -80,7 +76,6 @@ describe ReleaseTools::ComponentVersions do
   end
 
   describe '.update_omnibus' do
-    let(:project) { ReleaseTools::Project::OmnibusGitlab }
     let(:version_map) do
       {
         'GITALY_SERVER_VERSION' => '1.33.0',
@@ -94,14 +89,13 @@ describe ReleaseTools::ComponentVersions do
     let(:commit) { double('commit', id: 'abcd') }
 
     it 'commits version updates for the specified ref' do
-      allow(fake_client).to receive(:project_path).and_return(project.path)
 
       without_dry_run do
         described_class.update_omnibus('foo-branch', version_map)
       end
 
       expect(fake_client).to have_received(:create_commit).with(
-        project.path,
+        described_class::OmnibusGitlab,
         'foo-branch',
         anything,
         array_including(
@@ -114,7 +108,6 @@ describe ReleaseTools::ComponentVersions do
   end
 
   describe '.cng_version_changes?' do
-    let(:cng_project) { ReleaseTools::Project::CNGImage }
     let(:changed_version_map) do
       {
         'GITALY_SERVER_VERSION' => 'v1.80.0',
@@ -148,12 +141,8 @@ describe ReleaseTools::ComponentVersions do
     end
 
     before do
-      allow(fake_client).to receive(:project_path)
-        .with(cng_project)
-        .and_return(cng_project.path)
-
       allow(fake_client).to receive(:file_contents)
-        .with(cng_project.path, '/ci_files/variables.yml', 'foo-branch')
+        .with(described_class::CNGImage, '/ci_files/variables.yml', 'foo-branch')
         .and_return(cng_variables)
     end
 
@@ -167,24 +156,19 @@ describe ReleaseTools::ComponentVersions do
   end
 
   describe '.omnibus_version_changes?' do
-    let(:project) { ReleaseTools::Project::OmnibusGitlab }
     let(:version_map) { { 'GITALY_SERVER_VERSION' => '1.33.0' } }
 
     it 'keeps omnibus versions that have changed' do
-      allow(fake_client).to receive(:project_path).and_return(project.path)
-
       expect(fake_client).to receive(:file_contents)
-        .with(project.path, "/GITALY_SERVER_VERSION", 'foo-branch')
+        .with(described_class::OmnibusGitlab, "/GITALY_SERVER_VERSION", 'foo-branch')
         .and_return("1.2.3\n")
 
       expect(described_class.omnibus_version_changes?('foo-branch', version_map)).to be(true)
     end
 
     it 'rejects omnibus versions that have not changed' do
-      allow(fake_client).to receive(:project_path).and_return(project.path)
-
       expect(fake_client).to receive(:file_contents)
-        .with(project.path, "/GITALY_SERVER_VERSION", 'foo-branch')
+        .with(described_class::OmnibusGitlab, "/GITALY_SERVER_VERSION", 'foo-branch')
         .and_return("1.33.0\n")
 
       expect(described_class.omnibus_version_changes?('foo-branch', version_map)).to be(false)
