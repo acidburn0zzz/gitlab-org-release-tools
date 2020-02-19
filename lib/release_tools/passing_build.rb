@@ -4,15 +4,15 @@ module ReleaseTools
   class PassingBuild
     include ::SemanticLogger::Loggable
 
-    attr_reader :project, :ref
+    attr_reader :ref
 
-    def initialize(project, ref)
-      @project = project
+    def initialize(ref)
+      @project = ReleaseTools::Project::GitlabEe
       @ref = ref
     end
 
-    def execute(args)
-      commits = ReleaseTools::Commits.new(project, ref: ref)
+    def execute(trigger: false)
+      commits = ReleaseTools::Commits.new(@project, ref: ref)
 
       commit =
         if SharedStatus.security_release?
@@ -24,13 +24,13 @@ module ReleaseTools
         end
 
       if commit.nil?
-        raise "Unable to find a passing #{project} build for `#{ref}` on dev"
+        raise "Unable to find a passing #{@project} build for `#{ref}` on dev"
       end
 
-      @omnibus_version_map = ReleaseTools::ComponentVersions.get_omnibus_compat_versions(project, commit.id)
-      @cng_version_map = ReleaseTools::ComponentVersions.get_cng_compat_versions(project, commit.id)
+      @omnibus_version_map = ReleaseTools::ComponentVersions.get_omnibus_compat_versions(@project, commit.id)
+      @cng_version_map = ReleaseTools::ComponentVersions.get_cng_compat_versions(@project, commit.id)
 
-      trigger_build if args.trigger_build
+      trigger_build if trigger
     end
 
     def trigger_build

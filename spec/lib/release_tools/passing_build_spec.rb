@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe ReleaseTools::PassingBuild do
-  let(:project) { ReleaseTools::Project::GitlabCe }
+  let(:project) { ReleaseTools::Project::GitlabEe }
   let(:fake_commit) { double('Commit', id: SecureRandom.hex(20), created_at: Time.now.to_s) }
   let(:omnibus_version_map) { { 'VERSION' => '1.2.3' } }
   let(:cng_version_map) do
@@ -13,7 +13,7 @@ describe ReleaseTools::PassingBuild do
     }
   end
 
-  subject(:service) { described_class.new(project, 'master') }
+  subject(:service) { described_class.new('master') }
 
   describe '#execute' do
     let(:fake_commits) { spy }
@@ -26,7 +26,7 @@ describe ReleaseTools::PassingBuild do
       expect(fake_commits).to receive(:latest_successful_on_build)
         .and_return(nil)
 
-      expect { service.execute(nil) }
+      expect { service.execute }
         .to raise_error(/Unable to find a passing/)
     end
 
@@ -44,7 +44,7 @@ describe ReleaseTools::PassingBuild do
 
       expect(service).not_to receive(:trigger_build)
 
-      service.execute(double(trigger_build: false))
+      service.execute
     end
 
     it 'triggers a build when specified' do
@@ -61,7 +61,7 @@ describe ReleaseTools::PassingBuild do
 
       expect(service).to receive(:trigger_build)
 
-      service.execute(double(trigger_build: true))
+      service.execute(trigger: true)
     end
   end
 
@@ -81,7 +81,7 @@ describe ReleaseTools::PassingBuild do
     context 'when using auto-deploy' do
       let(:tag_name) { 'tag-name' }
 
-      subject(:service) { described_class.new(project, '11-10-auto-deploy-1234') }
+      subject(:service) { described_class.new('11-10-auto-deploy-1234') }
 
       before do
         allow(ReleaseTools::AutoDeploy::Naming).to receive(:tag)

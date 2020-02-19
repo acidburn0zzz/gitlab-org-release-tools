@@ -50,6 +50,8 @@ namespace :auto_deploy do
 
   desc "Tag the auto-deploy branches from the latest passing builds"
   task tag: :check_enabled do
-    Rake::Task['passing_build:ee'].invoke(ReleaseTools::AutoDeployBranch.current, true)
+    ReleaseTools::PassingBuild
+      .new(ReleaseTools::AutoDeployBranch.current)
+      .execute(trigger: true)
   end
 end
