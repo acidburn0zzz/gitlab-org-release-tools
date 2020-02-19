@@ -27,8 +27,8 @@ module ReleaseTools
         raise "Unable to find a passing #{@project} build for `#{ref}` on dev"
       end
 
-      @omnibus_version_map = ReleaseTools::ComponentVersions.get_omnibus_compat_versions(@project, commit.id)
-      @cng_version_map = ReleaseTools::ComponentVersions.get_cng_compat_versions(@project, commit.id)
+      @omnibus_version_map = ReleaseTools::ComponentVersions.get_omnibus_compat_versions(commit.id)
+      @cng_version_map = ReleaseTools::ComponentVersions.get_cng_compat_versions(commit.id)
 
       trigger_build if trigger
     end

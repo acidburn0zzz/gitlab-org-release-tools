@@ -2,8 +2,12 @@
 
 module ReleaseTools
   module Services
+    # Automatically updates component versions to their latest passing refs
     class ComponentUpdateService
       include ::SemanticLogger::Loggable
+
+      # The project that receives updated component info
+      TARGET_PROJECT = ReleaseTools::Project::GitlabEe
 
       COMPONENTS = [
         Project::Gitaly,
@@ -37,7 +41,7 @@ module ReleaseTools
       end
 
       def versions_changed?(versions)
-        component_versions = ComponentVersions.get_omnibus_compat_versions(Project::GitlabEe, target_branch)
+        component_versions = ComponentVersions.get_omnibus_compat_versions(target_branch)
 
         versions.any? do |filename, version|
           component_versions[filename].chomp != version
@@ -65,7 +69,7 @@ module ReleaseTools
         end
 
         gitlab_client.create_commit(
-          gitlab_client.project_path(ReleaseTools::Project::GitlabEe),
+          gitlab_client.project_path(TARGET_PROJECT),
           target_branch,
           'Update component versions',
           actions

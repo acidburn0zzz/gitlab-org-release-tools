@@ -89,7 +89,6 @@ describe ReleaseTools::ComponentVersions do
     let(:commit) { double('commit', id: 'abcd') }
 
     it 'commits version updates for the specified ref' do
-
       without_dry_run do
         described_class.update_omnibus('foo-branch', version_map)
       end

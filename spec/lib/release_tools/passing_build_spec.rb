@@ -3,7 +3,6 @@
 require 'spec_helper'
 
 describe ReleaseTools::PassingBuild do
-  let(:project) { ReleaseTools::Project::GitlabEe }
   let(:fake_commit) { double('Commit', id: SecureRandom.hex(20), created_at: Time.now.to_s) }
   let(:omnibus_version_map) { { 'VERSION' => '1.2.3' } }
   let(:cng_version_map) do
@@ -35,11 +34,11 @@ describe ReleaseTools::PassingBuild do
         .and_return(fake_commit)
 
       expect(ReleaseTools::ComponentVersions)
-        .to receive(:get_omnibus_compat_versions).with(project, fake_commit.id)
+        .to receive(:get_omnibus_compat_versions).with(fake_commit.id)
         .and_return(omnibus_version_map)
 
       expect(ReleaseTools::ComponentVersions)
-        .to receive(:get_cng_compat_versions).with(project, fake_commit.id)
+        .to receive(:get_cng_compat_versions).with(fake_commit.id)
         .and_return(cng_version_map)
 
       expect(service).not_to receive(:trigger_build)
@@ -52,11 +51,11 @@ describe ReleaseTools::PassingBuild do
         .and_return(fake_commit)
 
       expect(ReleaseTools::ComponentVersions)
-        .to receive(:get_omnibus_compat_versions).with(project, fake_commit.id)
+        .to receive(:get_omnibus_compat_versions).with(fake_commit.id)
         .and_return(omnibus_version_map)
 
       expect(ReleaseTools::ComponentVersions)
-        .to receive(:get_cng_compat_versions).with(project, fake_commit.id)
+        .to receive(:get_cng_compat_versions).with(fake_commit.id)
         .and_return(cng_version_map)
 
       expect(service).to receive(:trigger_build)
@@ -68,7 +67,6 @@ describe ReleaseTools::PassingBuild do
   describe '#trigger_build' do
     let(:fake_client) { spy }
     let(:fake_ops_client) { spy }
-    let(:project) { ReleaseTools::Project::GitlabEe }
     let(:cng_project) { ReleaseTools::Project::CNGImage }
     let(:omnibus_project) { ReleaseTools::Project::OmnibusGitlab }
 
@@ -249,7 +247,7 @@ describe ReleaseTools::PassingBuild do
       expect(fake_client)
         .to have_received(:create_tag)
         .with(
-          fake_client.project_path(project),
+          fake_client.project_path(ReleaseTools::Project::OmnibusGitlab),
           tag_name,
           fake_commit.id,
           "Auto-deploy tag-name\n\nVERSION: 1.2.3"

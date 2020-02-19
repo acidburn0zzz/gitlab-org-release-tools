@@ -26,7 +26,7 @@ describe ReleaseTools::Services::ComponentUpdateService do
     enable_all_features
     allow(service).to receive(:gitlab_client).and_return(internal_client)
     allow(ReleaseTools::ComponentVersions).to receive(:get_omnibus_compat_versions)
-      .with(ReleaseTools::Project::GitlabEe, target_branch)
+      .with(target_branch)
       .and_return(component_versions)
   end
 
@@ -53,7 +53,7 @@ describe ReleaseTools::Services::ComponentUpdateService do
                            .and_return(last_indexer_commit)
                            .once
       expect(internal_client).to receive(:project_path)
-                                   .with(ReleaseTools::Project::GitlabEe)
+                                   .with(described_class::TARGET_PROJECT)
                                    .and_return('a project path')
       expect(internal_client).to receive(:create_commit).with(
         'a project path',

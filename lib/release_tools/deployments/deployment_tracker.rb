@@ -95,7 +95,6 @@ module ReleaseTools
 
       def track_gitaly_deployment(gitlab_sha)
         sha = ComponentVersions.get_component(
-          Project::GitlabEe,
           gitlab_sha,
           Project::Gitaly.version_file
         )
