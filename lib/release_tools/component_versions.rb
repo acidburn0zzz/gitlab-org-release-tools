@@ -4,6 +4,13 @@ module ReleaseTools
   class ComponentVersions
     include ::SemanticLogger::Loggable
 
+    # The project that defines the component versions we're working with
+    SOURCE_PROJECT = ReleaseTools::Project::GitlabEe
+
+    # Shorthands for the two packagers this class currently works with
+    OmnibusGitlab = ReleaseTools::Project::OmnibusGitlab
+    CNGImage = ReleaseTools::Project::CNGImage
+
     FILES = [
       Project::Gitaly.version_file,
       Project::GitlabElasticsearchIndexer.version_file,
@@ -12,36 +19,36 @@ module ReleaseTools
       Project::GitlabWorkhorse.version_file
     ].freeze
 
-    def self.get_omnibus_compat_versions(project, commit_id)
+    def self.get_omnibus_compat_versions(commit_id)
       versions = { 'VERSION' => commit_id }
 
       FILES.each_with_object(versions) do |file, memo|
-        memo[file] = get_component(project, commit_id, file)
+        memo[file] = get_component(commit_id, file)
       end
 
-      logger.info('Omnibus Versions', { project: project }.merge(versions))
+      logger.info('Omnibus Versions', versions)
 
       versions
     end
 
-    def self.get_cng_compat_versions(project, commit_id)
-      versions = get_omnibus_compat_versions(project, commit_id)
+    def self.get_cng_compat_versions(commit_id)
+      versions = get_omnibus_compat_versions(commit_id)
 
       versions = sanitize_cng_versions(versions)
 
       gemfile = GemfileParser.new(
         client.file_contents(
-          client.project_path(project),
+          SOURCE_PROJECT,
           'Gemfile.lock',
           commit_id
         )
       )
 
-      Project::GitlabEe.gems.each do |gem_name, variable|
+      SOURCE_PROJECT.gems.each do |gem_name, variable|
         versions[variable] = gemfile.gem_version(gem_name)
       end
 
-      logger.info('CNG Versions', { project: project }.merge(versions))
+      logger.info('CNG Versions', versions)
 
       versions
     end
@@ -59,9 +66,9 @@ module ReleaseTools
       versions
     end
 
-    def self.get_component(project, commit_id, file)
+    def self.get_component(commit_id, file)
       client
-        .file_contents(client.project_path(project), file, commit_id)
+        .file_contents(SOURCE_PROJECT, file, commit_id)
         .chomp
     end
 
@@ -78,7 +85,7 @@ module ReleaseTools
       }
 
       client.create_commit(
-        client.project_path(ReleaseTools::Project::CNGImage),
+        CNGImage,
         target_branch,
         'Update component versions',
         [action]
@@ -104,7 +111,7 @@ module ReleaseTools
       end
 
       client.create_commit(
-        client.project_path(ReleaseTools::Project::OmnibusGitlab),
+        OmnibusGitlab,
         target_branch,
         'Update component versions',
         actions
@@ -120,7 +127,7 @@ module ReleaseTools
 
     def self.cng_version_changes?(target_branch, version_map)
       variables_file = client.file_contents(
-        client.project_path(ReleaseTools::Project::CNGImage),
+        CNGImage,
         '/ci_files/variables.yml',
         target_branch
       ).chomp
@@ -144,7 +151,7 @@ module ReleaseTools
     def self.omnibus_version_changes?(target_branch, version_map)
       version_map.any? do |filename, contents|
         client.file_contents(
-          client.project_path(ReleaseTools::Project::OmnibusGitlab),
+          OmnibusGitlab,
           "/#{filename}",
           target_branch
         ).chomp != contents
@@ -162,7 +169,7 @@ module ReleaseTools
 
     def self.cng_variables(target_branch)
       variables = client.file_contents(
-        client.project_path(ReleaseTools::Project::CNGImage),
+        CNGImage,
         '/ci_files/variables.yml',
         target_branch
       ).chomp

@@ -78,13 +78,9 @@ describe ReleaseTools::Deployments::DeploymentTracker do
       end
 
       it 'tracks the deployment of GitLab and Gitaly' do
-        allow(ReleaseTools::GitlabClient)
-          .to receive(:file_contents)
-          .with(
-            ReleaseTools::Project::GitlabEe.path,
-            'GITALY_SERVER_VERSION',
-            '123'
-          )
+        allow(ReleaseTools::ComponentVersions)
+          .to receive(:get_component)
+          .with('123', 'GITALY_SERVER_VERSION')
           .and_return('94b8fd8d152680445ec14241f14d1e4c04b0b5ab')
 
         expect(ReleaseTools::GitlabClient)
@@ -118,13 +114,9 @@ describe ReleaseTools::Deployments::DeploymentTracker do
       end
 
       it 'does not track the Gitaly deployment when Gitaly uses a tag version' do
-        allow(ReleaseTools::GitlabClient)
-          .to receive(:file_contents)
-          .with(
-            ReleaseTools::Project::GitlabEe.path,
-            'GITALY_SERVER_VERSION',
-            '123'
-          )
+        allow(ReleaseTools::ComponentVersions)
+          .to receive(:get_component)
+          .with('123', 'GITALY_SERVER_VERSION')
           .and_return('1.2')
 
         expect(ReleaseTools::GitlabClient)

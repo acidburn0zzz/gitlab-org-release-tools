@@ -8,7 +8,6 @@ module ReleaseTools
     class << self
       extend Forwardable
 
-      def_delegator :client, :file_contents
       def_delegator :client, :job_play
 
       def_delegator :client, :create_group_label
@@ -31,6 +30,10 @@ module ReleaseTools
 
     def self.current_user
       @current_user ||= client.user
+    end
+
+    def self.file_contents(project, *args)
+      client.file_contents(project_path(project), *args)
     end
 
     def self.issues(project = Project::GitlabCe, options = {})
