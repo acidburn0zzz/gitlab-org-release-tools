@@ -21,12 +21,12 @@ describe ReleaseTools::AutoDeploy::Naming do
 
       args = {
         timestamp: Time.new(2019, 7, 2, 10, 14).to_s,
-        omnibus_ref: SecureRandom.hex(20),
+        packager_ref: SecureRandom.hex(20),
         ee_ref: SecureRandom.hex(20)
       }
 
       expect(described_class.tag(**args)).to eq(
-        "4.2.201907021014+#{args[:ee_ref][0...11]}.#{args[:omnibus_ref][0...11]}"
+        "4.2.201907021014+#{args[:ee_ref][0...11]}.#{args[:packager_ref][0...11]}"
       )
     end
   end

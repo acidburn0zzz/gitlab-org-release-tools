@@ -44,7 +44,7 @@ module ReleaseTools
     def tag(target_commit)
       tag_name = ReleaseTools::AutoDeploy::Naming.tag(
         timestamp: target_commit.created_at.to_s,
-        omnibus_ref: target_commit.id,
+        packager_ref: target_commit.id,
         ee_ref: @omnibus_version_map['VERSION']
       )
 
@@ -136,7 +136,7 @@ module ReleaseTools
         .create_tag(project.path, name, ref, message)
     end
 
-    # See https://gitlab.com/gitlab-org/gitlab-foss/issues/25392
+    # See https://gitlab.com/gitlab-org/gitlab/issues/16661
     def commit_url(project, id)
       if SharedStatus.security_release?
         "https://dev.gitlab.org/#{project}/commit/#{id}"

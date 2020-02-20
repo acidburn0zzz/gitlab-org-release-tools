@@ -4,16 +4,16 @@ module ReleaseTools
   module AutoDeploy
     class Naming
       BRANCH_FORMAT = '%<major>d-%<minor>d-auto-deploy-%<timestamp>s'
-      TAG_FORMAT = '%<major>d.%<minor>d.%<timestamp>s+%<ee_ref>.11s.%<omnibus_ref>.11s'
+      TAG_FORMAT = '%<major>d.%<minor>d.%<timestamp>s+%<ee_ref>.11s.%<packager_ref>.11s'
 
       def self.branch
         new.branch
       end
 
-      def self.tag(timestamp:, omnibus_ref:, ee_ref:)
+      def self.tag(timestamp:, packager_ref:, ee_ref:)
         new.tag(
           timestamp: timestamp,
-          omnibus_ref: omnibus_ref,
+          packager_ref: packager_ref,
           ee_ref: ee_ref
         )
       end
@@ -27,13 +27,13 @@ module ReleaseTools
         )
       end
 
-      def tag(timestamp:, omnibus_ref:, ee_ref:)
+      def tag(timestamp:, packager_ref:, ee_ref:)
         format(
           TAG_FORMAT,
           major: version.first,
           minor: version.last,
           timestamp: Time.parse(timestamp).strftime('%Y%m%d%H%M'),
-          omnibus_ref: omnibus_ref,
+          packager_ref: packager_ref,
           ee_ref: ee_ref
         )
       end
