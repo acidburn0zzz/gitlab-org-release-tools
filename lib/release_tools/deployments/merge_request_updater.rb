@@ -12,6 +12,9 @@ module ReleaseTools
       # The base interval for retrying operations that failed, in seconds.
       RETRY_INTERVAL = 5
 
+      # The separator between a scope and label name for scoped labels.
+      SCOPE_SEPARATOR = '::'
+
       # Returns a MergeRequestUpdater operating on successful deployments.
       def self.for_successful_deployments(deployments)
         new(deployments.select(&:success?))
@@ -41,16 +44,24 @@ module ReleaseTools
       # This does not use slash commands, as comments that _only_ include slash
       # commands are rejected by our API.
       def add_label(label)
+        scope = label_scope(label)
+
         each_merge_request do |mr|
           with_retries do
             logger.info(
               "Adding label #{label.inspect} to merge request #{mr.web_url}"
             )
 
+            labels = mr.labels
+
+            if scope
+              labels.reject! { |l| l.start_with?("#{scope}#{SCOPE_SEPARATOR}") }
+            end
+
             GitlabClient.update_merge_request(
               mr.project_id,
               mr.iid,
-              labels: [label, *mr.labels].join(',')
+              labels: [label, *labels].join(',')
             )
           end
         end
@@ -80,6 +91,12 @@ module ReleaseTools
 
       def with_retries(&block)
         Retriable.retriable(base_interval: RETRY_INTERVAL, &block)
+      end
+
+      def label_scope(label)
+        segments = label.split(SCOPE_SEPARATOR)
+
+        segments[0] if segments.length > 1
       end
     end
   end

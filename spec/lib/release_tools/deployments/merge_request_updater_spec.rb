@@ -104,5 +104,57 @@ describe ReleaseTools::Deployments::MergeRequestUpdater do
 
       described_class.new([deploy]).add_label('bar')
     end
+
+    it 'removes existing scoped labels if the new label is a scoped label' do
+      deploy = ReleaseTools::Deployments::DeploymentTracker::Deployment
+        .new(ReleaseTools::Project::GitlabEe, 1, 'success')
+
+      mr1 = double(
+        :mr,
+        project_id: 2,
+        iid: 3,
+        web_url: 'foo',
+        labels: %w[workflow::canary foo]
+      )
+
+      page = Gitlab::PaginatedResponse.new([mr1])
+
+      expect(ReleaseTools::GitlabClient)
+        .to receive(:deployed_merge_requests)
+        .with(deploy.project, deploy.id)
+        .and_return(page)
+
+      expect(ReleaseTools::GitlabClient)
+        .to receive(:update_merge_request)
+        .with(2, 3, labels: 'workflow::production,foo')
+
+      described_class.new([deploy]).add_label('workflow::production')
+    end
+
+    it 'does not remove any scoped labels when adding a regular label' do
+      deploy = ReleaseTools::Deployments::DeploymentTracker::Deployment
+        .new(ReleaseTools::Project::GitlabEe, 1, 'success')
+
+      mr1 = double(
+        :mr,
+        project_id: 2,
+        iid: 3,
+        web_url: 'foo',
+        labels: %w[workflow::canary foo]
+      )
+
+      page = Gitlab::PaginatedResponse.new([mr1])
+
+      expect(ReleaseTools::GitlabClient)
+        .to receive(:deployed_merge_requests)
+        .with(deploy.project, deploy.id)
+        .and_return(page)
+
+      expect(ReleaseTools::GitlabClient)
+        .to receive(:update_merge_request)
+        .with(2, 3, labels: 'kittens,workflow::canary,foo')
+
+      described_class.new([deploy]).add_label('kittens')
+    end
   end
 end
