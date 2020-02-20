@@ -60,10 +60,18 @@ describe ReleaseTools::Deployments::DeploymentTracker do
       let(:parser) do
         instance_double(ReleaseTools::Deployments::DeploymentVersionParser)
       end
+      let(:omnibus_parser) do
+        instance_double(ReleaseTools::Deployments::OmnibusDeploymentVersionParser)
+      end
 
       let(:parsed_version) do
         ReleaseTools::Deployments::DeploymentVersionParser::DeploymentVersion
           .new('123', 'master', false)
+      end
+
+      let(:parsed_omnibus_version) do
+        ReleaseTools::Deployments::OmnibusDeploymentVersionParser::DeploymentVersion
+          .new('456', 'master', false)
       end
 
       before do
@@ -75,12 +83,25 @@ describe ReleaseTools::Deployments::DeploymentTracker do
         allow(ReleaseTools::Deployments::DeploymentVersionParser)
           .to receive(:new)
           .and_return(parser)
+
+        allow(omnibus_parser)
+          .to receive(:parse)
+          .with(version)
+          .and_return(parsed_omnibus_version)
+
+        allow(ReleaseTools::Deployments::OmnibusDeploymentVersionParser)
+          .to receive(:new)
+          .and_return(omnibus_parser)
       end
 
-      it 'tracks the deployment of GitLab and Gitaly' do
-        allow(ReleaseTools::ComponentVersions)
-          .to receive(:get_component)
-          .with('123', 'GITALY_SERVER_VERSION')
+      it 'tracks the deployment of GitLab, Gitaly, and Omnibus GitLab' do
+        allow(ReleaseTools::GitlabClient)
+          .to receive(:file_contents)
+          .with(
+            ReleaseTools::Project::GitlabEe,
+            'GITALY_SERVER_VERSION',
+            '123'
+          )
           .and_return('94b8fd8d152680445ec14241f14d1e4c04b0b5ab')
 
         expect(ReleaseTools::GitlabClient)
@@ -106,17 +127,34 @@ describe ReleaseTools::Deployments::DeploymentTracker do
           )
           .and_return(double(:deployment, id: 2, status: 'success'))
 
+        expect(ReleaseTools::GitlabClient)
+          .to receive(:create_deployment)
+          .with(
+            ReleaseTools::Project::OmnibusGitlab,
+            'staging',
+            'master',
+            '456',
+            'success',
+            tag: false
+          )
+          .and_return(double(:deployment, id: 3, status: 'success'))
+
         deployments = described_class.new('staging', 'success', version).track
 
-        expect(deployments.length).to eq(2)
+        expect(deployments.length).to eq(3)
         expect(deployments[0].id).to eq(1)
         expect(deployments[1].id).to eq(2)
+        expect(deployments[2].id).to eq(3)
       end
 
       it 'does not track the Gitaly deployment when Gitaly uses a tag version' do
-        allow(ReleaseTools::ComponentVersions)
-          .to receive(:get_component)
-          .with('123', 'GITALY_SERVER_VERSION')
+        allow(ReleaseTools::GitlabClient)
+          .to receive(:file_contents)
+          .with(
+            ReleaseTools::Project::GitlabEe,
+            'GITALY_SERVER_VERSION',
+            '123'
+          )
           .and_return('1.2')
 
         expect(ReleaseTools::GitlabClient)
@@ -141,10 +179,23 @@ describe ReleaseTools::Deployments::DeploymentTracker do
             'success'
           )
 
+        expect(ReleaseTools::GitlabClient)
+          .to receive(:create_deployment)
+          .with(
+            ReleaseTools::Project::OmnibusGitlab,
+            'staging',
+            'master',
+            '456',
+            'success',
+            tag: false
+          )
+          .and_return(double(:deployment, id: 3, status: 'success'))
+
         deployments = described_class.new('staging', 'success', version).track
 
-        expect(deployments.length).to eq(1)
+        expect(deployments.length).to eq(2)
         expect(deployments[0].id).to eq(1)
+        expect(deployments[1].id).to eq(3)
       end
     end
 

@@ -17,7 +17,7 @@ module ReleaseTools
         -
         (?<commit>\h{11,})
         \.
-        \h{11,}
+        (?<omnibus_commit>\h{11,})
         \z
       /x.freeze
 

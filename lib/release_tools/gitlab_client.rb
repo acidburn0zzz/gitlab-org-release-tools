@@ -4,6 +4,9 @@ module ReleaseTools
   class GitlabClient
     DEFAULT_GITLAB_API_ENDPOINT = 'https://gitlab.com/api/v4'
 
+    # The regular expression to use for matching auto deploy branch names.
+    AUTO_DEPLOY_BRANCH_REGEX = /\A\d+-\d+-auto-deploy-\d{8}\z/.freeze
+
     # Some methods get delegated directly to the internal client
     class << self
       extend Forwardable
@@ -413,6 +416,12 @@ module ReleaseTools
       client.get(
         "/projects/#{project_path}/issues/#{issue_iid}/related_merge_requests"
       )
+    end
+
+    def self.first_successful_auto_deployment_pipeline(project, sha)
+      pipelines(project, sha: sha, status: 'success')
+        .select { |p| p.ref.match?(AUTO_DEPLOY_BRANCH_REGEX) }
+        .first
     end
   end
 end

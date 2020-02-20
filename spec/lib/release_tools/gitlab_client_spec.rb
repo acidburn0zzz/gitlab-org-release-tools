@@ -422,4 +422,20 @@ describe ReleaseTools::GitlabClient do
       expect(described_class.related_merge_requests('foo/bar', 1)).to eq(page)
     end
   end
+
+  describe '#first_successful_auto_deployment_pipeline' do
+    it 'returns the first auto-deployment pipeline' do
+      pipeline1 = double(:pipeline, ref: 'foo')
+      pipeline2 = double(:pipeline, ref: '12-9-auto-deploy-20200218')
+
+      allow(described_class)
+        .to receive(:pipelines)
+        .and_return([pipeline1, pipeline2])
+
+      got = described_class
+        .first_successful_auto_deployment_pipeline('gitlab-org/gitlab', '123')
+
+      expect(got).to eq(pipeline2)
+    end
+  end
 end

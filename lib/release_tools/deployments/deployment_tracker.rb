@@ -64,10 +64,12 @@ module ReleaseTools
         end
 
         version = DeploymentVersionParser.new.parse(@version)
+        omnibus_version = OmnibusDeploymentVersionParser.new.parse(@version)
         gitlab_deployment = track_gitlab_deployment(version)
         gitaly_deployment = track_gitaly_deployment(version.sha)
+        omnibus_deployment = track_omnibus_deployment(omnibus_version)
 
-        [gitlab_deployment, gitaly_deployment].compact
+        [gitlab_deployment, gitaly_deployment, omnibus_deployment].compact
       end
 
       private
@@ -118,6 +120,27 @@ module ReleaseTools
         )
 
         Deployment.new(Project::Gitaly, data.id, data.status)
+      end
+
+      def track_omnibus_deployment(version)
+        logger.info(
+          'Recording Omnibus GitLab deployment',
+          environment: @environment,
+          status: @status,
+          sha: version.sha,
+          ref: version.ref
+        )
+
+        data = GitlabClient.create_deployment(
+          Project::OmnibusGitlab,
+          @environment,
+          version.ref,
+          version.sha,
+          @status,
+          tag: version.tag?
+        )
+
+        Deployment.new(Project::OmnibusGitlab, data.id, data.status)
       end
     end
   end
