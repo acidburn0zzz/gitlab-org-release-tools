@@ -57,7 +57,7 @@ describe ReleaseTools::Deployments::DeploymentVersionParser do
       end
     end
 
-    context 'when parsing a deployed tag' do
+    context 'when parsing an RC tag' do
       it 'returns a DeploymentVersion' do
         allow(ReleaseTools::GitlabClient)
           .to receive(:tag)
@@ -75,6 +75,29 @@ describe ReleaseTools::Deployments::DeploymentVersionParser do
         version = described_class.new.parse('12.5.0-rc43.ee.0')
 
         expect(version.ref).to eq('v12.5.0-rc43-ee')
+        expect(version.sha).to eq('6614791fadf7a479aea05dada8488d1f64bdb43d')
+        expect(version.tag?).to eq(true)
+      end
+    end
+
+    context 'when parsing a stable tag' do
+      it 'returns a DeploymentVersion' do
+        allow(ReleaseTools::GitlabClient)
+          .to receive(:tag)
+          .and_return(
+            double(
+              :tag,
+              commit: double(
+                :commit,
+                id: '6614791fadf7a479aea05dada8488d1f64bdb43d'
+              ),
+              name: 'v12.8.0-ee'
+            )
+          )
+
+        version = described_class.new.parse('12.8.0-ee.0')
+
+        expect(version.ref).to eq('v12.8.0-ee')
         expect(version.sha).to eq('6614791fadf7a479aea05dada8488d1f64bdb43d')
         expect(version.tag?).to eq(true)
       end
