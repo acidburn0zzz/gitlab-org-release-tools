@@ -29,21 +29,35 @@ module ReleaseTools
       #               containing data about a deployment.
       # version - a String containing the version that was deployed.
       def self.notify(environment, deployments, version)
-        return unless environment == RELEASE_ENVIRONMENT
+        unless environment == RELEASE_ENVIRONMENT
+          ReleaseTools.logger.info(
+            'Not notifying released merge requests for this environment',
+            environment: environment
+          )
+
+          return
+        end
 
         parsed_version = Version.new(version)
 
         # If the version format is something we don't recognise (e.g. we deploy
         # an auto deploy package to pre for some reason), we don't want to
         # notify merge requests about the deployment.
-        return unless parsed_version.valid?
+        unless parsed_version.valid?
+          ReleaseTools.logger.warn(
+            'Not notifying released merge requests since the version is not supported',
+            environment: environment,
+            version: version
+          )
 
-        # RC releases are deployed to pre at least once per release, and
-        # possibly more times. If we were to create a comment for every RC
-        # release this would lead to a lot of noise. It could also confuse
-        # developers, as changes in an RC are not guaranteed to also go in the
-        # final release.
-        return if parsed_version.rc?
+          return
+        end
+
+        ReleaseTools.logger.info(
+          'Notifying merge requests that will be released',
+          environment: environment,
+          version: version
+        )
 
         comment = format(TEMPLATE, version: parsed_version.to_patch)
 
