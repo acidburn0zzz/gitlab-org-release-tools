@@ -9,15 +9,21 @@ describe ReleaseTools::Qa::Ref do
 
   context '#ref' do
     it 'returns the EE commit when using an auto deploy ref' do
-      ref = described_class.new('v12.0.2019123-123.456')
+      ref = described_class.new('v12.0.2019123-123456123456.456789456789')
 
-      expect(ref.ref).to eq('123')
+      expect(ref.ref).to eq('123456123456')
     end
 
     it 'returns the ref as-is when using a regular tag' do
       ref = described_class.new('v12.0.0')
 
       expect(ref.ref).to eq('v12.0.0')
+    end
+
+    it 'returns the input ref for a patch version' do
+      ref = described_class.new('v12.8.0-ee.0')
+
+      expect(ref.ref).to eq('v12.8.0-ee.0')
     end
   end
 

@@ -15,9 +15,9 @@ module ReleaseTools
         \.
         (?<patch>\d+)
         -
-        (?<commit>\h+)
+        (?<commit>\h{11,})
         \.
-        \h+
+        \h{11,}
         \z
       /x.freeze
 
