@@ -42,7 +42,7 @@ module ReleaseTools
           @group = 'gitlab-org/release/managers'
           @client = Gitlab.client(
             endpoint: GITLAB_API_ENDPOINT,
-            private_token: ENV['GITLAB_API_PRIVATE_TOKEN']
+            private_token: ENV['RELEASE_BOT_PRODUCTION_TOKEN']
           )
         end
       end

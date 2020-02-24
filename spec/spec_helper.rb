@@ -9,10 +9,10 @@ ENV.delete('FEATURE_INSTANCE_ID')
 # Stub API tokens
 ENV['DEV_API_PRIVATE_TOKEN'] = 'test'
 ENV['GITLAB_API_APPROVAL_TOKEN'] = 'test'
-ENV['GITLAB_API_PRIVATE_TOKEN'] = 'test'
 ENV['OPS_API_PRIVATE_TOKEN'] = 'test'
-ENV['VERSION_API_PRIVATE_TOKEN'] = 'test'
 ENV['RELEASE_BOT_DEV_TOKEN'] = 'test'
+ENV['RELEASE_BOT_PRODUCTION_TOKEN'] = 'test'
+ENV['VERSION_API_PRIVATE_TOKEN'] = 'test'
 
 # SimpleCov needs to be loaded before everything else
 require_relative 'support/simplecov'
