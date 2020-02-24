@@ -12,7 +12,7 @@ http_interactions:
       Content-Type:
       - application/x-www-form-urlencoded
       Private-Token:
-      - "[GITLAB_API_PRIVATE_TOKEN]"
+      - "[RELEASE_BOT_PRODUCTION_TOKEN]"
   response:
     status:
       code: 400
@@ -55,7 +55,7 @@ http_interactions:
       User-Agent:
       - Gitlab Ruby Gem 4.4.0
       Private-Token:
-      - "[GITLAB_API_PRIVATE_TOKEN]"
+      - "[RELEASE_BOT_PRODUCTION_TOKEN]"
   response:
     status:
       code: 400

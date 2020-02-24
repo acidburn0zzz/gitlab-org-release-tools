@@ -14,7 +14,7 @@ http_interactions:
       User-Agent:
       - Gitlab Ruby Gem 4.3.0
       Private-Token:
-      - "[GITLAB_API_PRIVATE_TOKEN]"
+      - "[RELEASE_BOT_PRODUCTION_TOKEN]"
   response:
     status:
       code: 200
@@ -110,7 +110,7 @@ http_interactions:
       User-Agent:
       - Gitlab Ruby Gem 4.3.0
       Private-Token:
-      - "[GITLAB_API_PRIVATE_TOKEN]"
+      - "[RELEASE_BOT_PRODUCTION_TOKEN]"
   response:
     status:
       code: 200
@@ -172,7 +172,7 @@ http_interactions:
       User-Agent:
       - Gitlab Ruby Gem 4.3.0
       Private-Token:
-      - "[GITLAB_API_PRIVATE_TOKEN]"
+      - "[RELEASE_BOT_PRODUCTION_TOKEN]"
   response:
     status:
       code: 200
@@ -234,7 +234,7 @@ http_interactions:
       User-Agent:
       - Gitlab Ruby Gem 4.3.0
       Private-Token:
-      - "[GITLAB_API_PRIVATE_TOKEN]"
+      - "[RELEASE_BOT_PRODUCTION_TOKEN]"
   response:
     status:
       code: 200
@@ -296,7 +296,7 @@ http_interactions:
       User-Agent:
       - Gitlab Ruby Gem 4.3.0
       Private-Token:
-      - "[GITLAB_API_PRIVATE_TOKEN]"
+      - "[RELEASE_BOT_PRODUCTION_TOKEN]"
   response:
     status:
       code: 200
@@ -358,7 +358,7 @@ http_interactions:
       User-Agent:
       - Gitlab Ruby Gem 4.3.0
       Private-Token:
-      - "[GITLAB_API_PRIVATE_TOKEN]"
+      - "[RELEASE_BOT_PRODUCTION_TOKEN]"
   response:
     status:
       code: 200
@@ -451,7 +451,7 @@ http_interactions:
       User-Agent:
       - Gitlab Ruby Gem 4.3.0
       Private-Token:
-      - "[GITLAB_API_PRIVATE_TOKEN]"
+      - "[RELEASE_BOT_PRODUCTION_TOKEN]"
   response:
     status:
       code: 200
@@ -526,7 +526,7 @@ http_interactions:
       User-Agent:
       - Gitlab Ruby Gem 4.3.0
       Private-Token:
-      - "[GITLAB_API_PRIVATE_TOKEN]"
+      - "[RELEASE_BOT_PRODUCTION_TOKEN]"
   response:
     status:
       code: 200

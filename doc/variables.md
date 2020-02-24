@@ -9,13 +9,10 @@ defined in the [release-tools project](https://gitlab.com/gitlab-org/release-too
 
 ## Instance tokens
 
-
 | Variable Name                | Deployment         | Token name\*      | Scopes        | User          |
 | ------------                 | ------------       | ------------      | ------------  | ------------
 | `DEV_API_PRIVATE_TOKEN`        | dev.gitlab.org     | release-tools     | api           | [@gitlab-release-tools-bot][gitlab-release-tools-bot-dev] |
 | `RELEASE_BOT_DEV_TOKEN`        | dev.gitlab.org     | release-tools     | api           | [@gitlab-release-tools-bot][gitlab-release-tools-bot-dev] |
-| `GITLAB_API_PRIVATE_TOKEN`     | gitlab.com         | Automated Upstream merge requests in release-tools | api | [@gitlab-bot][gitlab-bot-com] |
-| `GITLAB_API_APPROVAL_TOKEN`    | gitlab.com         | ce-to-ee-approvals | api | [@gitlab-release-tools-bot][gitlab-release-tools-bot-com] |
 | `OPS_API_PRIVATE_TOKEN`        | ops.gitlab.net     | deployer token for ops.gitlab.net | api, read_user, read_repository, read_registry | [@deployer][deployer-ops] |
 | `RELEASE_BOT_OPS_TOKEN`        | ops.gitlab.net     | Release token | api | [@gitlab-release-tools-bot][gitlab-release-tools-bot-ops] |
 | `RELEASE_BOT_PRODUCTION_TOKEN` | gitlab.com         | release-tools | api | [@gitlab-release-tools-bot][gitlab-release-tools-bot-com] |

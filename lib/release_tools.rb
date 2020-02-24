@@ -50,6 +50,8 @@ require 'release_tools/project/omnibus_gitlab'
 require 'release_tools/project/release/tasks'
 require 'release_tools/project/release_tools'
 
+require 'release_tools/preflight'
+
 require 'release_tools/auto_deploy/naming'
 require 'release_tools/auto_deploy/version'
 require 'release_tools/auto_deploy_branch'
@@ -150,3 +152,5 @@ require 'release_tools/security/mirrors'
 require 'release_tools/security/issue_crawler'
 require 'release_tools/version_client'
 require 'release_tools/versions'
+
+ReleaseTools::Preflight.check

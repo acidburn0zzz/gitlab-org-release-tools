@@ -12,7 +12,6 @@ require_version()
 
 setup_env()
 {
-  export GITLAB_API_PRIVATE_TOKEN="$RELEASE_BOT_PRODUCTION_TOKEN"
   export DEV_API_PRIVATE_TOKEN="$RELEASE_BOT_DEV_TOKEN"
 }
 

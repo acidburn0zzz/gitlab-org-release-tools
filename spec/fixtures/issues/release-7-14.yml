@@ -10,7 +10,7 @@ http_interactions:
       Accept:
       - application/json
       Private-Token:
-      - "[GITLAB_API_PRIVATE_TOKEN]"
+      - "[RELEASE_BOT_PRODUCTION_TOKEN]"
   response:
     status:
       code: 200
@@ -69,7 +69,7 @@ http_interactions:
       Content-Type:
       - application/x-www-form-urlencoded
       Private-Token:
-      - "[GITLAB_API_PRIVATE_TOKEN]"
+      - "[RELEASE_BOT_PRODUCTION_TOKEN]"
   response:
     status:
       code: 200
