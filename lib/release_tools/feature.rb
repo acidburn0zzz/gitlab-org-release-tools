@@ -10,7 +10,7 @@ module ReleaseTools
     include ::SemanticLogger::Loggable
 
     UNLEASH = ::Unleash::Client.new(
-      url: 'https://gitlab.com/api/v4/feature_flags/unleash/430285',
+      url: ENV['FEATURE_INSTANCE_URL'],
       app_name: SemanticLogger.application,
       instance_id: ENV['FEATURE_INSTANCE_ID'],
       disable_metrics: true,

@@ -34,6 +34,11 @@ authenticating over HTTPS with an access token.
   by auto-deploy jobs and **should not be changed manually.**
 - `OMNIBUS_BUILD_TRIGGER_TOKEN` -- Used to trigger an Omnibus build.
 
+## Feature flags
+
+- `FEATURE_INSTANCE_URL` -- Unleash endpoint for project feature flags
+- `FEATURE_INSTANCE_ID` -- Unleash instance ID for project feature flags
+
 ## Miscellany
 
 - `SENTRY_DSN` -- DSN for the `release-tools` project on
