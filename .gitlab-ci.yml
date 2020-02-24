@@ -81,7 +81,6 @@ release-managers:
   stage: automation
   script:
     - source scripts/setup_ssh.sh
-    - export OPS_API_PRIVATE_TOKEN="$RELEASE_BOT_OPS_TOKEN"
     - bundle exec rake release_managers:sync
   only:
     refs:

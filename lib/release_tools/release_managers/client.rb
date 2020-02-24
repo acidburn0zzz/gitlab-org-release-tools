@@ -35,7 +35,7 @@ module ReleaseTools
           @group = 'release-managers'
           @client = Gitlab.client(
             endpoint: OPS_API_ENDPOINT,
-            private_token: ENV['OPS_API_PRIVATE_TOKEN']
+            private_token: ENV['RELEASE_BOT_OPS_TOKEN']
           )
         else
           @target = :production
