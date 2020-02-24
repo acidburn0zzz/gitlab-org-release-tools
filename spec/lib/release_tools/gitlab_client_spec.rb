@@ -409,4 +409,17 @@ describe ReleaseTools::GitlabClient do
       expect(described_class.project_path(project)).to eq(project)
     end
   end
+
+  describe '.related_merge_requests' do
+    it 'returns the related merge requests' do
+      page = double(:page)
+
+      allow(described_class.client)
+        .to receive(:get)
+        .with('/projects/foo%2Fbar/issues/1/related_merge_requests')
+        .and_return(page)
+
+      expect(described_class.related_merge_requests('foo/bar', 1)).to eq(page)
+    end
+  end
 end

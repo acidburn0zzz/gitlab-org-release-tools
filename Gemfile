@@ -4,7 +4,7 @@ source "https://rubygems.org"
 
 gem 'activesupport', '~> 5.1.0'
 gem 'colorize'
-gem 'gitlab', '~> 4.11'
+gem 'gitlab', '~> 4.13'
 gem 'http', '~> 4.1.0'
 gem 'parallel', '~> 1.14'
 gem 'rake'
