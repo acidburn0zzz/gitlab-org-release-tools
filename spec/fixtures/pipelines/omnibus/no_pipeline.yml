@@ -14,7 +14,7 @@ http_interactions:
       User-Agent:
       - Gitlab Ruby Gem 4.4.0
       Private-Token:
-      - "[DEV_API_PRIVATE_TOKEN]"
+      - "[RELEASE_BOT_DEV_TOKEN]"
   response:
     status:
       code: 200
@@ -81,7 +81,7 @@ http_interactions:
       User-Agent:
       - Gitlab Ruby Gem 4.4.0
       Private-Token:
-      - "[DEV_API_PRIVATE_TOKEN]"
+      - "[RELEASE_BOT_DEV_TOKEN]"
   response:
     status:
       code: 200

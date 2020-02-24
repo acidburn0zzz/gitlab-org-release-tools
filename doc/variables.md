@@ -11,9 +11,8 @@ defined in the [release-tools project](https://gitlab.com/gitlab-org/release-too
 
 | Variable Name                | Deployment         | Token name\*      | Scopes        | User          |
 | ------------                 | ------------       | ------------      | ------------  | ------------
-| `DEV_API_PRIVATE_TOKEN`        | dev.gitlab.org     | release-tools     | api           | [@gitlab-release-tools-bot][gitlab-release-tools-bot-dev] |
-| `RELEASE_BOT_DEV_TOKEN`        | dev.gitlab.org     | release-tools     | api           | [@gitlab-release-tools-bot][gitlab-release-tools-bot-dev] |
 | `OPS_API_PRIVATE_TOKEN`        | ops.gitlab.net     | deployer token for ops.gitlab.net | api, read_user, read_repository, read_registry | [@deployer][deployer-ops] |
+| `RELEASE_BOT_DEV_TOKEN`        | dev.gitlab.org     | release-tools     | api           | [@gitlab-release-tools-bot][gitlab-release-tools-bot-dev] |
 | `RELEASE_BOT_OPS_TOKEN`        | ops.gitlab.net     | Release token | api | [@gitlab-release-tools-bot][gitlab-release-tools-bot-ops] |
 | `RELEASE_BOT_PRODUCTION_TOKEN` | gitlab.com         | release-tools | api | [@gitlab-release-tools-bot][gitlab-release-tools-bot-com] |
 | `VERSION_API_PRIVATE_TOKEN`    | version.gitlab.com | private token | api | robert+release-tools@gitlab.com

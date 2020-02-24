@@ -10,17 +10,10 @@ require_version()
   fi
 }
 
-setup_env()
-{
-  export DEV_API_PRIVATE_TOKEN="$RELEASE_BOT_DEV_TOKEN"
-}
-
 auth_rake()
 {
   bundle exec rake "release_managers:auth[$RELEASE_USER]" "$1"
 }
-
-setup_env
 
 case $1 in
   # auto_deploy namespace
