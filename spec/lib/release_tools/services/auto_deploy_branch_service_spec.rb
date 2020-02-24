@@ -18,7 +18,10 @@ describe ReleaseTools::Services::AutoDeployBranchService do
     it 'creates auto-deploy branches' do
       branch_name = 'branch-name'
 
-      expect(service).to receive(:latest_successful_ref).and_return(branch_commit).thrice
+      expect(service).to receive(:latest_successful_ref)
+        .and_return(branch_commit)
+        .exactly(4)
+        .times
       expect(internal_client).to receive(:create_branch).with(
         branch_name,
         branch_commit,
@@ -33,6 +36,11 @@ describe ReleaseTools::Services::AutoDeployBranchService do
         branch_name,
         branch_commit,
         ReleaseTools::Project::CNGImage
+      )
+      expect(internal_client).to receive(:create_branch).with(
+        branch_name,
+        branch_commit,
+        ReleaseTools::Project::HelmGitlab
       )
       expect(internal_client).to receive(:update_variable).with(
         'gitlab-org/release-tools',
