@@ -24,9 +24,6 @@ module ReleaseTools
     #     version.ref  # => "v12.5.0-rc43-ee"
     #     version.tag? # => true
     class DeploymentVersionParser
-      # The regular expression to use for matching auto deploy branch names.
-      AUTO_DEPLOY_BRANCH_REGEX = /\A\d+-\d+-auto-deploy-\d{8}\z/.freeze
-
       # The regular expression to use for extracting the name of a deployed tag.
       TAG_REGEX = /
         (?<major>\d+)
@@ -47,7 +44,7 @@ module ReleaseTools
       # Parses the supplied version into a `DeploymentVersion`, which contains:
       #
       # * The deployed SHA
-      # * The deployed branch of tag name
+      # * The deployed branch or tag name
       # * A boolean indicating if a tag was deployed instead of a branch
       #
       # This method will raise an ArgumentError if the version could not be
@@ -73,9 +70,7 @@ module ReleaseTools
 
         sha = fetch_complete_sha(matches[:commit])
         ref = GitlabClient
-          .pipelines(Project::GitlabEe, sha: sha, status: 'success')
-          .select { |p| p.ref.match?(AUTO_DEPLOY_BRANCH_REGEX) }
-          .first&.ref
+          .first_successful_auto_deployment_pipeline(Project::GitlabEe, sha)&.ref
 
         DeploymentVersion.new(sha, ref || DEFAULT_REF, false)
       end
@@ -87,7 +82,7 @@ module ReleaseTools
       end
 
       def fetch_complete_sha(short_sha)
-        GitlabClient.commit(Project::GitlabEe, ref: short_sha)&.id || short_sha
+        GitlabClient.commit(Project::GitlabEe, ref: short_sha).id
       end
 
       def tag_for_version(version)
