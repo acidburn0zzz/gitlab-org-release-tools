@@ -2,8 +2,24 @@
 
 module ReleaseTools
   class Preflight
+    include ::SemanticLogger::Loggable
+
     def self.check
+      check_ci_environment
       check_variables
+    end
+
+    def self.check_ci_environment
+      return unless ENV['CI']
+      return if ENV['CI_JOB_STAGE'] == 'test'
+      return if ENV['CI_JOB_URL'].include?('ops.gitlab.net')
+
+      logger.warn(
+        'CI job running outside of Ops environment',
+        stage: ENV['CI_JOB_STAGE'],
+        name: ENV['CI_JOB_NAME'],
+        url: ENV['CI_JOB_URL']
+      )
     end
 
     def self.check_variables
