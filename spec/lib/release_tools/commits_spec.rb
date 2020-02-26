@@ -83,31 +83,39 @@ describe ReleaseTools::Commits do
     context 'when the project is GitLab' do
       let(:project) { ReleaseTools::Project::GitlabEe }
 
-      it 'also checks # of jobs when status is success' do
+      it 'also checks if the pipeline is a full pipeline when status is success' do
         commit = double('commit', id: 'abc', status: 'success', last_pipeline: double('pipeline', id: 1))
+
+        job1 = double(:job, name: 'compile-assets')
+        job2 = double(:job, name: 'setup-test-env')
+        page = Gitlab::PaginatedResponse.new([job1, job2])
 
         expect(client).to receive(:commit)
                             .with(project, ref: commit.id)
                             .and_return(commit)
                             .once
         expect(client).to receive(:pipeline_jobs)
-                            .with(project, 1, per_page: 50)
-                            .and_return(double('jobs', has_next_page?: true))
+                            .with(project, 1)
+                            .and_return(page)
                             .once
 
         expect(success?(commit)).to be true
       end
 
-      it 'returns false when the # of jobs < 50' do
+      it 'returns false when the pipeline is not a full pipeline' do
         commit = double('commit', id: 'abc', status: 'success', last_pipeline: double('pipeline', id: 1))
+
+        job1 = double(:job, name: 'compile-assets')
+        job2 = double(:job, name: 'docs lint')
+        page = Gitlab::PaginatedResponse.new([job1, job2])
 
         expect(client).to receive(:commit)
                             .with(project, ref: commit.id)
                             .and_return(commit)
                             .once
         expect(client).to receive(:pipeline_jobs)
-                            .with(project, 1, per_page: 50)
-                            .and_return(double('jobs', has_next_page?: false))
+                            .with(project, 1)
+                            .and_return(page)
                             .once
 
         expect(success?(commit)).to be false

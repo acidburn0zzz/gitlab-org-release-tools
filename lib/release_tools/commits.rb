@@ -69,16 +69,39 @@ module ReleaseTools
     def success?(commit)
       result = @client.commit(@project, ref: commit.id)
 
-      return false if result.status != 'success'
+      if result.status != 'success'
+        logger.info(
+          'Skipping commit because the pipeline did not succeed',
+          commit: commit.id,
+          status: result.status
+        )
+
+        return false
+      end
+
       return true if @project != ReleaseTools::Project::GitlabEe
 
-      # Prevent false positive on docs-only pipelines
+      # Documentation-only changes result in a pipeline with only a few jobs.
+      # If we were to include a passing documentation pipeline/commit, we may
+      # end up also including code that broke a previous full pipeline.
       #
-      # A gitlab full pipeline has over 200 jobs, but isn't necessarily consistent
-      # about the order, so we're only checking size
+      # We also take into account QA only pipelines. These pipelines _should_ be
+      # considered, but don't have a regular full pipeline. The "setup-test-env"
+      # job is present for both regular and QA pipelines, but not for
+      # documentation pipelines; hence we check for the presence of this job.
+      # This is more reliable than just checking the amount of jobs.
       @client
-        .pipeline_jobs(@project, result.last_pipeline.id, per_page: 50)
-        .has_next_page?
+        .pipeline_jobs(@project, result.last_pipeline.id)
+        .auto_paginate do |job|
+          return true if job.name.start_with?('setup-test-env')
+        end
+
+      logger.info(
+        'Skipping commit because we could not find a full successful pipeline',
+        commit: commit.id
+      )
+
+      false
     end
   end
 end
