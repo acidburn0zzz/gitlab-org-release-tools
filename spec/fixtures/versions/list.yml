@@ -12,7 +12,7 @@ http_interactions:
       Content-Type:
       - application/x-www-form-urlencoded
       Private-Token:
-      - "[VERSION_API_PRIVATE_TOKEN]"
+      - "[RELEASE_BOT_VERSION_TOKEN]"
   response:
     status:
       code: 200

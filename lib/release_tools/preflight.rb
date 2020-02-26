@@ -26,7 +26,8 @@ module ReleaseTools
       {
         'DEV_API_PRIVATE_TOKEN' => 'RELEASE_BOT_DEV_TOKEN',
         'GITLAB_API_PRIVATE_TOKEN' => 'RELEASE_BOT_PRODUCTION_TOKEN',
-        'OPS_API_PRIVATE_TOKEN' => 'RELEASE_BOT_OPS_TOKEN'
+        'OPS_API_PRIVATE_TOKEN' => 'RELEASE_BOT_OPS_TOKEN',
+        'VERSION_API_PRIVATE_TOKEN' => 'RELEASE_BOT_VERSION_TOKEN'
       }.each do |old, replace|
         next unless ENV[old].present?
 
