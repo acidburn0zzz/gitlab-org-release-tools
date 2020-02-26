@@ -4,6 +4,7 @@ require 'spec_helper'
 
 describe ReleaseTools::ComponentVersions do
   let(:fake_client) { spy }
+  let(:target_branch) { '12-9-auto-deploy-20200218' }
 
   before do
     stub_const('ReleaseTools::GitlabClient', fake_client)
@@ -35,18 +36,18 @@ describe ReleaseTools::ComponentVersions do
 
     it 'keeps omnibus versions that have changed' do
       expect(fake_client).to receive(:file_contents)
-        .with(described_class::OmnibusGitlab, "/GITALY_SERVER_VERSION", 'foo-branch')
+        .with(described_class::OmnibusGitlab, "/GITALY_SERVER_VERSION", target_branch)
         .and_return("1.2.3\n")
 
-      expect(described_class.omnibus_version_changes?('foo-branch', version_map)).to be(true)
+      expect(described_class.omnibus_version_changes?(target_branch, version_map)).to be(true)
     end
 
     it 'rejects omnibus versions that have not changed' do
       expect(fake_client).to receive(:file_contents)
-        .with(described_class::OmnibusGitlab, "/GITALY_SERVER_VERSION", 'foo-branch')
+        .with(described_class::OmnibusGitlab, "/GITALY_SERVER_VERSION", target_branch)
         .and_return("1.33.0\n")
 
-      expect(described_class.omnibus_version_changes?('foo-branch', version_map)).to be(false)
+      expect(described_class.omnibus_version_changes?(target_branch, version_map)).to be(false)
     end
   end
 
@@ -61,16 +62,45 @@ describe ReleaseTools::ComponentVersions do
         'VERSION' => '0cfa69752d82b8e134bdb8e473c185bdae26ccc2'
       }
     end
-    let(:commit) { double('commit', id: 'abcd') }
+
+    it 'does nothing without version changes' do
+      expect(described_class).to receive(:omnibus_version_changes?)
+        .and_return(false)
+      expect(described_class).not_to receive(:commit_omnibus)
+
+      without_dry_run do
+        described_class.update_omnibus(target_branch, version_map)
+      end
+    end
+
+    it 'commits version updates for the specified ref' do
+      expect(described_class).to receive(:omnibus_version_changes?)
+        .and_return(true)
+
+      expect(described_class).to receive(:commit_omnibus)
+        .with(target_branch, version_map)
+
+      without_dry_run do
+        described_class.update_omnibus(target_branch, version_map)
+      end
+    end
+  end
+
+  describe '.commit_omnibus' do
+    let(:version_map) do
+      {
+        'VERSION' => '0cfa69752d82b8e134bdb8e473c185bdae26ccc2'
+      }
+    end
 
     it 'commits version updates for the specified ref' do
       without_dry_run do
-        described_class.update_omnibus('foo-branch', version_map)
+        described_class.commit_omnibus(target_branch, version_map)
       end
 
       expect(fake_client).to have_received(:create_commit).with(
         described_class::OmnibusGitlab,
-        'foo-branch',
+        target_branch,
         anything,
         array_including(
           action: 'update',
@@ -167,16 +197,79 @@ describe ReleaseTools::ComponentVersions do
 
     before do
       allow(fake_client).to receive(:file_contents)
-        .with(described_class::CNGImage, '/ci_files/variables.yml', 'foo-branch')
+        .with(described_class::CNGImage, '/ci_files/variables.yml', target_branch)
         .and_return(cng_variables)
     end
 
     it 'keeps cng versions that have changed' do
-      expect(described_class.cng_version_changes?('foo-branch', changed_version_map)).to be(true)
+      expect(described_class.cng_version_changes?(target_branch, changed_version_map)).to be(true)
     end
 
     it 'rejects cng versions that have not changed' do
-      expect(described_class.cng_version_changes?('foo-branch', unchanged_version_map)).to be(false)
+      expect(described_class.cng_version_changes?(target_branch, unchanged_version_map)).to be(false)
+    end
+  end
+
+  describe '.update_cng' do
+    let(:version_map) do
+      {
+        'GITALY_SERVER_VERSION' => 'v1.80.0',
+        'GITLAB_ASSETS_TAG' => 'v12.7.0'
+      }
+    end
+
+    it 'does nothing without version changes' do
+      expect(described_class).to receive(:cng_version_changes?)
+        .and_return(false)
+      expect(described_class).not_to receive(:commit_cng)
+
+      without_dry_run do
+        described_class.update_cng(target_branch, version_map)
+      end
+    end
+
+    it 'commits version updates for the specified ref' do
+      expect(described_class).to receive(:cng_version_changes?)
+        .and_return(true)
+
+      expect(described_class).to receive(:commit_cng)
+        .with(target_branch, version_map)
+
+      without_dry_run do
+        described_class.update_cng(target_branch, version_map)
+      end
+    end
+  end
+
+  describe '.commit_cng' do
+    let(:version_map) do
+      {
+        'GITLAB_VERSION' => 'v12.7.0',
+        'MAILROOM_VERSION' => '0.10.1'
+      }
+    end
+
+    it 'commits new CNG variables' do
+      # By stubbing this to an empty Hash, we verify that we merge the provided
+      # argument
+      expect(described_class).to receive(:cng_variables)
+        .with(target_branch)
+        .and_return({})
+
+      without_dry_run do
+        described_class.commit_cng(target_branch, version_map)
+      end
+
+      expect(fake_client).to have_received(:create_commit).with(
+        described_class::CNGImage,
+        target_branch,
+        anything,
+        array_including(
+          action: 'update',
+          file_path: '/ci_files/variables.yml',
+          content: { 'variables' => version_map }.to_yaml
+        )
+      )
     end
   end
 end

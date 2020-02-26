@@ -33,6 +33,15 @@ module ReleaseTools
         .chomp
     end
 
+    # See https://gitlab.com/gitlab-org/gitlab/issues/16661
+    def self.commit_url(project, id)
+      if SharedStatus.security_release?
+        "https://dev.gitlab.org/#{project}/commit/#{id}"
+      else
+        "https://gitlab.com/#{project}/commit/#{id}"
+      end
+    end
+
     # Omnibus
     # ----------------------------------------------------------------------
 
@@ -68,8 +77,16 @@ module ReleaseTools
     end
 
     def self.update_omnibus(target_branch, version_map)
+      unless omnibus_version_changes?(target_branch, version_map)
+        return logger.warn('No changes to Omnibus component versions, nothing to tag')
+      end
+
       return if SharedStatus.dry_run?
 
+      commit_omnibus(target_branch, version_map)
+    end
+
+    def self.commit_omnibus(target_branch, version_map)
       actions = version_map.map do |filename, contents|
         {
           action: 'update',
@@ -78,12 +95,17 @@ module ReleaseTools
         }
       end
 
-      client.create_commit(
+      commit = client.create_commit(
         OmnibusGitlab,
         target_branch,
         'Update component versions',
         actions
       )
+
+      url = commit_url(OmnibusGitlab, commit.id)
+      logger.info('Updated Omnibus versions', commit_url: url)
+
+      commit
     rescue ::Gitlab::Error::Error => ex
       logger.fatal(
         'Failed to commit Omnibus version changes',
@@ -154,8 +176,16 @@ module ReleaseTools
     end
 
     def self.update_cng(target_branch, version_map)
+      unless cng_version_changes?(target_branch, version_map)
+        return logger.warn('No changes to CNG component versions, nothing to tag')
+      end
+
       return if SharedStatus.dry_run?
 
+      commit_cng(target_branch, version_map)
+    end
+
+    def self.commit_cng(target_branch, version_map)
       old_variables = cng_variables(target_branch)
       new_variables = old_variables.merge(version_map)
 
@@ -165,12 +195,17 @@ module ReleaseTools
         content: { 'variables' => new_variables }.to_yaml
       }
 
-      client.create_commit(
+      commit = client.create_commit(
         CNGImage,
         target_branch,
         'Update component versions',
         [action]
       )
+
+      url = commit_url(CNGImage, commit.id)
+      logger.info('Updated CNG versions', commit_url: url)
+
+      commit
     rescue ::Gitlab::Error::Error => ex
       logger.fatal(
         'Failed to commit CNG version changes',
