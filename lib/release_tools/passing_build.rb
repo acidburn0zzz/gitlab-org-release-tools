@@ -60,17 +60,8 @@ module ReleaseTools
     private
 
     def update_projects_for_autodeploy
-      if ReleaseTools::ComponentVersions.cng_version_changes?(ref, @cng_version_map)
-        update_cng_versions
-      else
-        logger.warn("No changes to CNG component versions, nothing to tag")
-      end
-
-      if ReleaseTools::ComponentVersions.omnibus_version_changes?(ref, @omnibus_version_map)
-        update_omnibus_versions
-      else
-        logger.warn("No changes to Omnibus component versions, nothing to tag")
-      end
+      ReleaseTools::ComponentVersions.update_cng(ref, @cng_version_map)
+      ReleaseTools::ComponentVersions.update_omnibus(ref, @omnibus_version_map)
 
       project = ReleaseTools::Project::OmnibusGitlab
       if project_changes?(project)
@@ -92,24 +83,6 @@ module ReleaseTools
       # have been changes on the branch since we last tagged it, and should be
       # considered changed
       refs.none? { |ref| ref.type == 'tag' }
-    end
-
-    def update_cng_versions
-      commit = ReleaseTools::ComponentVersions.update_cng(ref, @cng_version_map)
-
-      url = commit_url(ReleaseTools::Project::CNGImage, commit.id)
-      logger.info('Updated CNG versions', commit_url: url)
-
-      commit
-    end
-
-    def update_omnibus_versions
-      commit = ReleaseTools::ComponentVersions.update_omnibus(ref, @omnibus_version_map)
-
-      url = commit_url(ReleaseTools::Project::OmnibusGitlab, commit.id)
-      logger.info('Updated Omnibus versions', commit_url: url)
-
-      commit
     end
 
     def tag_omnibus(name, message, commit)
@@ -134,15 +107,6 @@ module ReleaseTools
 
       ReleaseTools::GitlabOpsClient
         .create_tag(project.path, name, ref, message)
-    end
-
-    # See https://gitlab.com/gitlab-org/gitlab/issues/16661
-    def commit_url(project, id)
-      if SharedStatus.security_release?
-        "https://dev.gitlab.org/#{project}/commit/#{id}"
-      else
-        "https://gitlab.com/#{project}/commit/#{id}"
-      end
     end
   end
 end
