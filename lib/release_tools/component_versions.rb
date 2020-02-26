@@ -19,6 +19,23 @@ module ReleaseTools
       Project::GitlabWorkhorse.version_file
     ].freeze
 
+    def self.client
+      if SharedStatus.security_release?
+        ReleaseTools::GitlabDevClient
+      else
+        ReleaseTools::GitlabClient
+      end
+    end
+
+    def self.get_component(commit_id, file)
+      client
+        .file_contents(SOURCE_PROJECT, file, commit_id)
+        .chomp
+    end
+
+    # Omnibus
+    # ----------------------------------------------------------------------
+
     def self.get_omnibus_compat_versions(commit_id)
       versions = { 'VERSION' => commit_id }
 
@@ -31,9 +48,56 @@ module ReleaseTools
       versions
     end
 
+    def self.omnibus_version_changes?(target_branch, version_map)
+      version_map.any? do |filename, contents|
+        client.file_contents(
+          OmnibusGitlab,
+          "/#{filename}",
+          target_branch
+        ).chomp != contents
+      end
+    rescue ::Gitlab::Error::Error => ex
+      logger.warn(
+        'Failed to find Omnibus version file',
+        target: target_branch,
+        error_code: ex.response_status,
+        error_message: ex.message
+      )
+
+      false
+    end
+
+    def self.update_omnibus(target_branch, version_map)
+      return if SharedStatus.dry_run?
+
+      actions = version_map.map do |filename, contents|
+        {
+          action: 'update',
+          file_path: "/#{filename}",
+          content: "#{contents}\n"
+        }
+      end
+
+      client.create_commit(
+        OmnibusGitlab,
+        target_branch,
+        'Update component versions',
+        actions
+      )
+    rescue ::Gitlab::Error::Error => ex
+      logger.fatal(
+        'Failed to commit Omnibus version changes',
+        target: target_branch,
+        error_code: ex.response_status,
+        error_message: ex.message
+      )
+    end
+
+    # CNG
+    # ----------------------------------------------------------------------
+
     def self.get_cng_compat_versions(commit_id)
       versions = get_omnibus_compat_versions(commit_id)
-
       versions = sanitize_cng_versions(versions)
 
       gemfile = GemfileParser.new(
@@ -66,10 +130,27 @@ module ReleaseTools
       versions
     end
 
-    def self.get_component(commit_id, file)
-      client
-        .file_contents(SOURCE_PROJECT, file, commit_id)
-        .chomp
+    def self.cng_version_changes?(target_branch, version_map)
+      variables_file = client.file_contents(
+        CNGImage,
+        '/ci_files/variables.yml',
+        target_branch
+      ).chomp
+
+      old_versions = YAML.safe_load(variables_file).fetch('variables')
+
+      version_map.any? do |component, version|
+        old_versions[component] != version
+      end
+    rescue ::Gitlab::Error::Error => ex
+      logger.warn(
+        'Failed to find CNG version file',
+        target: target_branch,
+        error_code: ex.response_status,
+        error_message: ex.message
+      )
+
+      false
     end
 
     def self.update_cng(target_branch, version_map)
@@ -99,74 +180,6 @@ module ReleaseTools
       )
     end
 
-    def self.update_omnibus(target_branch, version_map)
-      return if SharedStatus.dry_run?
-
-      actions = version_map.map do |filename, contents|
-        {
-          action: 'update',
-          file_path: "/#{filename}",
-          content: "#{contents}\n"
-        }
-      end
-
-      client.create_commit(
-        OmnibusGitlab,
-        target_branch,
-        'Update component versions',
-        actions
-      )
-    rescue ::Gitlab::Error::Error => ex
-      logger.fatal(
-        'Failed to commit Omnibus version changes',
-        target: target_branch,
-        error_code: ex.response_status,
-        error_message: ex.message
-      )
-    end
-
-    def self.cng_version_changes?(target_branch, version_map)
-      variables_file = client.file_contents(
-        CNGImage,
-        '/ci_files/variables.yml',
-        target_branch
-      ).chomp
-
-      old_versions = YAML.safe_load(variables_file).fetch('variables')
-
-      version_map.any? do |component, version|
-        old_versions[component] != version
-      end
-    rescue ::Gitlab::Error::Error => ex
-      logger.warn(
-        'Failed to find CNG version file',
-        target: target_branch,
-        error_code: ex.response_status,
-        error_message: ex.message
-      )
-
-      false
-    end
-
-    def self.omnibus_version_changes?(target_branch, version_map)
-      version_map.any? do |filename, contents|
-        client.file_contents(
-          OmnibusGitlab,
-          "/#{filename}",
-          target_branch
-        ).chomp != contents
-      end
-    rescue ::Gitlab::Error::Error => ex
-      logger.warn(
-        'Failed to find Omnibus version file',
-        target: target_branch,
-        error_code: ex.response_status,
-        error_message: ex.message
-      )
-
-      false
-    end
-
     def self.cng_variables(target_branch)
       variables = client.file_contents(
         CNGImage,
@@ -175,14 +188,6 @@ module ReleaseTools
       ).chomp
 
       YAML.safe_load(variables).fetch('variables')
-    end
-
-    def self.client
-      if SharedStatus.security_release?
-        ReleaseTools::GitlabDevClient
-      else
-        ReleaseTools::GitlabClient
-      end
     end
   end
 end
