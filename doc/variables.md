@@ -14,7 +14,7 @@ defined in the [release-tools project](https://gitlab.com/gitlab-org/release-too
 | `RELEASE_BOT_DEV_TOKEN`        | dev.gitlab.org     | release-tools | api          | [@gitlab-release-tools-bot][gitlab-release-tools-bot-dev] |
 | `RELEASE_BOT_OPS_TOKEN`        | ops.gitlab.net     | Release token | api          | [@gitlab-release-tools-bot][gitlab-release-tools-bot-ops] |
 | `RELEASE_BOT_PRODUCTION_TOKEN` | gitlab.com         | release-tools | api          | [@gitlab-release-tools-bot][gitlab-release-tools-bot-com] |
-| `VERSION_API_PRIVATE_TOKEN`    | version.gitlab.com | private token | api          | robert+release-tools@gitlab.com                           |
+| `RELEASE_BOT_VERSION_TOKEN`    | version.gitlab.com | private token | api          | robert+release-tools@gitlab.com                           |
 
 _* Token name refers to the name that was entered when the token was created_
 

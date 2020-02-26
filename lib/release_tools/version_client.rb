@@ -20,8 +20,8 @@ module ReleaseTools
     end
 
     def self.api_token
-      ENV.fetch('VERSION_API_PRIVATE_TOKEN') do |name|
-        raise "Must specificy `#{name}` environment variable!"
+      ENV.fetch('RELEASE_BOT_VERSION_TOKEN') do |name|
+        raise "Must specify `#{name}` environment variable!"
       end
     end
 
