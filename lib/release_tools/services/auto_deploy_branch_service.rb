@@ -44,9 +44,17 @@ module ReleaseTools
       end
 
       def update_auto_deploy_ci
-        gitlab_client.update_variable(Project::ReleaseTools.path, CI_VAR_AUTO_DEPLOY, branch_name)
-      rescue Gitlab::Error::NotFound
-        gitlab_client.create_variable(Project::ReleaseTools.path, CI_VAR_AUTO_DEPLOY, branch_name)
+        begin
+          gitlab_client.update_variable(Project::ReleaseTools.path, CI_VAR_AUTO_DEPLOY, branch_name)
+        rescue Gitlab::Error::NotFound
+          gitlab_client.create_variable(Project::ReleaseTools.path, CI_VAR_AUTO_DEPLOY, branch_name)
+        end
+
+        begin
+          gitlab_ops_client.update_variable('gitlab-org/release/tools', CI_VAR_AUTO_DEPLOY, branch_name)
+        rescue Gitlab::Error::NotFound
+          gitlab_ops_client.create_variable('gitlab-org/release/tools', CI_VAR_AUTO_DEPLOY, branch_name)
+        end
       end
     end
   end
