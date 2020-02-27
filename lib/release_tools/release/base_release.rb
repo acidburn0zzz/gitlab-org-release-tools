@@ -27,8 +27,12 @@ module ReleaseTools
       private
 
       # Overridable
-      def remotes
+      def project
         raise NotImplementedError
+      end
+
+      def remotes
+        project.remotes
       end
 
       def repository
@@ -70,7 +74,7 @@ module ReleaseTools
         create_tag(tag)
         push_ref('tag', tag)
 
-        Slack::TagNotification.release(version) unless SharedStatus.dry_run?
+        Slack::TagNotification.release(project, version) unless SharedStatus.dry_run?
       end
 
       def master_branch

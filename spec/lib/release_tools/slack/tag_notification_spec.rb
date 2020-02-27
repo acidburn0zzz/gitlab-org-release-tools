@@ -22,8 +22,9 @@ describe ReleaseTools::Slack::TagNotification do
   end
 
   describe '.release' do
+    let(:project) { ReleaseTools::Project::Gitaly }
     let(:version) { ReleaseTools::Version.new('10.4.20') }
-    let(:message) { "_Liz Lemon_ tagged `#{version}`" }
+    let(:message) { "_Liz Lemon_ tagged `#{version}` on `gitlab-org/gitaly`" }
 
     before do
       allow(ReleaseTools::SharedStatus).to receive(:user).and_return('Liz Lemon')
@@ -49,7 +50,7 @@ describe ReleaseTools::Slack::TagNotification do
         ).and_return(response(200))
 
         ClimateControl.modify(CI_JOB_URL: 'foo') do
-          described_class.release(version)
+          described_class.release(project, version)
         end
       end
     end
@@ -66,18 +67,17 @@ describe ReleaseTools::Slack::TagNotification do
         expect_post(json: { text: message })
           .and_return(response(200))
 
-        described_class.release(version)
+        described_class.release(project, version)
       end
 
       it 'posts a message indicating a security release' do
-        security_message = message.dup
-        security_message << " as a security release"
+        security_message = "_Liz Lemon_ tagged `#{version}` on `gitlab/gitaly` as a security release"
 
         expect_post(json: { text: security_message })
           .and_return(response(200))
 
         ClimateControl.modify(SECURITY: 'true') do
-          described_class.release(version)
+          described_class.release(project, version)
         end
       end
     end

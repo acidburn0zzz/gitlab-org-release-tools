@@ -10,8 +10,8 @@ module ReleaseTools
         ENV.fetch('SLACK_TAG_URL', '')
       end
 
-      def self.release(version)
-        text = "_#{SharedStatus.user}_ tagged `#{version}`"
+      def self.release(project, version)
+        text = "_#{SharedStatus.user}_ tagged `#{version}` on `#{project}`"
 
         text += " as a security release" if SharedStatus.security_release?
 

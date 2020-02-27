@@ -5,8 +5,8 @@ module ReleaseTools
     class GitlabCeRelease < BaseRelease
       private
 
-      def remotes
-        Project::GitlabCe.remotes
+      def project
+        Project::GitlabCe
       end
 
       def before_execute_hook
