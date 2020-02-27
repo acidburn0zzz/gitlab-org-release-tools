@@ -7,8 +7,8 @@ module ReleaseTools
     class CNGImageRelease < GitlabBasedRelease
       include ReleaseTools::Support::UbiHelper
 
-      def remotes
-        Project::CNGImage.remotes
+      def project
+        Project::CNGImage
       end
 
       def tag

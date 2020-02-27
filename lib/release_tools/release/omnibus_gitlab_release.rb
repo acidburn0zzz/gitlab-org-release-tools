@@ -35,8 +35,8 @@ module ReleaseTools
         logger.error('Changelog update failed', version: version, path: ex.changelog_path)
       end
 
-      def remotes
-        ReleaseTools::Project::OmnibusGitlab.remotes
+      def project
+        ReleaseTools::Project::OmnibusGitlab
       end
 
       def version_class

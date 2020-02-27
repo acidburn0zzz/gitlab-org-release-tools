@@ -5,8 +5,8 @@ module ReleaseTools
     class GitlabEeRelease < GitlabCeRelease
       private
 
-      def remotes
-        Project::GitlabEe.remotes
+      def project
+        Project::GitlabEe
       end
 
       def after_execute_hook

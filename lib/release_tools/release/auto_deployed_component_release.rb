@@ -18,15 +18,6 @@ module ReleaseTools
     class AutoDeployedComponentRelease < GitlabBasedRelease
       class TaggingNotAllowed < StandardError; end
 
-      # Overridable
-      def project
-        raise NotImplementedError
-      end
-
-      def remotes
-        project.remotes
-      end
-
       def stable_branch_base
         @stable_branch_base ||= version_string_from_file(project.version_file)
       end

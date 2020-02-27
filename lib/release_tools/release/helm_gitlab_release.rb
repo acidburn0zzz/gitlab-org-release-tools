@@ -15,8 +15,8 @@ module ReleaseTools
         HelmChartVersion
       end
 
-      def remotes
-        Project::HelmGitlab.remotes
+      def project
+        Project::HelmGitlab
       end
 
       def version_manager
