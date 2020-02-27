@@ -8,7 +8,10 @@ module ReleaseTools
 
       # A regex to use for ensuring that we only track Gitaly deployments for
       # SHAs, not tagged versions.
-      GIT_SHA_REGEX = /\A[0-9a-f]{40}\z/.freeze
+      GITALY_SHA_REGEX = /\A[0-9a-f]{40}\z/.freeze
+
+      # A regex that matches Gitaly tagged releases, such as "12.8.1".
+      GITALY_TAGGED_RELEASE_REGEX = /\A\d+\.\d+\.\d+(-rc\d+)?\z/.freeze
 
       # The deployment statuses that we support.
       DEPLOYMENT_STATUSES = Set.new(%w[success failed]).freeze
@@ -96,30 +99,43 @@ module ReleaseTools
       end
 
       def track_gitaly_deployment(gitlab_sha)
-        sha = ComponentVersions.get_component(
+        version = ComponentVersions.get_component(
           gitlab_sha,
           Project::Gitaly.version_file
         )
 
-        return unless sha.match?(GIT_SHA_REGEX)
+        ref, sha, is_tag = gitaly_deployment_details(version)
 
         logger.info(
           'Recording Gitaly deployment',
           environment: @environment,
           status: @status,
           sha: sha,
-          ref: GITALY_DEPLOY_REF
+          ref: ref
         )
 
         data = GitlabClient.create_deployment(
           Project::Gitaly,
           @environment,
-          GITALY_DEPLOY_REF,
+          ref,
           sha,
-          @status
+          @status,
+          tag: is_tag
         )
 
         Deployment.new(Project::Gitaly, data.id, data.status)
+      end
+
+      def gitaly_deployment_details(version)
+        if version.match?(GITALY_TAGGED_RELEASE_REGEX)
+          tag = GitlabClient.tag(Project::Gitaly, tag: "v#{version}")
+
+          [tag.name, tag.commit.id, true]
+        elsif version.match?(GITALY_SHA_REGEX)
+          [GITALY_DEPLOY_REF, version, false]
+        else
+          raise "The Gitaly version #{sha} is not recognised"
+        end
       end
 
       def track_omnibus_deployment(version)

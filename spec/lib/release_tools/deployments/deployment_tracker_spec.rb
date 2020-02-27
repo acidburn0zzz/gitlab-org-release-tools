@@ -123,7 +123,8 @@ describe ReleaseTools::Deployments::DeploymentTracker do
             'staging',
             'master',
             '94b8fd8d152680445ec14241f14d1e4c04b0b5ab',
-            'success'
+            'success',
+            tag: false
           )
           .and_return(double(:deployment, id: 2, status: 'success'))
 
@@ -147,7 +148,7 @@ describe ReleaseTools::Deployments::DeploymentTracker do
         expect(deployments[2].id).to eq(3)
       end
 
-      it 'does not track the Gitaly deployment when Gitaly uses a tag version' do
+      it 'tracks the Gitaly deployment when Gitaly uses a tag version' do
         allow(ReleaseTools::GitlabClient)
           .to receive(:file_contents)
           .with(
@@ -155,7 +156,7 @@ describe ReleaseTools::Deployments::DeploymentTracker do
             'GITALY_SERVER_VERSION',
             '123'
           )
-          .and_return('1.2')
+          .and_return('1.2.3')
 
         expect(ReleaseTools::GitlabClient)
           .to receive(:create_deployment)
@@ -170,14 +171,23 @@ describe ReleaseTools::Deployments::DeploymentTracker do
           .and_return(double(:deployment, id: 1, status: 'success'))
 
         expect(ReleaseTools::GitlabClient)
-          .not_to receive(:create_deployment)
+          .to receive(:tag)
+          .with(ReleaseTools::Project::Gitaly, tag: 'v1.2.3')
+          .and_return(
+            double(:tag, name: 'v1.2.3', commit: double(:commit, id: 'abc'))
+          )
+
+        expect(ReleaseTools::GitlabClient)
+          .to receive(:create_deployment)
           .with(
             ReleaseTools::Project::Gitaly,
             'staging',
-            'master',
-            '1.2',
-            'success'
+            'v1.2.3',
+            'abc',
+            'success',
+            tag: true
           )
+          .and_return(double(:deployment, id: 2, status: 'success'))
 
         expect(ReleaseTools::GitlabClient)
           .to receive(:create_deployment)
@@ -193,9 +203,71 @@ describe ReleaseTools::Deployments::DeploymentTracker do
 
         deployments = described_class.new('staging', 'success', version).track
 
-        expect(deployments.length).to eq(2)
+        expect(deployments.length).to eq(3)
         expect(deployments[0].id).to eq(1)
-        expect(deployments[1].id).to eq(3)
+        expect(deployments[1].id).to eq(2)
+        expect(deployments[2].id).to eq(3)
+      end
+
+      it 'tracks the Gitaly deployment when Gitaly uses an RC tag version' do
+        allow(ReleaseTools::GitlabClient)
+          .to receive(:file_contents)
+          .with(
+            ReleaseTools::Project::GitlabEe,
+            'GITALY_SERVER_VERSION',
+            '123'
+          )
+          .and_return('1.2.3-rc1')
+
+        expect(ReleaseTools::GitlabClient)
+          .to receive(:create_deployment)
+          .with(
+            ReleaseTools::Project::GitlabEe,
+            'staging',
+            'master',
+            '123',
+            'success',
+            tag: false
+          )
+          .and_return(double(:deployment, id: 1, status: 'success'))
+
+        expect(ReleaseTools::GitlabClient)
+          .to receive(:tag)
+          .with(ReleaseTools::Project::Gitaly, tag: 'v1.2.3-rc1')
+          .and_return(
+            double(:tag, name: 'v1.2.3-rc1', commit: double(:commit, id: 'abc'))
+          )
+
+        expect(ReleaseTools::GitlabClient)
+          .to receive(:create_deployment)
+          .with(
+            ReleaseTools::Project::Gitaly,
+            'staging',
+            'v1.2.3-rc1',
+            'abc',
+            'success',
+            tag: true
+          )
+          .and_return(double(:deployment, id: 2, status: 'success'))
+
+        expect(ReleaseTools::GitlabClient)
+          .to receive(:create_deployment)
+          .with(
+            ReleaseTools::Project::OmnibusGitlab,
+            'staging',
+            'master',
+            '456',
+            'success',
+            tag: false
+          )
+          .and_return(double(:deployment, id: 3, status: 'success'))
+
+        deployments = described_class.new('staging', 'success', version).track
+
+        expect(deployments.length).to eq(3)
+        expect(deployments[0].id).to eq(1)
+        expect(deployments[1].id).to eq(2)
+        expect(deployments[2].id).to eq(3)
       end
     end
 
