@@ -85,7 +85,7 @@ describe ReleaseTools::Release::GitlabCeRelease, :slow do
 
     repository.checkout(branch)
     ob_repository.checkout(branch)
-    gitaly_repository.checkout(gitaly_stable_branch(version))
+    gitaly_repository.checkout(gitaly_stable_branch(version)) if Dir.exist?(gitaly_repo_path)
   end
 
   describe '#execute' do
@@ -193,7 +193,7 @@ describe ReleaseTools::Release::GitlabCeRelease, :slow do
       context "with a new 10-1-stable#{suffix} stable branch, releasing an RC" do
         let(:version) { "10.1.0-rc13#{suffix}" }
         let(:ob_version) { "10.1.0+rc13.#{edition}.0" }
-        let(:gitaly_version) { '10.1.0-rc13' }
+        let(:gitaly_version) { GitalyReleaseFixture.new.repository.head.target_id }
         let(:branch) { "10-1-stable#{suffix}" }
         let(:gitaly_branch) { gitaly_stable_branch(version) }
 
@@ -213,8 +213,7 @@ describe ReleaseTools::Release::GitlabCeRelease, :slow do
               expect(repository).to have_version.at(version)
 
               # Gitaly expectations
-              expect(gitaly_repository.head.name).to eq "refs/heads/#{gitaly_branch}"
-              expect(gitaly_repository).to have_version.at(gitaly_version)
+              expect(Dir.exist?(gitaly_repo_path)).to be_falsey # rubocop:disable RSpec/PredicateMatcher
 
               # Omnibus-GitLab expectations
               expect(ob_repository.head.name).to eq "refs/heads/#{branch}"

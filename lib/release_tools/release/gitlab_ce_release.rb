@@ -61,6 +61,8 @@ module ReleaseTools
       end
 
       def tag_gitaly
+        return if version.rc?
+
         gitaly_version = version.to_ce
 
         Release::GitalyRelease.new(
