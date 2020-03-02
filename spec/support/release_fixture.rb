@@ -180,6 +180,11 @@ class GitalyReleaseFixture
     create_prefixed_master
 
     commit_blob(path: 'VERSION', content: "1.1.1\n", message: 'Version bumping')
+    commit_blob(
+      path: 'ruby/proto/gitaly/version.rb',
+      content: "module Gitaly; VERSION='1.1.1'; end\n",
+      message: 'ruby proto version'
+    )
 
     repository.checkout("#{branch_prefix}master")
 
