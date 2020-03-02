@@ -33,7 +33,7 @@ module ReleaseTools
             merge_request: merge_request.web_url,
             target: @target
           )
-        rescue ::Gitlab::Error::BadRequest => ex
+        rescue ::Gitlab::Error::Error => ex
           logger.fatal(
             'Failed security cherry-pick to auto-deploy',
             project: merge_request.project_id,
