@@ -4,6 +4,7 @@ stages:
   - test
   - deploy
   - automation
+  - wait
   - chatops
 
 cache: &global-cache
@@ -149,6 +150,16 @@ auto_deploy:tag:
   stage: automation
   script:
     - bundle exec rake 'auto_deploy:tag'
+  only:
+    variables:
+      - $PASSING_BUILD_AUTO_DEPLOY_SCHEDULE == "true"
+
+auto_deploy:wait:omnibus:
+  <<: *with-bundle
+  stage: wait
+  allow_failure: true
+  script:
+    - bundle exec rake 'auto_deploy:wait[gitlab-org/omnibus-gitlab]'
   only:
     variables:
       - $PASSING_BUILD_AUTO_DEPLOY_SCHEDULE == "true"

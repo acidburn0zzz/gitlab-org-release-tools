@@ -4,13 +4,35 @@ module ReleaseTools
 
     attr_reader :project, :sha
 
-    def initialize(project, sha, versions)
+    def initialize(project, sha = nil, versions = nil)
       @project = project
       @sha = sha
       @token = ENV.fetch('OMNIBUS_BUILD_TRIGGER_TOKEN') do |name|
         raise "Missing environment variable `#{name}`"
       end
       @versions = versions
+    end
+
+    def find_and_wait
+      tags = ReleaseTools::GitlabDevClient.tags(@project)
+      matched_tags = tags.select do |k|
+        # TODO this is specific to CNG
+        k.name =~ /\A\d+\.\d+\.\d+\+[\w\d]+\z/
+      end
+
+      raise if matched_tags.empty?
+
+      # TODO this feels dangerous, we are relying to queries to find a tag without
+      # restriction to validate it's the tag that we want to monitor for.
+      # If syncing is stopped or hung for whatever reason, we may end up waiting
+      # on the wrong tag
+      tag = matched_tags.first
+
+      pipeline = ReleaseTools::GitlabDevClient.pipelines(@project, ref: tag.name).first
+
+      ReleaseTools.logger.info("Found tag and pipeline", project: @project, ref: tag.name, pipeline: pipeline.id, url: pipeline.web_url)
+
+      wait(pipeline.id)
     end
 
     def trigger
@@ -31,7 +53,7 @@ module ReleaseTools
     private
 
     def status(id)
-      ReleaseTools::GitlabDevClient.pipeline(ReleaseTools::Project::OmnibusGitlab, id).status
+      ReleaseTools::GitlabDevClient.pipeline(@project, id).status
     end
 
     def wait(id)
@@ -50,7 +72,7 @@ module ReleaseTools
           case status(id)
           when 'created', 'pending', 'running'
             sleep(interval)
-          when 'success'
+          when 'success', 'manual'
             break
           else
             raise 'Pipeline did not succeed.'

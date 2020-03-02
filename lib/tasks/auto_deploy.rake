@@ -64,4 +64,10 @@ namespace :auto_deploy do
       .new(branch, commit.id)
       .execute
   end
+
+  desc "Wait on build for project"
+  task :wait, [:project] do |_t, args|
+    project = args.project
+    ReleaseTools::Pipeline.new(project).find_and_wait
+  end
 end
