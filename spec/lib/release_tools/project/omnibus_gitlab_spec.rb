@@ -7,6 +7,7 @@ describe ReleaseTools::Project::OmnibusGitlab do
   it_behaves_like 'project .security_group'
   it_behaves_like 'project .security_path', 'gitlab-org/security/omnibus-gitlab'
   it_behaves_like 'project .to_s'
+  it_behaves_like 'project .canonical_or_security_path'
 
   describe '.path' do
     it { expect(described_class.path).to eq 'gitlab-org/omnibus-gitlab' }

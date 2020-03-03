@@ -13,7 +13,16 @@ module ReleaseTools
     end
 
     def security_release?
-      ENV['SECURITY'].present?
+      return true if ENV['SECURITY'].present?
+
+      @security_release == true
+    end
+
+    def as_security_release(security_release = true)
+      @security_release = security_release
+      yield
+    ensure
+      @security_release = false
     end
 
     def user

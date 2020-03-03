@@ -25,7 +25,7 @@ describe ReleaseTools::Deployments::MergeRequestUpdater do
 
       expect(ReleaseTools::GitlabClient)
         .to receive(:deployed_merge_requests)
-        .with(deploy.project, deploy.id)
+        .with(deploy.project.canonical_or_security_path, deploy.id)
         .and_return(page)
 
       expect(ReleaseTools::GitlabClient)
@@ -95,7 +95,7 @@ describe ReleaseTools::Deployments::MergeRequestUpdater do
 
       expect(ReleaseTools::GitlabClient)
         .to receive(:deployed_merge_requests)
-        .with(deploy.project, deploy.id)
+        .with(deploy.project.canonical_or_security_path, deploy.id)
         .and_return(page)
 
       expect(ReleaseTools::GitlabClient)
@@ -121,7 +121,7 @@ describe ReleaseTools::Deployments::MergeRequestUpdater do
 
       expect(ReleaseTools::GitlabClient)
         .to receive(:deployed_merge_requests)
-        .with(deploy.project, deploy.id)
+        .with(deploy.project.canonical_or_security_path, deploy.id)
         .and_return(page)
 
       expect(ReleaseTools::GitlabClient)
@@ -147,7 +147,7 @@ describe ReleaseTools::Deployments::MergeRequestUpdater do
 
       expect(ReleaseTools::GitlabClient)
         .to receive(:deployed_merge_requests)
-        .with(deploy.project, deploy.id)
+        .with(deploy.project.canonical_or_security_path, deploy.id)
         .and_return(page)
 
       expect(ReleaseTools::GitlabClient)

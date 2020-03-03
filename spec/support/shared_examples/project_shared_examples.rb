@@ -52,6 +52,26 @@ RSpec.shared_examples 'project .to_s' do
   end
 end
 
+RSpec.shared_examples 'project .canonical_or_security_path' do
+  it 'returns the normal path by default' do
+    expect(described_class.canonical_or_security_path)
+      .to eq(described_class.path)
+  end
+
+  context 'with a security release' do
+    before do
+      allow(ReleaseTools::SharedStatus)
+        .to receive(:security_release?)
+        .and_return(true)
+    end
+
+    it 'returns the security path' do
+      expect(described_class.canonical_or_security_path)
+        .to eq(described_class.security_path)
+    end
+  end
+end
+
 RSpec.shared_examples 'project .security_group' do
   it 'returns security group with `security_remote` flag enabled' do
     enable_feature(:security_remote)

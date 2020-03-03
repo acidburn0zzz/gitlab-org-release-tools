@@ -77,7 +77,10 @@ module ReleaseTools
 
       def each_deployment_merge_request(project, deployment_id, &block)
         page = with_retries do
-          GitlabClient.deployed_merge_requests(project, deployment_id)
+          GitlabClient.deployed_merge_requests(
+            project.canonical_or_security_path,
+            deployment_id
+          )
         end
 
         while page

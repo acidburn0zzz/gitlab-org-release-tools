@@ -51,6 +51,14 @@ module ReleaseTools
         end
       end
 
+      def self.canonical_or_security_path
+        # This method exists so that it's more clear that one wants the path
+        # based on the security release status, as using `#to_s` could make one
+        # think they can just remove the use of `#to_s` and produce the same
+        # result.
+        to_s
+      end
+
       def self.to_s
         if SharedStatus.security_release?
           security_path
