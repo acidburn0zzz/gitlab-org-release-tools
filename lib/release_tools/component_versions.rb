@@ -36,9 +36,9 @@ module ReleaseTools
     # See https://gitlab.com/gitlab-org/gitlab/issues/16661
     def self.commit_url(project, id)
       if SharedStatus.security_release?
-        "https://dev.gitlab.org/#{project}/commit/#{id}"
+        "https://dev.gitlab.org/#{project.dev_path}/commit/#{id}"
       else
-        "https://gitlab.com/#{project}/commit/#{id}"
+        "https://gitlab.com/#{project.path}/commit/#{id}"
       end
     end
 

@@ -21,7 +21,6 @@ module ReleaseTools
       def_delegator :client, :create_variable
       def_delegator :client, :update_variable
 
-      def_delegator :client, :create_commit
       def_delegator :client, :create_tag
 
       def_delegator :client, :cancel_pipeline
@@ -108,6 +107,10 @@ module ReleaseTools
 
     def self.commit(project = Project::GitlabCe, ref:)
       client.commit(project_path(project), ref)
+    end
+
+    def self.create_commit(project, *args)
+      client.create_commit(project_path(project), *args)
     end
 
     def self.commit_refs(project, sha, options = {})
