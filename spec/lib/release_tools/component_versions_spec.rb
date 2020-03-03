@@ -136,7 +136,7 @@ describe ReleaseTools::ComponentVersions do
         a_hash_including(
           'GITLAB_VERSION' => commit_id,
           file => 'v1.2.3',
-          'MAILROOM_VERSION' => '0.9.1'
+          'MAILROOM_VERSION' => '0.0.3'
         )
       )
     end

@@ -14,7 +14,7 @@ module ReleaseTools
       # The variables are used in CNG image configurations.
       def self.gems
         {
-          mail_room: 'MAILROOM_VERSION'
+          'gitlab-mail_room' => 'MAILROOM_VERSION'
         }
       end
     end

@@ -60,7 +60,7 @@ describe ReleaseTools::Release::CNGImageRelease do
         'GITLAB_ASSETS_TAG' => "v#{version}",
         'GITLAB_REF_SLUG' => "v#{version}",
         'GITLAB_VERSION' => "v#{version}",
-        'MAILROOM_VERSION' => '0.9.1',
+        'MAILROOM_VERSION' => '0.0.3',
         'GITALY_SERVER_VERSION' => 'v5.6.0',
         'GITLAB_ELASTICSEARCH_INDEXER_VERSION' => 'v9.9.9',
         'GITLAB_SHELL_VERSION' => 'v2.3.0',
