@@ -11,7 +11,8 @@ module ReleaseTools
     def self.client
       @client ||= Gitlab.client(
         endpoint: OPS_API_ENDPOINT,
-        private_token: ENV['RELEASE_BOT_OPS_TOKEN']
+        private_token: ENV['RELEASE_BOT_OPS_TOKEN'],
+        httparty: httparty_opts
       )
     end
   end
