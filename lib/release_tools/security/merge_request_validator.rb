@@ -65,11 +65,7 @@ module ReleaseTools
         elsif pipeline.failed?
           error('Failing pipeline', <<~ERROR)
             The latest pipeline has one or more failing builds. Merge requests
-            can not be merged unless the pipeline has passed. Some builds are
-            allowed to fail on dev.gitlab.org, which currently includes the
-            following builds:
-
-            * #{Pipeline::ALLOWED_FAILURES.join("\n* ")}
+            can not be merged unless the pipeline has passed.
           ERROR
         elsif pipeline.pending?
           # This covers pipelines that are skipped, still running, or in another

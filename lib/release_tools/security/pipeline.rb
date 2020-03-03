@@ -3,28 +3,6 @@
 module ReleaseTools
   module Security
     class Pipeline
-      ALLOWED_FAILURES =
-        if ReleaseTools::Feature.enabled?(:security_remote)
-          # Nothing is allowed to fail for security projects on gitlab.com
-          %w[].freeze
-        else
-          # On dev.gitlab.org certain jobs will fail, such as EE specific line
-          # checking jobs. For security MRs we allow these jobs to fail, at
-          # least while we still use dev.gitlab.org for the security workflow.
-          #
-          # SAST should be removed when we are no longer backporting to 12.2:
-          #   https://gitlab.com/gitlab-org/release-tools/issues/319
-          %w[
-            code_quality
-            downtime_check
-            ee-files-location-check
-            ee-specific-lines-check
-            ee_compat_check
-            review-build-cng
-            sast
-          ].freeze
-        end
-
       FINISHED_STATES = %w[success failed].to_set
 
       # @param [Gitlab::ObjectifiedHash] merge_request
@@ -69,9 +47,7 @@ module ReleaseTools
         allowed_to_fail = allowed_failures
 
         latest_jobs.any? do |job|
-          job.status == 'failed' &&
-            !ALLOWED_FAILURES.include?(job.name) &&
-            !allowed_to_fail.include?(job.name)
+          job.status == 'failed' && !allowed_to_fail.include?(job.name)
         end
       end
 

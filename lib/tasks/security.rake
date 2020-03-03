@@ -22,23 +22,17 @@ namespace :security do
         false
       end
 
-    client = ReleaseTools::Security::DevClient.new
+    if ReleaseTools::Feature.enabled?(:security_mirror_toggle)
+      ReleaseTools::Security::Mirrors.disable
+    end
 
     ReleaseTools::Security::MergeRequestsMerger
-      .new(client, merge_master: merge_master)
+      .new(ReleaseTools::Security::DevClient.new, merge_master: merge_master)
       .execute
 
-    if ReleaseTools::Feature.enabled?(:security_remote)
-      if ReleaseTools::Feature.enabled?(:security_mirror_toggle)
-        ReleaseTools::Security::Mirrors.disable
-      end
-
-      client = ReleaseTools::Security::Client.new
-
-      ReleaseTools::Security::MergeRequestsMerger
-        .new(client, merge_master: merge_master)
-        .execute
-    end
+    ReleaseTools::Security::MergeRequestsMerger
+      .new(ReleaseTools::Security::Client.new, merge_master: merge_master)
+      .execute
   end
 
   desc 'Prepare for a new security release'
@@ -88,11 +82,9 @@ namespace :security do
       .new(ReleaseTools::Security::DevClient.new)
       .execute
 
-    if ReleaseTools::Feature.enabled?(:security_remote)
-      ReleaseTools::Security::MergeRequestsValidator
-        .new(ReleaseTools::Security::Client.new)
-        .execute
-    end
+    ReleaseTools::Security::MergeRequestsValidator
+      .new(ReleaseTools::Security::Client.new)
+      .execute
   end
 
   namespace :gitaly do
