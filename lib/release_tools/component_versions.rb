@@ -155,7 +155,7 @@ module ReleaseTools
     def self.cng_version_changes?(target_branch, version_map)
       variables_file = client.file_contents(
         CNGImage,
-        '/ci_files/variables.yml',
+        'ci_files/variables.yml',
         target_branch
       ).chomp
 
@@ -191,7 +191,7 @@ module ReleaseTools
 
       action = {
         action: 'update',
-        file_path: '/ci_files/variables.yml',
+        file_path: 'ci_files/variables.yml',
         content: { 'variables' => new_variables }.to_yaml
       }
 
@@ -218,7 +218,7 @@ module ReleaseTools
     def self.cng_variables(target_branch)
       variables = client.file_contents(
         CNGImage,
-        '/ci_files/variables.yml',
+        'ci_files/variables.yml',
         target_branch
       ).chomp
 

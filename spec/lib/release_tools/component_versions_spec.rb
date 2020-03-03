@@ -197,7 +197,7 @@ describe ReleaseTools::ComponentVersions do
 
     before do
       allow(fake_client).to receive(:file_contents)
-        .with(described_class::CNGImage, '/ci_files/variables.yml', target_branch)
+        .with(described_class::CNGImage, 'ci_files/variables.yml', target_branch)
         .and_return(cng_variables)
     end
 
@@ -266,7 +266,7 @@ describe ReleaseTools::ComponentVersions do
         anything,
         array_including(
           action: 'update',
-          file_path: '/ci_files/variables.yml',
+          file_path: 'ci_files/variables.yml',
           content: { 'variables' => version_map }.to_yaml
         )
       )
