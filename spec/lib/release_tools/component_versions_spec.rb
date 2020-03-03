@@ -36,7 +36,7 @@ describe ReleaseTools::ComponentVersions do
 
     it 'keeps omnibus versions that have changed' do
       expect(fake_client).to receive(:file_contents)
-        .with(described_class::OmnibusGitlab, "/GITALY_SERVER_VERSION", target_branch)
+        .with(described_class::OmnibusGitlab, "GITALY_SERVER_VERSION", target_branch)
         .and_return("1.2.3\n")
 
       expect(described_class.omnibus_version_changes?(target_branch, version_map)).to be(true)
@@ -44,7 +44,7 @@ describe ReleaseTools::ComponentVersions do
 
     it 'rejects omnibus versions that have not changed' do
       expect(fake_client).to receive(:file_contents)
-        .with(described_class::OmnibusGitlab, "/GITALY_SERVER_VERSION", target_branch)
+        .with(described_class::OmnibusGitlab, "GITALY_SERVER_VERSION", target_branch)
         .and_return("1.33.0\n")
 
       expect(described_class.omnibus_version_changes?(target_branch, version_map)).to be(false)

@@ -61,7 +61,7 @@ module ReleaseTools
       version_map.any? do |filename, contents|
         client.file_contents(
           OmnibusGitlab,
-          "/#{filename}",
+          filename,
           target_branch
         ).chomp != contents
       end
