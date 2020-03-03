@@ -2,6 +2,8 @@
 
 module ReleaseTools
   class GitlabClient
+    include ::SemanticLogger::Loggable
+
     DEFAULT_GITLAB_API_ENDPOINT = 'https://gitlab.com/api/v4'
 
     # The regular expression to use for matching auto deploy branch names.
@@ -19,7 +21,6 @@ module ReleaseTools
       def_delegator :client, :create_variable
       def_delegator :client, :update_variable
 
-      def_delegator :client, :create_commit
       def_delegator :client, :create_tag
 
       def_delegator :client, :cancel_pipeline
@@ -106,6 +107,10 @@ module ReleaseTools
 
     def self.commit(project = Project::GitlabCe, ref:)
       client.commit(project_path(project), ref)
+    end
+
+    def self.create_commit(project, *args)
+      client.create_commit(project_path(project), *args)
     end
 
     def self.commit_refs(project, sha, options = {})
@@ -344,8 +349,13 @@ module ReleaseTools
     def self.client
       @client ||= Gitlab.client(
         endpoint: DEFAULT_GITLAB_API_ENDPOINT,
-        private_token: ENV['RELEASE_BOT_PRODUCTION_TOKEN']
+        private_token: ENV['RELEASE_BOT_PRODUCTION_TOKEN'],
+        httparty: httparty_opts
       )
+    end
+
+    def self.httparty_opts
+      { logger: logger, log_level: :debug }
     end
 
     # Overridden by GitLabDevClient

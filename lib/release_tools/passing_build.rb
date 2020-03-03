@@ -77,7 +77,14 @@ module ReleaseTools
     end
 
     def project_changes?(project)
-      refs = GitlabClient.commit_refs(project, ref)
+      client =
+        if SharedStatus.security_release?
+          ReleaseTools::GitlabDevClient
+        else
+          ReleaseTools::GitlabClient
+        end
+
+      refs = client.commit_refs(project, ref)
 
       # When our auto-deploy branch `ref` has no associated tags, then there
       # have been changes on the branch since we last tagged it, and should be
