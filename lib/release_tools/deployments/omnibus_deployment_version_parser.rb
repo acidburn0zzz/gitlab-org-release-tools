@@ -40,7 +40,7 @@ module ReleaseTools
 
         sha = fetch_complete_sha(matches[:omnibus_commit])
         ref = GitlabClient.first_successful_auto_deployment_pipeline(
-          Project::OmnibusGitlab,
+          Project::OmnibusGitlab.canonical_or_security_path,
           sha
         )&.ref
 
@@ -51,7 +51,8 @@ module ReleaseTools
         return unless version.match?(DeploymentVersionParser::TAG_REGEX)
 
         tag_name = Version.new(version).to_omnibus(ee: true)
-        tag = GitlabClient.tag(Project::OmnibusGitlab, tag: tag_name)
+        tag = GitlabClient
+          .tag(Project::OmnibusGitlab.canonical_or_security_path, tag: tag_name)
 
         DeploymentVersion.new(tag.commit.id, tag.name, true)
       rescue Gitlab::Error::Error
@@ -59,7 +60,9 @@ module ReleaseTools
       end
 
       def fetch_complete_sha(short_sha)
-        GitlabClient.commit(Project::OmnibusGitlab, ref: short_sha).id
+        GitlabClient
+          .commit(Project::OmnibusGitlab.canonical_or_security_path, ref: short_sha)
+          .id
       end
     end
   end

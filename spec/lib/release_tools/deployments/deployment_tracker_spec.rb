@@ -107,7 +107,7 @@ describe ReleaseTools::Deployments::DeploymentTracker do
         expect(ReleaseTools::GitlabClient)
           .to receive(:create_deployment)
           .with(
-            ReleaseTools::Project::GitlabEe,
+            ReleaseTools::Project::GitlabEe.canonical_or_security_path,
             'staging',
             'master',
             '123',
@@ -119,7 +119,7 @@ describe ReleaseTools::Deployments::DeploymentTracker do
         expect(ReleaseTools::GitlabClient)
           .to receive(:create_deployment)
           .with(
-            ReleaseTools::Project::Gitaly,
+            ReleaseTools::Project::Gitaly.canonical_or_security_path,
             'staging',
             'master',
             '94b8fd8d152680445ec14241f14d1e4c04b0b5ab',
@@ -131,7 +131,7 @@ describe ReleaseTools::Deployments::DeploymentTracker do
         expect(ReleaseTools::GitlabClient)
           .to receive(:create_deployment)
           .with(
-            ReleaseTools::Project::OmnibusGitlab,
+            ReleaseTools::Project::OmnibusGitlab.canonical_or_security_path,
             'staging',
             'master',
             '456',
@@ -161,7 +161,7 @@ describe ReleaseTools::Deployments::DeploymentTracker do
         expect(ReleaseTools::GitlabClient)
           .to receive(:create_deployment)
           .with(
-            ReleaseTools::Project::GitlabEe,
+            ReleaseTools::Project::GitlabEe.canonical_or_security_path,
             'staging',
             'master',
             '123',
@@ -172,7 +172,10 @@ describe ReleaseTools::Deployments::DeploymentTracker do
 
         expect(ReleaseTools::GitlabClient)
           .to receive(:tag)
-          .with(ReleaseTools::Project::Gitaly, tag: 'v1.2.3')
+          .with(
+            ReleaseTools::Project::Gitaly.canonical_or_security_path,
+            tag: 'v1.2.3'
+          )
           .and_return(
             double(:tag, name: 'v1.2.3', commit: double(:commit, id: 'abc'))
           )
@@ -180,7 +183,7 @@ describe ReleaseTools::Deployments::DeploymentTracker do
         expect(ReleaseTools::GitlabClient)
           .to receive(:create_deployment)
           .with(
-            ReleaseTools::Project::Gitaly,
+            ReleaseTools::Project::Gitaly.canonical_or_security_path,
             'staging',
             'v1.2.3',
             'abc',
@@ -192,7 +195,7 @@ describe ReleaseTools::Deployments::DeploymentTracker do
         expect(ReleaseTools::GitlabClient)
           .to receive(:create_deployment)
           .with(
-            ReleaseTools::Project::OmnibusGitlab,
+            ReleaseTools::Project::OmnibusGitlab.canonical_or_security_path,
             'staging',
             'master',
             '456',
@@ -222,7 +225,7 @@ describe ReleaseTools::Deployments::DeploymentTracker do
         expect(ReleaseTools::GitlabClient)
           .to receive(:create_deployment)
           .with(
-            ReleaseTools::Project::GitlabEe,
+            ReleaseTools::Project::GitlabEe.canonical_or_security_path,
             'staging',
             'master',
             '123',
@@ -233,7 +236,10 @@ describe ReleaseTools::Deployments::DeploymentTracker do
 
         expect(ReleaseTools::GitlabClient)
           .to receive(:tag)
-          .with(ReleaseTools::Project::Gitaly, tag: 'v1.2.3-rc1')
+          .with(
+            ReleaseTools::Project::Gitaly.canonical_or_security_path,
+            tag: 'v1.2.3-rc1'
+          )
           .and_return(
             double(:tag, name: 'v1.2.3-rc1', commit: double(:commit, id: 'abc'))
           )
@@ -241,7 +247,7 @@ describe ReleaseTools::Deployments::DeploymentTracker do
         expect(ReleaseTools::GitlabClient)
           .to receive(:create_deployment)
           .with(
-            ReleaseTools::Project::Gitaly,
+            ReleaseTools::Project::Gitaly.canonical_or_security_path,
             'staging',
             'v1.2.3-rc1',
             'abc',
@@ -253,7 +259,7 @@ describe ReleaseTools::Deployments::DeploymentTracker do
         expect(ReleaseTools::GitlabClient)
           .to receive(:create_deployment)
           .with(
-            ReleaseTools::Project::OmnibusGitlab,
+            ReleaseTools::Project::OmnibusGitlab.canonical_or_security_path,
             'staging',
             'master',
             '456',

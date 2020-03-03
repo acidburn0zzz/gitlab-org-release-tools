@@ -30,4 +30,14 @@ describe ReleaseTools::SharedStatus do
       end
     end
   end
+
+  describe '#as_security_release' do
+    it 'allows enabling of security releases for the duration of the block' do
+      described_class.as_security_release do
+        expect(described_class.security_release?).to eq(true)
+      end
+
+      expect(described_class.security_release?).to eq(false)
+    end
+  end
 end

@@ -69,8 +69,10 @@ module ReleaseTools
         return unless matches && matches[:commit]
 
         sha = fetch_complete_sha(matches[:commit])
-        ref = GitlabClient
-          .first_successful_auto_deployment_pipeline(Project::GitlabEe, sha)&.ref
+        ref = GitlabClient.first_successful_auto_deployment_pipeline(
+          Project::GitlabEe.canonical_or_security_path,
+          sha
+        )&.ref
 
         DeploymentVersion.new(sha, ref || DEFAULT_REF, false)
       end
@@ -82,7 +84,10 @@ module ReleaseTools
       end
 
       def fetch_complete_sha(short_sha)
-        GitlabClient.commit(Project::GitlabEe, ref: short_sha).id
+        GitlabClient.commit(
+          Project::GitlabEe.canonical_or_security_path,
+          ref: short_sha
+        ).id
       end
 
       def tag_for_version(version)
@@ -96,7 +101,8 @@ module ReleaseTools
           "v#{matches[:major]}.#{matches[:minor]}.#{matches[:patch]}-#{suffix}"
 
         begin
-          GitlabClient.tag(Project::GitlabEe, tag: tag_name)
+          GitlabClient
+            .tag(Project::GitlabEe.canonical_or_security_path, tag: tag_name)
         rescue Gitlab::Error::Error
           nil
         end

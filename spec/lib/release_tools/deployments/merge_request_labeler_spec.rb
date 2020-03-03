@@ -30,7 +30,7 @@ describe ReleaseTools::Deployments::MergeRequestLabeler do
 
         allow(ReleaseTools::GitlabClient)
           .to receive(:deployed_merge_requests)
-          .with(ReleaseTools::Project::GitlabEe, 1)
+          .with(ReleaseTools::Project::GitlabEe.canonical_or_security_path, 1)
           .and_return(page)
 
         expect(ReleaseTools::GitlabClient)

@@ -124,30 +124,34 @@ namespace :release do
   task :track_deployment, [:environment, :status, :version] do |_, args|
     env = args[:environment]
     version = args[:version]
-    tracker = ReleaseTools::Deployments::DeploymentTracker
-      .new(env, args[:status], version)
+    meta = ReleaseTools::Deployments::Metadata.new(version)
 
-    deployments = tracker.track
+    ReleaseTools::SharedStatus.as_security_release(meta.security_release?) do
+      tracker = ReleaseTools::Deployments::DeploymentTracker
+        .new(env, args[:status], version)
 
-    Raven.capture do
-      ReleaseTools::Deployments::MergeRequestLabeler
-        .new
-        .label_merge_requests(env, deployments)
-    end
+      deployments = tracker.track
 
-    Raven.capture do
-      ReleaseTools::Deployments::ReleasedMergeRequestNotifier
-        .notify(env, deployments, version)
-    end
+      Raven.capture do
+        ReleaseTools::Deployments::MergeRequestLabeler
+          .new
+          .label_merge_requests(env, deployments)
+      end
 
-    previous, latest = tracker.qa_commit_range
+      Raven.capture do
+        ReleaseTools::Deployments::ReleasedMergeRequestNotifier
+          .notify(env, deployments, version)
+      end
 
-    if previous && latest
-      ReleaseTools
-        .logger
-        .info('Attempting to create QA issue', from: previous, until: latest)
+      previous, latest = tracker.qa_commit_range
 
-      build_qa_issue(get_version(version: version), previous, latest)
+      if previous && latest
+        ReleaseTools
+          .logger
+          .info('Attempting to create QA issue', from: previous, until: latest)
+
+        build_qa_issue(get_version(version: version), previous, latest)
+      end
     end
   end
 

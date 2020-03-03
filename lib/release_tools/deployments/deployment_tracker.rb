@@ -44,7 +44,10 @@ module ReleaseTools
         end
 
         current, previous = GitlabClient
-          .deployments(Project::GitlabEe, @environment)
+          .deployments(
+            Project::GitlabEe.canonical_or_security_path,
+            @environment
+          )
           .first(2)
           .map(&:sha)
 
@@ -87,7 +90,7 @@ module ReleaseTools
         )
 
         data = GitlabClient.create_deployment(
-          Project::GitlabEe,
+          Project::GitlabEe.canonical_or_security_path,
           @environment,
           version.ref,
           version.sha,
@@ -115,7 +118,7 @@ module ReleaseTools
         )
 
         data = GitlabClient.create_deployment(
-          Project::Gitaly,
+          Project::Gitaly.canonical_or_security_path,
           @environment,
           ref,
           sha,
@@ -128,7 +131,8 @@ module ReleaseTools
 
       def gitaly_deployment_details(version)
         if version.match?(GITALY_TAGGED_RELEASE_REGEX)
-          tag = GitlabClient.tag(Project::Gitaly, tag: "v#{version}")
+          tag = GitlabClient
+            .tag(Project::Gitaly.canonical_or_security_path, tag: "v#{version}")
 
           [tag.name, tag.commit.id, true]
         elsif version.match?(GITALY_SHA_REGEX)
@@ -148,7 +152,7 @@ module ReleaseTools
         )
 
         data = GitlabClient.create_deployment(
-          Project::OmnibusGitlab,
+          Project::OmnibusGitlab.canonical_or_security_path,
           @environment,
           version.ref,
           version.sha,
