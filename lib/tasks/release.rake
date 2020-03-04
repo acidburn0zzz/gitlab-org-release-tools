@@ -129,7 +129,7 @@ namespace :release do
     # Tracking security releases is disabled until the security workflow for
     # Omnibus is moved to GitLab.com:
     # https://gitlab.com/gitlab-com/gl-infra/delivery/issues/692
-    break if meta.security_release?
+    next if meta.security_release?
 
     ReleaseTools::SharedStatus.as_security_release(meta.security_release?) do
       tracker = ReleaseTools::Deployments::DeploymentTracker
