@@ -4,6 +4,7 @@ require 'spec_helper'
 
 describe ReleaseTools::AutoDeploy::Tagger::Omnibus do
   let(:fake_client) { spy(project_path: described_class::PROJECT.path) }
+
   let(:target_branch) { '12-9-auto-deploy-20200226' }
   let(:version_map) do
     {
@@ -49,21 +50,61 @@ describe ReleaseTools::AutoDeploy::Tagger::Omnibus do
   end
 
   describe '#tag!' do
-    it 'creates a tag on the project' do
-      branch_head = double(
-        created_at: Time.new(2019, 7, 2, 10, 14),
-        id: SecureRandom.hex(20)
-      )
-
-      allow(tagger).to receive(:branch_head).and_return(branch_head)
-      allow(tagger).to receive(:tag_name).and_return('tag_name')
-
-      without_dry_run do
-        tagger.tag!
+    context 'without changes' do
+      before do
+        allow(tagger).to receive(:changes?).and_return(false)
       end
 
-      expect(fake_client).to have_received(:create_tag)
-        .with(described_class::PROJECT.path, 'tag_name', branch_head.id, anything)
+      it 'does nothing' do
+        expect(fake_client).not_to receive(:create_tag)
+
+        without_dry_run do
+          tagger.tag!
+        end
+      end
+    end
+
+    context 'with changes' do
+      before do
+        allow(tagger).to receive(:changes?).and_return(true)
+        allow(tagger).to receive(:deploy!)
+      end
+
+      it 'creates a tag on the project' do
+        branch_head = double(
+          created_at: Time.new(2019, 7, 2, 10, 14),
+          id: SecureRandom.hex(20)
+        )
+
+        allow(tagger).to receive(:branch_head).and_return(branch_head)
+        allow(tagger).to receive(:tag_name).and_return('tag_name')
+
+        without_dry_run do
+          tagger.tag!
+        end
+
+        expect(fake_client).to have_received(:create_tag)
+          .with(described_class::PROJECT.path, 'tag_name', branch_head.id, anything)
+      end
+    end
+  end
+
+  describe '#deploy!' do
+    let(:fake_ops_client) { spy }
+
+    before do
+      stub_const('ReleaseTools::GitlabOpsClient', fake_ops_client)
+    end
+
+    it 'tags the Deployer' do
+      tag = double(name: 'tag_name', message: 'tag_message')
+
+      expect(fake_ops_client).to receive(:create_tag)
+        .with(described_class::DEPLOYER.path, tag.name, 'master', tag.message)
+
+      without_dry_run do
+        tagger.deploy!(tag)
+      end
     end
   end
 end

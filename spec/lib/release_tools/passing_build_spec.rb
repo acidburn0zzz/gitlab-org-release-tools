@@ -4,6 +4,7 @@ require 'spec_helper'
 
 describe ReleaseTools::PassingBuild do
   let(:fake_commit) { double('Commit', id: SecureRandom.hex(20), created_at: Time.now.to_s) }
+  let(:target_branch) { '11-10-auto-deploy-1234' }
   let(:omnibus_version_map) { { 'VERSION' => '1.2.3' } }
   let(:cng_version_map) do
     {
@@ -12,7 +13,7 @@ describe ReleaseTools::PassingBuild do
     }
   end
 
-  subject(:service) { described_class.new('master') }
+  subject(:service) { described_class.new(target_branch) }
 
   describe '#execute' do
     let(:fake_commits) { spy }
@@ -79,134 +80,46 @@ describe ReleaseTools::PassingBuild do
     context 'when using auto-deploy' do
       let(:tag_name) { 'tag-name' }
 
-      subject(:service) { described_class.new('11-10-auto-deploy-1234') }
-
       before do
-        allow(ReleaseTools::AutoDeploy::Naming).to receive(:tag)
-          .and_return(tag_name)
-
         stub_const('ReleaseTools::GitlabClient', fake_client)
         stub_const('ReleaseTools::GitlabOpsClient', fake_ops_client)
       end
 
       it 'updates CNG' do
         allow(ReleaseTools::ComponentVersions).to receive(:update_omnibus)
+        allow(service).to receive(:tag_omnibus)
+
         expect(ReleaseTools::ComponentVersions).to receive(:update_cng)
-          .with('11-10-auto-deploy-1234', cng_version_map)
+          .with(target_branch, cng_version_map)
 
         service.trigger_build
       end
 
       it 'updates Omnibus' do
         allow(ReleaseTools::ComponentVersions).to receive(:update_cng)
+        allow(service).to receive(:tag_omnibus)
+
         expect(ReleaseTools::ComponentVersions).to receive(:update_omnibus)
-          .with('11-10-auto-deploy-1234', omnibus_version_map)
+          .with(target_branch, omnibus_version_map)
 
         service.trigger_build
-      end
-
-      context 'with Omnibus project changes' do
-        before do
-          allow(fake_client).to receive(:project_path)
-            .with(cng_project)
-            .and_return(cng_project.path)
-
-          allow(fake_client).to receive(:project_path)
-            .with(omnibus_project)
-            .and_return(omnibus_project.path)
-
-          allow(ReleaseTools::ComponentVersions)
-            .to receive(:omnibus_version_changes?).and_return(false)
-
-          allow(ReleaseTools::ComponentVersions)
-            .to receive(:cng_version_changes?).and_return(false)
-
-          allow(service).to receive(:project_changes?)
-            .with(omnibus_project)
-            .and_return(true)
-        end
-
-        it 'tags' do
-          stub_const('ReleaseTools::Commits', spy(latest: fake_commit))
-          expect(ReleaseTools::Commits)
-            .to receive(:new).with(omnibus_project, ref: '11-10-auto-deploy-1234')
-
-          expect(service).to receive(:tag).with(fake_commit)
-
-          expect(ReleaseTools::Commits)
-            .not_to receive(:new).with(cng_project, ref: '11-10-auto-deploy-1234')
-
-          service.trigger_build
-        end
-      end
-
-      context 'with no changes' do
-        before do
-          allow(ReleaseTools::ComponentVersions)
-            .to receive(:omnibus_version_changes?).and_return(false)
-
-          allow(ReleaseTools::ComponentVersions)
-            .to receive(:cng_version_changes?).and_return(false)
-
-          allow(service).to receive(:project_changes?).and_return(false)
-        end
-
-        it 'does nothing' do
-          expect(service).not_to receive(:tag)
-
-          service.trigger_build
-        end
       end
     end
   end
 
-  describe '#tag' do
-    let(:fake_client) { spy }
-    let(:fake_ops_client) { spy }
-    let(:tag_name) { 'tag-name' }
-
+  describe '#tag_omnibus' do
     before do
-      allow(ReleaseTools::AutoDeploy::Naming).to receive(:tag)
-        .and_return(tag_name)
-
+      # Normally this gets set by `execute`, but we're bypassing that in specs
       service.instance_variable_set(:@omnibus_version_map, omnibus_version_map)
-
-      stub_const('ReleaseTools::GitlabClient', fake_client)
-      stub_const('ReleaseTools::GitlabOpsClient', fake_ops_client)
     end
 
-    it 'tags Omnibus with an annotated tag' do
-      expect(service).to receive(:tag_omnibus)
-        .with(tag_name, anything, fake_commit)
-        .and_call_original
+    it 'tags Omnibus' do
+      tagger = stub_const('ReleaseTools::AutoDeploy::Tagger::Omnibus', spy)
 
-      service.tag(fake_commit)
+      service.tag_omnibus
 
-      expect(fake_client)
-        .to have_received(:create_tag)
-        .with(
-          fake_client.project_path(ReleaseTools::Project::OmnibusGitlab),
-          tag_name,
-          fake_commit.id,
-          "Auto-deploy tag-name\n\nVERSION: 1.2.3"
-        )
-    end
-
-    it 'tags Deployer with an annotated tag' do
-      expect(service).to receive(:tag_deployer)
-        .with(tag_name, anything, "master")
-        .and_call_original
-
-      service.tag(fake_commit)
-
-      expect(fake_ops_client)
-        .to have_received(:create_tag)
-        .with(
-          ReleaseTools::Project::Deployer.path,
-          tag_name,
-          "master",
-          "Auto-deploy tag-name\n\nVERSION: 1.2.3"
-        )
+      expect(tagger).to have_received(:new).with(target_branch, omnibus_version_map)
+      expect(tagger).to have_received(:tag!)
     end
   end
 end
