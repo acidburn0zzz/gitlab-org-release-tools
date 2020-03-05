@@ -57,13 +57,13 @@ module ReleaseTools
     end
 
     def create_branch!
-      Branch.new(name: source_branch, project: default_project).tap do |branch|
+      Branch.new(name: source_branch, project: project).tap do |branch|
         unless SharedStatus.dry_run?
           logger.info(
             'Creating preparation branch',
             name: source_branch,
             target: stable_branch,
-            project: default_project
+            project: project
           )
 
           branch.create(ref: target_branch)
@@ -74,7 +74,7 @@ module ReleaseTools
         'Failed to create preparation branch',
         name: source_branch,
         target: target_branch,
-        project: default_project,
+        project: project,
         error_code: ex.response_status,
         error_message: ex.message
       )
