@@ -3,9 +3,11 @@
 require 'spec_helper'
 
 describe ReleaseTools::PreparationMergeRequest do
-  let(:merge_request) { described_class.new(version: ReleaseTools::Version.new('9.4.1')) }
+  let(:ce) { ReleaseTools::Project::GitlabCe }
+
+  let(:merge_request) { described_class.new(project: ce, version: ReleaseTools::Version.new('9.4.1')) }
   let(:ee_merge_request) { described_class.new(version: ReleaseTools::Version.new('9.4.1-ee')) }
-  let(:rc_merge_request) { described_class.new(version: ReleaseTools::Version.new('9.4.0-rc2')) }
+  let(:rc_merge_request) { described_class.new(project: ce, version: ReleaseTools::Version.new('9.4.0-rc2')) }
   let(:ee_rc_merge_request) { described_class.new(version: ReleaseTools::Version.new('9.4.0-rc2-ee')) }
 
   let(:subject) { merge_request }
@@ -63,12 +65,6 @@ describe ReleaseTools::PreparationMergeRequest do
     end
   end
 
-  context 'EE' do
-    it 'sets project to EE' do
-      expect(ee_merge_request.project).to eq(ReleaseTools::Project::GitlabEe)
-    end
-  end
-
   describe '#description' do
     before do
       allow_any_instance_of(ReleaseTools::MonthlyIssue)
@@ -90,8 +86,8 @@ describe ReleaseTools::PreparationMergeRequest do
     end
   end
 
-  describe '#create_branch!', vcr: { cassette_name: 'branches/create_preparation' } do
-    it 'creates the preparation branch in the correct project' do
+  describe '#create_branch!' do
+    it 'creates the preparation branch in the correct project', vcr: { cassette_name: 'branches/create_preparation' } do
       merge_request = described_class.new(version: ReleaseTools::Version.new('9.4.99'))
 
       without_dry_run do

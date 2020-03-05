@@ -2,7 +2,7 @@
 http_interactions:
 - request:
     method: post
-    uri: https://gitlab.com/api/v4/projects/gitlab-org%2Fgitlab/repository/branches
+    uri: https://gitlab.com/api/v4/projects/gitlab-org%2Fgitlab-foss/repository/branches
     body:
       encoding: UTF-8
       string: branch=9-4-stable-patch-1&ref=9-4-stable
@@ -43,7 +43,7 @@ http_interactions:
   recorded_at: Thu, 03 Aug 2017 20:17:35 GMT
 - request:
     method: post
-    uri: https://gitlab.com/api/v4/projects/gitlab-org%2Fgitlab/repository/branches?branch=9-4-stable-patch-1&ref=9-4-stable
+    uri: https://gitlab.com/api/v4/projects/gitlab-org%2Fgitlab-foss/repository/branches?branch=9-4-stable-patch-1&ref=9-4-stable
     body:
       encoding: UTF-8
       string: ''

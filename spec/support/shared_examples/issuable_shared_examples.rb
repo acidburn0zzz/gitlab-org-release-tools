@@ -20,7 +20,7 @@ RSpec.shared_examples 'issuable #create' do |create_issuable_method|
   it 'calls ReleaseTools::GitlabClient.create_issue' do
     expect(ReleaseTools::GitlabClient)
       .to receive(create_issuable_method)
-      .with(subject, ReleaseTools::Project::GitlabEe)
+      .with(subject, subject.project)
 
     subject.create
   end
@@ -30,7 +30,7 @@ RSpec.shared_examples 'issuable #update' do |update_issuable_method|
   it 'calls ReleaseTools::GitlabClient.update_issue' do
     expect(ReleaseTools::GitlabClient)
       .to receive(update_issuable_method)
-      .with(subject, ReleaseTools::Project::GitlabEe)
+      .with(subject, subject.project)
 
     subject.update
   end
@@ -40,7 +40,7 @@ RSpec.shared_examples 'issuable #accept' do |accept_issuable_method|
   it 'calls ReleaseTools::GitlabClient.create_issue' do
     expect(ReleaseTools::GitlabClient)
       .to receive(accept_issuable_method)
-      .with(subject, ReleaseTools::Project::GitlabEe)
+      .with(subject, subject.project)
 
     subject.accept
   end
@@ -50,7 +50,7 @@ RSpec.shared_examples 'issuable #remote_issuable' do |find_issuable_method|
   it 'delegates to ReleaseTools::GitlabClient' do
     expect(ReleaseTools::GitlabClient)
       .to receive(find_issuable_method)
-      .with(subject, ReleaseTools::Project::GitlabEe)
+      .with(subject, subject.project)
 
     subject.remote_issuable
   end
@@ -58,7 +58,7 @@ RSpec.shared_examples 'issuable #remote_issuable' do |find_issuable_method|
   context 'when remote issuable does not exist' do
     it 'does not memoize the value' do
       expect(ReleaseTools::GitlabClient).to receive(find_issuable_method).twice
-        .with(subject, ReleaseTools::Project::GitlabEe).and_return(nil)
+        .with(subject, subject.project).and_return(nil)
 
       2.times { subject.remote_issuable }
     end
@@ -67,7 +67,7 @@ RSpec.shared_examples 'issuable #remote_issuable' do |find_issuable_method|
   context 'when remote issuable exists' do
     it 'memoizes the remote issuable' do
       expect(ReleaseTools::GitlabClient).to receive(find_issuable_method).once
-        .with(subject, ReleaseTools::Project::GitlabEe).and_return(double)
+        .with(subject, subject.project).and_return(double)
 
       2.times { subject.remote_issuable }
     end
