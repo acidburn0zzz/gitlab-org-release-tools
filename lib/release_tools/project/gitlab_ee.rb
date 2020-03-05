@@ -10,11 +10,13 @@ module ReleaseTools
       }.freeze
 
       # Returns a Hash of `gem_name => variable_name` pairs
+      # Gem names are regular expressions to allow for renames
+      # and backwards compatibility
       #
       # The variables are used in CNG image configurations.
       def self.gems
         {
-          mail_room: 'MAILROOM_VERSION'
+          '^(gitlab-)?mail_room$': 'MAILROOM_VERSION'
         }
       end
     end

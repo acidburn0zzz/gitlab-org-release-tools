@@ -17,7 +17,7 @@ module ReleaseTools
     end
 
     def gem_version(gem_name)
-      spec = @parsed_file.specs.find { |x| x.name == gem_name.to_s }
+      spec = @parsed_file.specs.find { |x| x.name.match?(gem_name.to_s) }
 
       raise VersionNotFoundError, gem_name if spec.nil?
 
