@@ -93,6 +93,22 @@ describe ReleaseTools::AutoDeploy::Tagger::Omnibus do
         expect(fake_client).to have_received(:create_tag)
           .with(described_class::PROJECT.path, 'tag_name', branch_head.id, anything)
       end
+
+      it 'uses the dev client in a security release' do
+        fake_dev_client = stub_const('ReleaseTools::GitlabDevClient', spy)
+
+        allow(tagger).to receive(:branch_head).and_return(spy)
+        allow(tagger).to receive(:tag_name).and_return('tag_name')
+        allow(ReleaseTools::SharedStatus).to receive(:security_release?)
+          .and_return(true)
+
+        without_dry_run do
+          tagger.tag!
+        end
+
+        expect(fake_dev_client).to have_received(:create_tag)
+        expect(fake_client).not_to have_received(:create_tag)
+      end
     end
   end
 
