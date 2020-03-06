@@ -60,6 +60,13 @@ module ReleaseTools
       def execute_release
         if repository.tags.include?(tag)
           logger.warn('Tag already exists, skipping', name: tag)
+
+          # something later in the process may read the content of this repository
+          # i.e. Omnibus will read the content of gitlab repository
+          # the following line will checkout the tag, and fail if it does not exists
+          # such failure is impossible due to the if condition we are in.
+          repository.ensure_branch_exists(tag, base: tag)
+
           return
         end
 
