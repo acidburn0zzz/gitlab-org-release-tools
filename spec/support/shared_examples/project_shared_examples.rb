@@ -8,7 +8,7 @@ RSpec.shared_examples 'project .remotes' do
   it 'returns only dev remote during a security release' do
     skip 'No dev remote' unless described_class::REMOTES.key?(:dev)
 
-    expect(ReleaseTools::SharedStatus)
+    allow(ReleaseTools::SharedStatus)
       .to receive(:security_release?)
       .and_return(true)
 
