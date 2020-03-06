@@ -39,6 +39,7 @@ module ReleaseTools
         ReleaseTools::ComponentVersions.update_omnibus(ref, @omnibus_version_map)
 
         tag_omnibus
+        tag_cng
       else
         logger.fatal('Invalid ref for passing build trigger', ref: ref)
       end
@@ -47,6 +48,12 @@ module ReleaseTools
     def tag_omnibus
       ReleaseTools::AutoDeploy::Tagger::Omnibus
         .new(ref, @omnibus_version_map)
+        .tag!
+    end
+
+    def tag_cng
+      ReleaseTools::AutoDeploy::Tagger::CNGImage
+        .new(ref, @cng_version_map)
         .tag!
     end
   end

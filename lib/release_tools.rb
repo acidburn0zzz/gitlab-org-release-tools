@@ -53,6 +53,7 @@ require 'release_tools/project/release_tools'
 require 'release_tools/preflight'
 
 require 'release_tools/auto_deploy/naming'
+require 'release_tools/auto_deploy/tagger/cng_image'
 require 'release_tools/auto_deploy/tagger/omnibus'
 require 'release_tools/auto_deploy/version'
 require 'release_tools/auto_deploy_branch'

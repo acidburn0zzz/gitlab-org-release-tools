@@ -91,16 +91,18 @@ describe ReleaseTools::PassingBuild do
 
         expect(ReleaseTools::ComponentVersions).to receive(:update_cng)
           .with(target_branch, cng_version_map)
+        expect(service).to receive(:tag_cng)
 
         service.trigger_build
       end
 
       it 'updates Omnibus' do
         allow(ReleaseTools::ComponentVersions).to receive(:update_cng)
-        allow(service).to receive(:tag_omnibus)
+        allow(service).to receive(:tag_cng)
 
         expect(ReleaseTools::ComponentVersions).to receive(:update_omnibus)
           .with(target_branch, omnibus_version_map)
+        expect(service).to receive(:tag_omnibus)
 
         service.trigger_build
       end
@@ -119,6 +121,22 @@ describe ReleaseTools::PassingBuild do
       service.tag_omnibus
 
       expect(tagger).to have_received(:new).with(target_branch, omnibus_version_map)
+      expect(tagger).to have_received(:tag!)
+    end
+  end
+
+  describe '#tag_cng' do
+    before do
+      # Normally this gets set by `execute`, but we're bypassing that in specs
+      service.instance_variable_set(:@cng_version_map, cng_version_map)
+    end
+
+    it 'tags CNGImage' do
+      tagger = stub_const('ReleaseTools::AutoDeploy::Tagger::CNGImage', spy)
+
+      service.tag_cng
+
+      expect(tagger).to have_received(:new).with(target_branch, cng_version_map)
       expect(tagger).to have_received(:tag!)
     end
   end
