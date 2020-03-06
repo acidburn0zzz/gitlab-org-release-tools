@@ -19,6 +19,13 @@ describe ReleaseTools::AutoDeploy::Tagger::Omnibus do
     stub_const('ReleaseTools::GitlabClient', fake_client)
   end
 
+  describe 'initialize' do
+    it 'raises an error when unable to determine version information' do
+      expect { described_class.new('some_branch', {}) }
+        .to raise_error(ArgumentError, "Unable to determine version from some_branch")
+    end
+  end
+
   describe '#tag_name' do
     it 'returns a tag name in the appropriate format' do
       commit = double(

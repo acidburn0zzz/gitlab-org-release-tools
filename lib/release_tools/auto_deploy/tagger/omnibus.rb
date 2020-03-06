@@ -16,6 +16,8 @@ module ReleaseTools
           @version_map = version_map
 
           @major, @minor = target_branch.split('-', 3).take(2)
+
+          raise ArgumentError, "Unable to determine version from #{target_branch}" unless @major && @minor
         end
 
         def tag_name
