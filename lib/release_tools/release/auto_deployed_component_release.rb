@@ -61,7 +61,7 @@ module ReleaseTools
       def compile_changelog
         return if version.rc?
 
-        ReleaseTools::Changelog::Manager.new(repository.path, 'CHANGELOG.md', include_date: false)
+        ReleaseTools::Changelog::Manager.new(repository.path, 'CHANGELOG.md', exclude_date: true)
           .release(version, skip_master: version.monthly?)
       rescue ReleaseTools::Changelog::NoChangelogError => ex
         logger.error('Changelog update failed', project: project, version: version, path: ex.changelog_path)

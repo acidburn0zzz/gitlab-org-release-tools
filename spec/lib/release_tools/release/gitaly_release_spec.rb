@@ -86,7 +86,7 @@ describe ReleaseTools::Release::GitalyRelease, :slow do
       fixture.rebuild_fixture!
 
       allow(ReleaseTools::Changelog::Manager)
-        .to receive(:new).with(repo_path, 'CHANGELOG.md', include_date: false)
+        .to receive(:new).with(repo_path, 'CHANGELOG.md', exclude_date: true)
         .and_return(changelog_manager)
 
       Dir.mkdir(gitlab_repo_path)
