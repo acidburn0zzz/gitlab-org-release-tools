@@ -109,7 +109,7 @@ module ReleaseTools
         raise ::ReleaseTools::Changelog::NoChangelogError.new(changelog_file) if blob.nil?
 
         updater  = Updater.new(blob.content, version)
-        markdown = MarkdownGenerator.new(version, unreleased_entries, include_date: @params[:include_date]).to_s
+        markdown = MarkdownGenerator.new(version, unreleased_entries, **@params).to_s
 
         changelog_oid = repository.write(updater.insert(markdown), :blob)
         index.add(path: changelog_file, oid: changelog_oid, mode: 0o100644)

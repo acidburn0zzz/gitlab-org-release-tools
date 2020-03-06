@@ -96,7 +96,7 @@ describe ReleaseTools::Release::GitlabCeRelease, :slow do
     before do
       allow(ReleaseTools::Changelog::Manager).to receive(:new).with(repo_path).and_return(changelog_manager)
       allow(ReleaseTools::Changelog::Manager).to receive(:new).with(ob_repo_path, 'CHANGELOG.md').and_return(ob_changelog_manager)
-      allow(ReleaseTools::Changelog::Manager).to receive(:new).with(gitaly_repo_path, 'CHANGELOG.md', include_date: false).and_return(gitaly_changelog_manager)
+      allow(ReleaseTools::Changelog::Manager).to receive(:new).with(gitaly_repo_path, 'CHANGELOG.md', exclude_date: true).and_return(gitaly_changelog_manager)
     end
 
     { ce: '', ee: '-ee' }.each do |edition, suffix|

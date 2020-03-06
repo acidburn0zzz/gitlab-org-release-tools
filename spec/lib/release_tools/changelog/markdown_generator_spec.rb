@@ -76,6 +76,22 @@ describe ReleaseTools::Changelog::MarkdownGenerator do
           expect(generator.to_s).to match(/\(1983-07-02\)$/)
         end
       end
+
+      it 'handles `exclude_date: nil`' do
+        version = ReleaseTools::Version.new('9.2.0')
+        generator = described_class.new(version, [], exclude_date: nil)
+
+        Timecop.freeze(Time.local(1983, 7, 18)) do
+          expect(generator.to_s).to match(/\(1983-07-22\)$/)
+        end
+      end
+
+      it 'respects `exclude_date: true`' do
+        version = ReleaseTools::Version.new('9.2.0')
+        generator = described_class.new(version, [], exclude_date: true)
+
+        expect(generator.to_s).not_to match(/\(.*\)$/)
+      end
     end
 
     it 'sorts entries by type in `Changelog::Entry::TYPES` and by their entry ID in ascending order' do
