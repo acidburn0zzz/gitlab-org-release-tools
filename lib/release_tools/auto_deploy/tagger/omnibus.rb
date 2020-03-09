@@ -63,7 +63,7 @@ module ReleaseTools
         rescue ::Gitlab::Error::Error => ex
           logger.fatal(
             "Failed to tag Omnibus",
-            tag_name: tag_name,
+            name: tag_name,
             target: branch_head.id,
             error_code: ex.response_status,
             error_message: ex.message
@@ -84,7 +84,7 @@ module ReleaseTools
         rescue ::Gitlab::Error::Error => ex
           logger.fatal(
             "Failed to tag Deployer",
-            tag_name: tag.name,
+            name: tag.name,
             target: 'master',
             error_code: ex.response_status,
             error_message: ex.message
