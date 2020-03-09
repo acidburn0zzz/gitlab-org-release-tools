@@ -433,5 +433,12 @@ module ReleaseTools
         .select { |p| p.ref.match?(AUTO_DEPLOY_BRANCH_REGEX) }
         .first
     end
+
+    def self.remote_mirrors(project)
+      path = project_path(project)
+
+      # NOTE: Experimental API
+      client.get("/projects/#{client.url_encode(path)}/remote_mirrors")
+    end
   end
 end
