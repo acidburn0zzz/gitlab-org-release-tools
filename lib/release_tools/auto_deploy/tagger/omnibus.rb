@@ -59,7 +59,7 @@ module ReleaseTools
             tag_message
           )
 
-          deploy!(tag)
+          tag_deployer!(tag)
         rescue ::Gitlab::Error::Error => ex
           logger.fatal(
             "Failed to tag Omnibus",
@@ -70,9 +70,7 @@ module ReleaseTools
           )
         end
 
-        # Tag Deployer on `master` with the same name and message as a tag returned
-        # by the API
-        def deploy!(tag)
+        def tag_deployer!(tag)
           logger.info('Tagging Deployer', name: tag.name)
 
           return if SharedStatus.dry_run?

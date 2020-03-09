@@ -74,7 +74,7 @@ describe ReleaseTools::AutoDeploy::Tagger::Omnibus do
     context 'with changes' do
       before do
         allow(tagger).to receive(:changes?).and_return(true)
-        allow(tagger).to receive(:deploy!)
+        allow(tagger).to receive(:tag_deployer!)
       end
 
       it 'creates a tag on the project' do
@@ -112,7 +112,7 @@ describe ReleaseTools::AutoDeploy::Tagger::Omnibus do
     end
   end
 
-  describe '#deploy!' do
+  describe '#tag_deployer!' do
     let(:fake_ops_client) { spy }
 
     before do
@@ -126,7 +126,7 @@ describe ReleaseTools::AutoDeploy::Tagger::Omnibus do
         .with(described_class::DEPLOYER.path, tag.name, 'master', tag.message)
 
       without_dry_run do
-        tagger.deploy!(tag)
+        tagger.tag_deployer!(tag)
       end
     end
   end
