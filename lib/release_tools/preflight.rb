@@ -41,7 +41,7 @@ module ReleaseTools
           error: mirror.last_error
         )
       end
-    rescue ::Gitlab::Error::Error, Errno::ETIMEDOUT => ex
+    rescue ::Gitlab::Error::Error, SystemCallError => ex
       logger.warn(
         'Unable to determine mirror status',
         project: project,
