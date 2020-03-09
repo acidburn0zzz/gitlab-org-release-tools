@@ -66,43 +66,12 @@ describe ReleaseTools::PassingBuild do
   end
 
   describe '#trigger_build' do
-    let(:fake_client) { spy }
-    let(:fake_ops_client) { spy }
-    let(:cng_project) { ReleaseTools::Project::CNGImage }
-    let(:omnibus_project) { ReleaseTools::Project::OmnibusGitlab }
-
-    before do
-      # Normally this gets set by `execute`, but we're bypassing that in specs
-      service.instance_variable_set(:@omnibus_version_map, omnibus_version_map)
-      service.instance_variable_set(:@cng_version_map, cng_version_map)
-    end
-
     context 'when using auto-deploy' do
       let(:tag_name) { 'tag-name' }
 
-      before do
-        stub_const('ReleaseTools::GitlabClient', fake_client)
-        stub_const('ReleaseTools::GitlabOpsClient', fake_ops_client)
-      end
-
-      it 'updates CNG' do
-        allow(ReleaseTools::ComponentVersions).to receive(:update_omnibus)
-        allow(service).to receive(:tag_omnibus)
-
-        expect(ReleaseTools::ComponentVersions).to receive(:update_cng)
-          .with(target_branch, cng_version_map)
-        expect(service).to receive(:tag_cng)
-
-        service.trigger_build
-      end
-
-      it 'updates Omnibus' do
-        allow(ReleaseTools::ComponentVersions).to receive(:update_cng)
-        allow(service).to receive(:tag_cng)
-
-        expect(ReleaseTools::ComponentVersions).to receive(:update_omnibus)
-          .with(target_branch, omnibus_version_map)
-        expect(service).to receive(:tag_omnibus)
+      it 'auto-deploys Omnibus and CNGImage' do
+        expect(service).to receive(:auto_deploy_omnibus)
+        expect(service).to receive(:auto_deploy_cng)
 
         service.trigger_build
       end
@@ -115,10 +84,20 @@ describe ReleaseTools::PassingBuild do
       service.instance_variable_set(:@omnibus_version_map, omnibus_version_map)
     end
 
+    it 'updates Omnibus' do
+      stub_const('ReleaseTools::AutoDeploy::Tagger::Omnibus', spy)
+
+      expect(ReleaseTools::ComponentVersions).to receive(:update_omnibus)
+        .with(target_branch, omnibus_version_map)
+
+      service.auto_deploy_omnibus
+    end
+
     it 'tags Omnibus' do
+      stub_const('ReleaseTools::ComponentVersions', spy)
       tagger = stub_const('ReleaseTools::AutoDeploy::Tagger::Omnibus', spy)
 
-      service.tag_omnibus
+      service.auto_deploy_omnibus
 
       expect(tagger).to have_received(:new).with(target_branch, omnibus_version_map)
       expect(tagger).to have_received(:tag!)
@@ -131,10 +110,20 @@ describe ReleaseTools::PassingBuild do
       service.instance_variable_set(:@cng_version_map, cng_version_map)
     end
 
+    it 'updates CNG' do
+      stub_const('ReleaseTools::AutoDeploy::Tagger::CNGImage', spy)
+
+      expect(ReleaseTools::ComponentVersions).to receive(:update_cng)
+        .with(target_branch, cng_version_map)
+
+      service.auto_deploy_cng
+    end
+
     it 'tags CNGImage' do
+      stub_const('ReleaseTools::ComponentVersions', spy)
       tagger = stub_const('ReleaseTools::AutoDeploy::Tagger::CNGImage', spy)
 
-      service.tag_cng
+      service.auto_deploy_cng
 
       expect(tagger).to have_received(:new).with(target_branch, cng_version_map)
       expect(tagger).to have_received(:tag!)

@@ -35,23 +35,26 @@ module ReleaseTools
 
     def trigger_build
       if ref.match?(/\A(?:security\/)?\d+-\d+-auto-deploy-\d+\z/)
-        ReleaseTools::ComponentVersions.update_cng(ref, @cng_version_map)
-        ReleaseTools::ComponentVersions.update_omnibus(ref, @omnibus_version_map)
-
-        tag_omnibus
-        tag_cng
+        auto_deploy_omnibus
+        auto_deploy_cng
       else
         logger.fatal('Invalid ref for passing build trigger', ref: ref)
       end
     end
 
-    def tag_omnibus
+    def auto_deploy_omnibus
+      ReleaseTools::ComponentVersions
+        .update_omnibus(ref, @omnibus_version_map)
+
       ReleaseTools::AutoDeploy::Tagger::Omnibus
         .new(ref, @omnibus_version_map)
         .tag!
     end
 
-    def tag_cng
+    def auto_deploy_cng
+      ReleaseTools::ComponentVersions
+        .update_cng(ref, @cng_version_map)
+
       ReleaseTools::AutoDeploy::Tagger::CNGImage
         .new(ref, @cng_version_map)
         .tag!
