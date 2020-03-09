@@ -10,7 +10,7 @@ gem 'parallel', '~> 1.14'
 gem 'rake'
 gem 'retriable', '~> 3.1'
 gem 'rugged', '~> 0.28'
-gem 'semantic_logger', '~> 4.5.0'
+gem 'semantic_logger', '~> 4.6.1'
 gem 'sentry-raven', '~> 2.9', require: false
 gem 'unleash', '~> 0.1.5'
 gem 'version_sorter', '~> 2.2.0'
