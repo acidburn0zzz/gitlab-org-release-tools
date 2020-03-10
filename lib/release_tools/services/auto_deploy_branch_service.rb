@@ -35,8 +35,8 @@ module ReleaseTools
 
       private
 
-      def latest_successful_ref(project, client = gitlab_client)
-        ReleaseTools::Commits.new(project, client: client).latest_successful.id
+      def latest_successful_ref(project)
+        ReleaseTools::Commits.new(project).latest_successful.id
       end
 
       def update_auto_deploy_ci
