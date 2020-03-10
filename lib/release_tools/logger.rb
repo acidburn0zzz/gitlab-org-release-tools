@@ -34,6 +34,8 @@ end
 
 SemanticLogger.application = 'release-tools'
 SemanticLogger.default_level = ENV.fetch('LOG_LEVEL', 'debug').to_sym
+SemanticLogger.push_tags('dry-run') if ReleaseTools::SharedStatus.dry_run?
+SemanticLogger.push_tags('security') if ReleaseTools::SharedStatus.security_release?
 
 if File.basename($PROGRAM_NAME) == 'rspec'
   # Overwrite each test run; meaningless in CI but nice for development
