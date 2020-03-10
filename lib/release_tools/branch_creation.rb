@@ -8,10 +8,6 @@ module ReleaseTools
       ReleaseTools::GitlabClient
     end
 
-    def gitlab_ops_client
-      ReleaseTools::GitlabOpsClient
-    end
-
     def ignoring_duplicates
       yield
     rescue Gitlab::Error::Conflict, Gitlab::Error::BadRequest => ex

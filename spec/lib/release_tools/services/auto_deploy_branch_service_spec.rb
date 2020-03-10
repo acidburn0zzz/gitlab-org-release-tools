@@ -3,15 +3,15 @@
 require 'spec_helper'
 
 describe ReleaseTools::Services::AutoDeployBranchService do
-  let(:internal_client) { double('ReleaseTools::GitlabClient', current_milestone: double(title: '11.10'), update_variable: double) }
+  let(:internal_client) { double('ReleaseTools::GitlabClient') }
   let(:internal_client_ops) { spy('ReleaseTools::GitlabOpsClient') }
   let(:branch_commit) { double(latest_successful: double(id: '1234')) }
 
   subject(:service) { described_class.new('branch-name') }
 
   before do
-    allow(service).to receive(:gitlab_client).and_return(internal_client)
-    allow(service).to receive(:gitlab_ops_client).and_return(internal_client_ops)
+    stub_const('ReleaseTools::GitlabClient', internal_client)
+    stub_const('ReleaseTools::GitlabOpsClient', internal_client_ops)
   end
 
   describe '#create_branches!' do
@@ -42,8 +42,9 @@ describe ReleaseTools::Services::AutoDeployBranchService do
         branch_commit,
         ReleaseTools::Project::HelmGitlab
       )
-      expect(internal_client).to receive(:update_variable).with(
-        'gitlab-org/release-tools',
+
+      expect(internal_client_ops).to receive(:update_variable).with(
+        'gitlab-org/release/tools',
         'AUTO_DEPLOY_BRANCH',
         branch_name
       )
