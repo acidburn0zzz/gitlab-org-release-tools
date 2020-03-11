@@ -8,10 +8,6 @@ module ReleaseTools
       ReleaseTools::GitlabClient
     end
 
-    def gitlab_ops_client
-      ReleaseTools::GitlabOpsClient
-    end
-
     def ignoring_duplicates
       yield
     rescue Gitlab::Error::Conflict, Gitlab::Error::BadRequest => ex
@@ -22,14 +18,13 @@ module ReleaseTools
       end
     end
 
-    def create_branch_from_ref(project, branch, ref, client = gitlab_client)
-      logger&.warn('Branch creation will be ignored because of TEST env') if dry_run?
-      logger&.info('Creating branch', name: branch, from: ref, project: project.path)
+    def create_branch_from_ref(project, branch, ref)
+      logger&.info('Creating branch', name: branch, from: ref, project: project)
 
       return if dry_run?
 
       ignoring_duplicates do
-        Result.new(project, branch, client.create_branch(branch, ref, project))
+        Result.new(project, branch, gitlab_client.create_branch(branch, ref, project))
       end
     end
   end
