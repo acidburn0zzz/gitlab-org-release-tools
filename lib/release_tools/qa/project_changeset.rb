@@ -51,9 +51,15 @@ module ReleaseTools
         # TODO (rspeicher): We should be able to safely remove this sometime around December 2019
         path.gsub!(/-ee$/, '')
 
-        default_client.merge_request(OpenStruct.new(path: path, dev_path: dev_path), iid: iid)
-      rescue Gitlab::Error::NotFound
-        alternate_client.merge_request(OpenStruct.new(path: path, dev_path: dev_path), iid: iid)
+        project = OpenStruct.new(path: path, dev_path: dev_path)
+
+        Retriable.retriable do
+          begin
+            default_client.merge_request(project, iid: iid)
+          rescue Gitlab::Error::NotFound
+            alternate_client.merge_request(project, iid: iid)
+          end
+        end
       end
 
       def verify_refs!(*refs)

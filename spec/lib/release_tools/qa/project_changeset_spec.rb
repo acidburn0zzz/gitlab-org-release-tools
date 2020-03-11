@@ -64,6 +64,21 @@ describe ReleaseTools::Qa::ProjectChangeset, vcr: { cassette_name: 'commits-api'
       expect(mrs[1].iid).to eq(18_744)
     end
 
+    it 'retries retrieving of a merge request when this times out' do
+      raised = false
+
+      allow(subject.default_client).to receive(:merge_request) do
+        if raised
+          raised = true
+          raise Errno::ETIMEDOUT
+        else
+          double(:merge_request)
+        end
+      end
+
+      expect(subject.merge_requests.size).to eq(2)
+    end
+
     context 'for MRs created on another instance' do
       let(:from_ref) { 'v10.8.1' }
       let(:to_ref) { 'v10.8.2' }
