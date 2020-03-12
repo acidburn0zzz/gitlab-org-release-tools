@@ -41,6 +41,14 @@ module ReleaseTools
       client.file_contents(project_path(project), *args)
     end
 
+    def self.create_file(project, *args)
+      client.create_file(project_path(project), *args)
+    end
+
+    def self.edit_file(project, *args)
+      client.edit_file(project_path(project), *args)
+    end
+
     def self.issues(project = Project::GitlabCe, options = {})
       client.issues(project_path(project), options)
     end

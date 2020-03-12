@@ -17,6 +17,7 @@ describe ReleaseTools::AutoDeploy::Tagger::Omnibus do
 
   before do
     stub_const('ReleaseTools::GitlabClient', fake_client)
+    enable_feature(:release_json_tracking)
   end
 
   describe 'initialize' do
@@ -85,6 +86,7 @@ describe ReleaseTools::AutoDeploy::Tagger::Omnibus do
 
         allow(tagger).to receive(:branch_head).and_return(branch_head)
         allow(tagger).to receive(:tag_name).and_return('tag_name')
+        allow(tagger).to receive(:upload_version_data).with('omnibus')
 
         without_dry_run do
           tagger.tag!
@@ -99,6 +101,7 @@ describe ReleaseTools::AutoDeploy::Tagger::Omnibus do
 
         allow(tagger).to receive(:branch_head).and_return(spy)
         allow(tagger).to receive(:tag_name).and_return('tag_name')
+        allow(tagger).to receive(:upload_version_data).with('omnibus')
         allow(ReleaseTools::SharedStatus).to receive(:security_release?)
           .and_return(true)
 
@@ -108,6 +111,34 @@ describe ReleaseTools::AutoDeploy::Tagger::Omnibus do
 
         expect(fake_dev_client).to have_received(:create_tag)
         expect(fake_client).not_to have_received(:create_tag)
+      end
+
+      it 'uploads the version data' do
+        branch_head = double(
+          created_at: Time.new(2019, 7, 2, 10, 14),
+          id: 'foo'
+        )
+
+        uploader = instance_spy(ReleaseTools::ReleaseMetadataUploader)
+
+        allow(tagger).to receive(:branch_head).and_return(branch_head)
+        allow(tagger).to receive(:tag_name).and_return('12.1.3')
+
+        allow(ReleaseTools::ReleaseMetadataUploader)
+          .to receive(:new)
+          .and_return(uploader)
+
+        expect(uploader)
+          .to receive(:upload)
+          .with(
+            'omnibus',
+            '12.1.3',
+            an_instance_of(ReleaseTools::ReleaseMetadata)
+          )
+
+        without_dry_run do
+          tagger.tag!
+        end
       end
     end
   end

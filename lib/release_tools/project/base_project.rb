@@ -51,6 +51,10 @@ module ReleaseTools
         end
       end
 
+      def self.project_name
+        extract_path_from_remote(:canonical)[:project]
+      end
+
       def self.canonical_or_security_path
         # This method exists so that it's more clear that one wants the path
         # based on the security release status, as using `#to_s` could make one
