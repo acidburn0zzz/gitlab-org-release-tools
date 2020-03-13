@@ -12,21 +12,13 @@ describe ReleaseTools::Security::MergeRequestsValidator do
       merge_request2 = double(:merge_request, web_url: 'example.com')
 
       allow(client)
-        .to receive(:security_remote?)
-        .and_return(false)
-
-      allow(client)
         .to receive(:open_security_merge_requests)
-        .and_return(nil)
-
-      allow(client)
-        .to receive(:open_security_merge_requests)
-        .with('gitlab/gitlabhq')
+        .with('gitlab-org/security/gitlab')
         .and_return([merge_request1])
 
       allow(client)
         .to receive(:open_security_merge_requests)
-        .with('gitlab/gitlab-ee')
+        .with('gitlab-org/security/omnibus-gitlab')
         .and_return([merge_request2])
 
       allow(validator)

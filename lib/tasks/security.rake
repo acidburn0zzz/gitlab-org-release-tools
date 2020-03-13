@@ -27,10 +27,6 @@ namespace :security do
     end
 
     ReleaseTools::Security::MergeRequestsMerger
-      .new(ReleaseTools::Security::DevClient.new, merge_master: merge_master)
-      .execute
-
-    ReleaseTools::Security::MergeRequestsMerger
       .new(ReleaseTools::Security::Client.new, merge_master: merge_master)
       .execute
   end
@@ -78,10 +74,6 @@ namespace :security do
 
   desc 'Validates security merge requests'
   task validate: :force_security do
-    ReleaseTools::Security::MergeRequestsValidator
-      .new(ReleaseTools::Security::DevClient.new)
-      .execute
-
     ReleaseTools::Security::MergeRequestsValidator
       .new(ReleaseTools::Security::Client.new)
       .execute
