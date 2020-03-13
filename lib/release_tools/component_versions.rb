@@ -78,7 +78,7 @@ module ReleaseTools
 
     def self.update_omnibus(target_branch, version_map)
       unless omnibus_version_changes?(target_branch, version_map)
-        return logger.warn('No changes to Omnibus component versions, nothing to tag')
+        return logger.warn('No changes to Omnibus component versions')
       end
 
       return if SharedStatus.dry_run?
@@ -177,7 +177,7 @@ module ReleaseTools
 
     def self.update_cng(target_branch, version_map)
       unless cng_version_changes?(target_branch, version_map)
-        return logger.warn('No changes to CNG component versions, nothing to tag')
+        return logger.warn('No changes to CNG component versions')
       end
 
       return if SharedStatus.dry_run?
