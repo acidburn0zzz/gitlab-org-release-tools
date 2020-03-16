@@ -91,11 +91,6 @@ The following steps should ideally be completed within one day.
 
 ## Packaging
 
-- [ ] If security fixes on Omnibus were included in this release, ensure stable branches from Dev are synced to Security:
-  <% versions.each do |version| -%>
-  - push `dev` `omnibus-gitlab/<%= version.stable_branch %>` to `Security` only: `git push security <%= version.stable_branch %>`
-  <% end %>
-
 - [ ] Ping the Security Engineers so they can get started with the blog post. The blog post should be done on `https://dev.gitlab.org/gitlab/www-gitlab-com`
 
 - [ ] Ensure tests are green in CE and green in EE
