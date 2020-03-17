@@ -73,6 +73,7 @@ describe ReleaseTools::AutoDeploy::Tagger::CNGImage do
     context 'with changes' do
       before do
         allow(tagger).to receive(:changes?).and_return(true)
+        allow(tagger).to receive(:tag_helm!).and_return(true)
       end
 
       it 'creates a tag on the project' do
@@ -106,6 +107,22 @@ describe ReleaseTools::AutoDeploy::Tagger::CNGImage do
 
         expect(fake_dev_client).to have_received(:create_tag)
         expect(fake_client).not_to have_received(:create_tag)
+      end
+    end
+  end
+
+  describe '#tag_helm!' do
+    it 'tags the Helm project' do
+      tag = double(name: 'tag_name', message: 'tag_message')
+
+      expect(fake_client).to receive(:project_path)
+        .with(described_class::HELM)
+        .and_return(described_class::HELM.path)
+      expect(fake_client).to receive(:create_tag)
+        .with(described_class::HELM.path, tag.name, 'master', tag.message)
+
+      without_dry_run do
+        tagger.tag_helm!(tag)
       end
     end
   end
