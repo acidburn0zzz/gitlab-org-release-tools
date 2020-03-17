@@ -36,7 +36,10 @@ If this date is on a weekend, do this work on the next working day
 If this date is on a weekend, do this work on the last Friday before the 18th.
 
 - [ ] Proceed to cut a new auto-deploy branch
-    - [ ] Execute the `Auto-deploy branch creation` here: https://gitlab.com/gitlab-org/release-tools/pipeline_schedules
+   ```sh
+   # In Slack:
+   /chatops run auto_deploy prepare
+   ```
 - [ ] Ensure this build makes it through into production
 - [ ] Grab the `sha` from this new auto-deploy branch and notify Engineering Managers that this is the candidate `sha` for the release, in `#releases`:
     ```
