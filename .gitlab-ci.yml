@@ -159,7 +159,7 @@ auto_deploy:wait:cng:
   stage: wait
   allow_failure: true
   script:
-    - bundle exec rake 'auto_deploy:wait[gitlab/charts/components/images/pipelines]'
+    - bundle exec rake 'auto_deploy:wait[gitlab/charts/gitlab]'
   only:
     variables:
       - $PASSING_BUILD_AUTO_DEPLOY_SCHEDULE == "true"

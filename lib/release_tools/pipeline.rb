@@ -16,7 +16,7 @@ module ReleaseTools
     def find_and_wait
       tags = ReleaseTools::GitlabDevClient.tags(@project)
       matched_tags = tags.select do |k|
-        if @project == 'gitlab/charts/components/images' # CNG
+        if @project == 'gitlab/charts/gitlab' # our helm chart
           k.name =~ /\A\d+\.\d+\.\d+\+[\w\d]+\z/
         elsif @project == 'gitlab/omnibus-gitlab'
           k.name =~ /\A\d+\.\d+\.\d+\+[\w\d]+\.[\w\d]+\z/
