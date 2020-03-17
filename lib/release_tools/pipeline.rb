@@ -25,7 +25,10 @@ module ReleaseTools
         end
       end
 
-      raise if matched_tags.empty?
+      if matched_tags.empty?
+        logger.fatal('No tags matched.', project: @project) if matched_tags.empty?
+        exit 1
+      end
 
       # TODO this feels dangerous, we are relying to queries to find a tag without
       # restriction to validate it's the tag that we want to monitor for.
