@@ -55,7 +55,7 @@ else
       url: ENV['ELASTIC_URL'],
       index: 'release_tools',
       date_pattern: '',
-      host: ENV['CI_JOB_URL'],
+      host: ENV['CI_JOB_URL']
     )
   end
 
