@@ -138,8 +138,8 @@ describe ReleaseTools::CherryPick::Service do
         let(:picks) do
           Gitlab::PaginatedResponse.new(
             [
-              double(iid: 1, project_id: 13_083, merge_commit_sha: 'success-a', labels: %w[P1 bug]).as_null_object,
-              double(iid: 2, project_id: 13_083, merge_commit_sha: 'success-b', labels: %w[P2]).as_null_object,
+              double(iid: 1, project_id: 13_083, merge_commit_sha: 'success-a', labels: %w[S1 bug]).as_null_object,
+              double(iid: 2, project_id: 13_083, merge_commit_sha: 'success-b', labels: %w[S2]).as_null_object,
               double(iid: 3, project_id: 13_083, merge_commit_sha: 'success-c', labels: []).as_null_object,
 
               double(iid: 4, project_id: 13_083, merge_commit_sha: 'failure-a', labels: %w[P3]).as_null_object,
@@ -149,7 +149,7 @@ describe ReleaseTools::CherryPick::Service do
           )
         end
 
-        it 'attempts to cherry pick only P1 S1 merge requests' do
+        it 'attempts to cherry pick only S1 and S2 merge requests' do
           stub_picking
 
           expect(internal_client).to receive(:cherry_pick).exactly(3).times
@@ -163,7 +163,7 @@ describe ReleaseTools::CherryPick::Service do
             expect(success[1].merge_request.iid).to eql(picks[1].iid)
             denied = results.select(&:denied?)
             expect(denied.size).to be(3)
-            expect(denied.map(&:reason).uniq).to eq(['Merge request does not have P1 or P2 label'])
+            expect(denied.map(&:reason).uniq).to eq(['Merge request does not have S1 or S2 label'])
             expect(results.select(&:failure?).size).to be(4)
           end
         end

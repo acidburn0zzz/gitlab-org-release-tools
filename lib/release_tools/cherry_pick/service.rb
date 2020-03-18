@@ -100,7 +100,7 @@ module ReleaseTools
 
           result = Result.new(merge_request, :success)
         else
-          result = Result.new(merge_request, :denied, 'Merge request does not have P1 or P2 label')
+          result = Result.new(merge_request, :denied, 'Merge request does not have S1 or S2 label')
         end
       rescue Gitlab::Error::Error => ex
         result = Result.new(merge_request, :failure)
@@ -113,7 +113,7 @@ module ReleaseTools
       def allowed?(merge_request)
         case version
         when ReleaseTools::AutoDeploy::Version
-          merge_request.labels.include?('P1') || merge_request.labels.include?('P2')
+          merge_request.labels.include?('S1') || merge_request.labels.include?('S2')
         else
           true
         end
