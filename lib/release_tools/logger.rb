@@ -51,15 +51,11 @@ else
 
   if ENV['ELASTIC_URL'] && ReleaseTools::Feature.enabled?(:log_elastic)
     SemanticLogger.add_appender(
-      appender: :elasticsearch_http,
+      appender: :elasticsearch,
       url: ENV['ELASTIC_URL'],
       index: 'release_tools',
+      date_pattern: '',
       host: ENV['CI_JOB_URL'],
-
-      # Give ES more time to respond over HTTP
-      open_timeout: 5.0,
-      read_timeout: 5.0,
-      continue_timeout: 5.0
     )
   end
 
