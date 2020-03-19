@@ -26,10 +26,10 @@ require 'active_support/core_ext/string/inflections'
 require 'active_support/inflector'
 
 module ReleaseTools
+  include ::SemanticLogger::Loggable
 end
 
 loader = Zeitwerk::Loader.new
-loader.log!
 loader.inflector.inflect(
   'cng_image' => 'CNGImage',
   'cng_image_release' => 'CNGImageRelease',
@@ -38,4 +38,5 @@ loader.inflector.inflect(
 loader.push_dir(__dir__)
 loader.setup
 
+ReleaseTools::Logger.setup
 ReleaseTools::Preflight.check
