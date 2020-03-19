@@ -19,7 +19,7 @@ module ReleaseTools
       def create_label
         logger.info("Creating monthly Pick label", label: PickIntoLabel.for(@version))
 
-        return if dry_run?
+        return if ReleaseTools::SharedStatus.dry_run?
 
         ignoring_duplicates do
           PickIntoLabel.create(@version)

@@ -21,7 +21,7 @@ module ReleaseTools
     def create_branch_from_ref(project, branch, ref)
       logger&.info('Creating branch', name: branch, from: ref, project: project)
 
-      return if dry_run?
+      return if ReleaseTools::SharedStatus.dry_run?
 
       ignoring_duplicates do
         Result.new(project, branch, gitlab_client.create_branch(branch, ref, project))
