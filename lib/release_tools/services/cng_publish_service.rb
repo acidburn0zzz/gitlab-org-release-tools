@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative '../../support/ubi_helper'
-
 module ReleaseTools
   module Services
     class CNGPublishService < BasePublishService
