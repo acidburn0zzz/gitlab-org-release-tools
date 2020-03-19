@@ -69,6 +69,12 @@ If this date is on the weekend, do this work on the last Friday before the 20th.
    # In Slack:
    /chatops run release tag <%= version %>-rc42
    ```
+- [ ] Notify Engineering Managers that final candidate has been created in `#releases`:
+
+    ```
+    :mega: Barring any show-stopping issues, this is the final commit to be released on the 22nd.
+    https://gitlab.com/gitlab-org/gitlab/-/commits/<%= version.stable_branch(ee: true) %>
+    ```
 
 ## 22nd: release day
 
