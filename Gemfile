@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-gem 'activesupport', '~> 5.1.0'
+gem 'activesupport', '~> 5.1.0', require: false
 gem 'colorize'
 gem 'gitlab', '~> 4.13'
 gem 'http', '~> 4.1.0'
@@ -14,6 +14,7 @@ gem 'semantic_logger', '~> 4.6.1'
 gem 'sentry-raven', '~> 2.9', require: false
 gem 'unleash', '~> 0.1.5'
 gem 'version_sorter', '~> 2.2.0'
+gem 'zeitwerk', '~> 2.3.0'
 
 group :development, :test do
   gem 'byebug'
