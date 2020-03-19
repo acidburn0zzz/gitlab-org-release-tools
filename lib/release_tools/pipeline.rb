@@ -4,7 +4,7 @@ module ReleaseTools
 
     attr_reader :project, :sha
 
-    def initialize(project, sha = nil, versions = nil)
+    def initialize(project, sha, versions = nil)
       @project = project
       @sha = sha
       @token = ENV.fetch('OMNIBUS_BUILD_TRIGGER_TOKEN') do |name|
@@ -14,31 +14,9 @@ module ReleaseTools
     end
 
     def find_and_wait
-      tags = ReleaseTools::GitlabDevClient.tags(@project)
-      matched_tags = tags.select do |k|
-        if @project == 'gitlab/charts/gitlab' # our helm chart
-          k.name =~ /\A\d+\.\d+\.\d+\+[\w\d]+\z/
-        elsif @project == 'gitlab/omnibus-gitlab'
-          k.name =~ /\A\d+\.\d+\.\d+\+[\w\d]+\.[\w\d]+\z/
-        else
-          raise 'invalid project defined'
-        end
-      end
+      pipeline = ReleaseTools::GitlabDevClient.pipelines(@project, ref: @sha).first
 
-      if matched_tags.empty?
-        logger.fatal('No tags matched.', project: @project) if matched_tags.empty?
-        exit 1
-      end
-
-      # TODO this feels dangerous, we are relying to queries to find a tag without
-      # restriction to validate it's the tag that we want to monitor for.
-      # If syncing is stopped or hung for whatever reason, we may end up waiting
-      # on the wrong tag
-      tag = matched_tags.first
-
-      pipeline = ReleaseTools::GitlabDevClient.pipelines(@project, ref: tag.name).first
-
-      ReleaseTools.logger.info("Found tag and pipeline", project: @project, ref: tag.name, pipeline: pipeline.id, url: pipeline.web_url)
+      ReleaseTools.logger.info("Found tag and pipeline", project: @project, ref: @sha, pipeline: pipeline.id, url: pipeline.web_url)
 
       wait(pipeline.id)
     end

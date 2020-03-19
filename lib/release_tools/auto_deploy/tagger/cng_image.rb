@@ -67,6 +67,8 @@ module ReleaseTools
             error_code: ex.response_status,
             error_message: ex.message
           )
+
+          tag
         end
 
         def tag_helm!(tag)
