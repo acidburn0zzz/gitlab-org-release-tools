@@ -59,9 +59,11 @@ module ReleaseTools
           when 'created', 'pending', 'running'
             sleep(interval)
           when 'success', 'manual'
+            logger.info("Caught successful pipeline", status: status(id), id: id, timeout: max_duration)
             break
           else
-            raise 'Pipeline did not succeed.'
+            logger.fatal("Pipeline did not succeed")
+            exit 1
           end
         end
       end

@@ -4,7 +4,6 @@ stages:
   - test
   - deploy
   - automation
-  - wait
   - chatops
 
 cache: &global-cache
