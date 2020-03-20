@@ -17,6 +17,11 @@ describe ReleaseTools::ReleaseManagers::Schedule do
     YAML
   end
 
+  before do
+    # Prevent retry delay from slowing down specs
+    stub_const("#{described_class}::RETRY_INTERVAL", 0)
+  end
+
   describe '#version_for_month' do
     context 'when there are releases scheduled' do
       before do
