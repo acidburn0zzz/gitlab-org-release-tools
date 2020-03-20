@@ -16,7 +16,7 @@ module ReleaseTools
     def find_and_wait
       pipeline = ReleaseTools::GitlabDevClient.pipelines(@project, ref: @sha).first
 
-      ReleaseTools.logger.info("Found tag and pipeline", project: @project, ref: @sha, pipeline: pipeline.id, url: pipeline.web_url)
+      ReleaseTools.logger.info("Found tag and pipeline", project: @project, ref: @sha, url: pipeline.web_url)
 
       wait(pipeline.id)
     end
@@ -59,7 +59,6 @@ module ReleaseTools
           when 'created', 'pending', 'running'
             sleep(interval)
           when 'success', 'manual'
-            logger.info("Caught successful pipeline", status: status(id), id: id, timeout: max_duration)
             break
           else
             logger.fatal("Pipeline did not succeed")
