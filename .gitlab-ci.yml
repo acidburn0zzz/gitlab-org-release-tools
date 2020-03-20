@@ -148,7 +148,7 @@ auto_deploy:tag:
   <<: *with-bundle
   stage: automation
   script:
-    - bundle exec rake 'auto_deploy:tag'
+    - bundle exec rake 'auto_deploy:tag[true]'
   only:
     variables:
       - $PASSING_BUILD_AUTO_DEPLOY_SCHEDULE == "true"
