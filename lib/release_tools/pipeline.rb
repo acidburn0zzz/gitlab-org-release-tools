@@ -58,7 +58,8 @@ module ReleaseTools
           case status(id)
           when 'created', 'pending', 'running'
             sleep(interval)
-          when 'success', 'manual'
+          when 'success'
+            logger.info("Pipeline succeeded", id: id)
             break
           else
             logger.fatal("Pipeline did not succeed")
