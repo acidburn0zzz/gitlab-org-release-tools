@@ -51,7 +51,6 @@ module RepositoryFixture
     index = repository.index
 
     files.each do |path, content|
-      FileUtils.mkdir_p(File.dirname(path))
       oid = repository.write(content, :blob)
       index.add(path: path, oid: oid, mode: 0o100644)
     end
