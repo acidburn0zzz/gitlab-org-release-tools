@@ -156,5 +156,6 @@ require 'release_tools/security/mirrors'
 require 'release_tools/security/issue_crawler'
 require 'release_tools/version_client'
 require 'release_tools/versions'
+require 'release_tools/automatic_release_candidate'
 
 ReleaseTools::Preflight.check
