@@ -49,7 +49,7 @@ namespace :auto_deploy do
   end
 
   desc "Tag the auto-deploy branches from the latest passing builds"
-  task tag: :check_enabled do
+  task :tag, [:wait_for_build] => :check_enabled do |_t, args|
     branch = ReleaseTools::AutoDeployBranch.current
 
     commit = ReleaseTools::PassingBuild
@@ -65,9 +65,8 @@ namespace :auto_deploy do
       .execute
   end
 
-  desc "Wait on build for project"
-  task :wait, [:project] do |_t, args|
-    project = args.project
-    ReleaseTools::Pipeline.new(project).find_and_wait
+    ReleaseTools::PassingBuild
+      .new(ReleaseTools::AutoDeployBranch.current)
+      .execute(trigger: true, wait: args.wait_for_build)
   end
 end
