@@ -118,6 +118,8 @@ describe ReleaseTools::RemoteRepository do
 
     context 'with an existing branch' do
       it 'fetches and checks out the branch with the configured global depth', :aggregate_failures do
+        expect(subject.logger).not_to receive(:warn)
+
         subject.ensure_branch_exists('branch-1')
 
         expect(rugged_repo).to have_head('branch-1')
@@ -128,6 +130,8 @@ describe ReleaseTools::RemoteRepository do
 
     context 'with a non-existing branch' do
       it 'creates and checks out the branch with the configured global depth', :aggregate_failures do
+        expect(subject.logger).to receive(:warn).and_call_original
+
         subject.ensure_branch_exists('branch-2')
 
         expect(rugged_repo).to have_head('branch-2')
@@ -329,7 +333,14 @@ describe ReleaseTools::RemoteRepository do
         expect(rugged_repo).to have_blob('README.md').with('Nice')
       end
 
+      it 'does not log the checkout operation' do
+        expect(subject.logger).not_to receive(:warn)
+
+        subject.merge('branch-2', into: 'master', no_ff: true)
+      end
+
       it 'raises an error if the branch does not exist' do
+        expect(subject.logger).to receive(:warn).and_call_original
         expect { subject.merge('branch-2', into: 'not-existing-branch') }
           .to raise_error(ReleaseTools::RemoteRepository::CannotCheckoutBranchError)
       end

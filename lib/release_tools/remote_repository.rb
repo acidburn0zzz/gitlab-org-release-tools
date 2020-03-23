@@ -307,7 +307,9 @@ module ReleaseTools
     end
 
     def checkout_branch(branch)
-      _, status = run_git %W[checkout --quiet #{branch}]
+      output, status = run_git %W[checkout --quiet #{branch}]
+
+      logger.warn('Failed to checkout', branch: branch, output: output) unless status.success?
 
       status.success?
     end
