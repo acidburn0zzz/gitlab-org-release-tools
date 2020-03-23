@@ -29,13 +29,5 @@ module ReleaseTools
 
       commit
     end
-
-    private
-
-    def wait_on_build(input)
-      Parallel.each(input, in_threads: Etc.nprocessors) do |project, tag|
-        ReleaseTools::Pipeline.new(project, tag).find_and_wait
-      end
-    end
   end
 end

@@ -63,10 +63,11 @@ namespace :auto_deploy do
     ReleaseTools::AutoDeploy::Builder::CNGImage
       .new(branch, commit.id)
       .execute
-  end
 
-    ReleaseTools::PassingBuild
-      .new(ReleaseTools::AutoDeployBranch.current)
-      .execute(trigger: true, wait: args.wait_for_build)
+    if args.wait_for_success == "true"
+      Parallel.each(tags, in_threads: Etc.nprocessors) do |project, tag|
+        ReleaseTools::Pipeline.new(project, tag).wait_for_success
+      end
+    end
   end
 end

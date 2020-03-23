@@ -4,36 +4,24 @@ module ReleaseTools
 
     attr_reader :project, :sha
 
-    def initialize(project, sha, versions = nil)
+    def initialize(project, ref)
       @project = project
-      @sha = sha
-      @token = ENV.fetch('OMNIBUS_BUILD_TRIGGER_TOKEN') do |name|
-        raise "Missing environment variable `#{name}`"
-      end
-      @versions = versions
+      @ref = ref
     end
 
-    def find_and_wait
-      pipeline = ReleaseTools::GitlabDevClient.pipelines(@project, ref: @sha).first
+    def wait_for_success
+      # TODO: figure out what to do if there's more than one pipeline, omnibus is an example of spinning
+      # up 2 pipelines during a tag for X reason
+      pipeline = ReleaseTools::GitlabDevClient.pipelines(@project, ref: @ref).first
 
-      ReleaseTools.logger.info("Found tag and pipeline", project: @project, ref: @sha, url: pipeline.web_url)
+      unless pipeline
+        ReleaseTools.logger.fatal("Pipeline not found", project: @project, ref: @ref)
+        exit 1
+      end
+
+      ReleaseTools.logger.info("Found tag and pipeline", project: @project, ref: @ref, url: pipeline.web_url)
 
       wait(pipeline.id)
-    end
-
-    def trigger
-      logger.info('Trigger pipeline', project: project, sha: sha)
-
-      trigger = ReleaseTools::GitlabDevClient.run_trigger(
-        ReleaseTools::Project::OmnibusGitlab,
-        @token,
-        'master',
-        build_variables
-      )
-
-      logger.info('Triggered pipeline', url: trigger.web_url)
-
-      wait(trigger.id)
     end
 
     private
@@ -49,32 +37,22 @@ module ReleaseTools
 
       logger.info("Waiting on pipeline success", id: id, timeout: max_duration)
 
-      logger.measure_info('Waiting for pipeline', metric: 'pipeline/waiting') do
-        loop do
-          if ReleaseTools::TimeUtil.timeout?(start, max_duration)
-            raise "Pipeline timeout after waiting for #{max_duration} seconds."
-          end
+      loop do
+        if ReleaseTools::TimeUtil.timeout?(start, max_duration)
+          raise "Pipeline timeout after waiting for #{max_duration} seconds."
+        end
 
-          case status(id)
-          when 'created', 'pending', 'running'
-            sleep(interval)
-          when 'success'
-            logger.info("Pipeline succeeded", id: id)
-            break
-          else
-            logger.fatal("Pipeline did not succeed")
-            exit 1
-          end
+        case status(id)
+        when 'created', 'pending', 'running'
+          sleep(interval)
+        when 'success'
+          logger.info("Pipeline succeeded", project: @project, ref: @ref, id: id)
+          break
+        else
+          logger.fatal("Pipeline did not succeed")
+          exit 1
         end
       end
-    end
-
-    def build_variables
-      @versions.merge(
-        'GITLAB_VERSION' => @sha,
-        'NIGHTLY' => 'true',
-        'ee' => @project == ReleaseTools::Project::GitlabEe
-      )
     end
   end
 end

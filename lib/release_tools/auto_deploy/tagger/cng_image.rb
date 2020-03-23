@@ -59,6 +59,8 @@ module ReleaseTools
           )
 
           tag_helm!(tag)
+
+          tag
         rescue ::Gitlab::Error::Error => ex
           logger.fatal(
             "Failed to tag CNG",
@@ -67,8 +69,6 @@ module ReleaseTools
             error_code: ex.response_status,
             error_message: ex.message
           )
-
-          tag
         end
 
         def tag_helm!(tag)

@@ -60,6 +60,8 @@ module ReleaseTools
           )
 
           tag_deployer!(tag)
+
+          tag
         rescue ::Gitlab::Error::Error => ex
           logger.fatal(
             "Failed to tag Omnibus",
@@ -68,8 +70,6 @@ module ReleaseTools
             error_code: ex.response_status,
             error_message: ex.message
           )
-
-          tag
         end
 
         def tag_deployer!(tag)
