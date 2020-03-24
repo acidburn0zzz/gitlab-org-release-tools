@@ -126,11 +126,6 @@ namespace :release do
     version = args[:version]
     meta = ReleaseTools::Deployments::Metadata.new(version)
 
-    # Tracking security releases is disabled until the security workflow for
-    # Omnibus is moved to GitLab.com:
-    # https://gitlab.com/gitlab-com/gl-infra/delivery/issues/692
-    next if meta.security_release?
-
     ReleaseTools::SharedStatus.as_security_release(meta.security_release?) do
       tracker = ReleaseTools::Deployments::DeploymentTracker
         .new(env, args[:status], version)
