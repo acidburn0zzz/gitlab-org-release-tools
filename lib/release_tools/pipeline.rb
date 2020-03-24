@@ -10,8 +10,6 @@ module ReleaseTools
     end
 
     def wait_for_success
-      # TODO: figure out what to do if there's more than one pipeline, omnibus is an example of spinning
-      # up 2 pipelines during a tag for X reason
       pipeline = ReleaseTools::GitlabDevClient.pipelines(@project, ref: @ref).first
 
       unless pipeline
