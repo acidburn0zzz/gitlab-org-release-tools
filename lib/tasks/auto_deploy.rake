@@ -50,8 +50,18 @@ namespace :auto_deploy do
 
   desc "Tag the auto-deploy branches from the latest passing builds"
   task tag: :check_enabled do
-    ReleaseTools::PassingBuild
-      .new(ReleaseTools::AutoDeployBranch.current)
-      .execute(trigger: true)
+    branch = ReleaseTools::AutoDeployBranch.current
+
+    commit = ReleaseTools::PassingBuild
+      .new(branch)
+      .execute
+
+    ReleaseTools::AutoDeploy::Builder::Omnibus
+      .new(branch, commit.id)
+      .execute
+
+    ReleaseTools::AutoDeploy::Builder::CNGImage
+      .new(branch, commit.id)
+      .execute
   end
 end
