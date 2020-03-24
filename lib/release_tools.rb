@@ -56,6 +56,8 @@ require 'release_tools/logger'
 require 'release_tools/preflight'
 
 require 'release_tools/auto_deploy/naming'
+require 'release_tools/auto_deploy/builder/cng_image'
+require 'release_tools/auto_deploy/builder/omnibus'
 require 'release_tools/auto_deploy/tagger/cng_image'
 require 'release_tools/auto_deploy/tagger/omnibus'
 require 'release_tools/auto_deploy/version'
