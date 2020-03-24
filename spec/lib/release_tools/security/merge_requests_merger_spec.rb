@@ -11,6 +11,7 @@ describe ReleaseTools::Security::MergeRequestsMerger do
       mr1 = double(:merge_request, target_branch: 'foo', web_url: 'example.com')
       mr2 = double(:merge_request, target_branch: 'bar', web_url: 'example.com')
       mr3 = double(:merge_request, target_branch: 'invalid', web_url: 'example.com')
+      merged_mr = double(:merge_request, merge_commit_sha: 'a')
       result = double(:result)
 
       allow(merger)
@@ -20,16 +21,16 @@ describe ReleaseTools::Security::MergeRequestsMerger do
       allow(merger)
         .to receive(:merge)
         .with(mr1)
-        .and_return(true)
+        .and_return([true, merged_mr])
 
       allow(merger)
         .to receive(:merge)
         .with(mr2)
-        .and_return(false)
+        .and_return([false, mr2])
 
       allow(ReleaseTools::Security::MergeResult)
         .to receive(:from_array)
-        .with(valid: [[true, mr1], [false, mr2]], invalid: [mr3])
+        .with(valid: [[true, merged_mr], [false, mr2]], invalid: [mr3])
         .and_return(result)
 
       expect(ReleaseTools::Slack::ChatopsNotification)
@@ -51,7 +52,7 @@ describe ReleaseTools::Security::MergeRequestsMerger do
 
       described_class.new(client, merge_master: true).tap do |instance|
         allow(instance).to receive(:merge)
-          .and_return(true)
+          .and_return([true, master_mr])
         allow(instance).to receive(:validated_merge_requests)
           .and_return([[master_mr], [backport]])
 
@@ -116,7 +117,7 @@ describe ReleaseTools::Security::MergeRequestsMerger do
         .and_return(response)
 
       without_dry_run do
-        expect(merger.merge(mr)).to eq(true)
+        expect(merger.merge(mr)).to eq([true, response])
       end
     end
 
@@ -135,7 +136,7 @@ describe ReleaseTools::Security::MergeRequestsMerger do
         .with(mr)
 
       without_dry_run do
-        expect(merger.merge(mr)).to eq(false)
+        expect(merger.merge(mr)).to eq([false, mr])
       end
     end
 
@@ -153,7 +154,7 @@ describe ReleaseTools::Security::MergeRequestsMerger do
         .with(mr)
 
       without_dry_run do
-        expect(merger.merge(mr)).to eq(false)
+        expect(merger.merge(mr)).to eq([false, mr])
       end
     end
   end

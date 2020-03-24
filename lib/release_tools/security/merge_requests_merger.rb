@@ -41,9 +41,7 @@ module ReleaseTools
         to_merge = valid.group_by(&:target_branch)
 
         tuples = Parallel.map(to_merge, in_threads: Etc.nprocessors) do |_, mrs|
-          mrs.map do |mr|
-            [merge(mr), mr]
-          end
+          mrs.map { |mr| merge(mr) }
         end
 
         return if SharedStatus.dry_run?
@@ -84,11 +82,11 @@ module ReleaseTools
         )
 
         if merged_mr.respond_to?(:merge_commit_sha) && merged_mr.merge_commit_sha
-          true
+          [true, merged_mr]
         else
           reassign_merge_request(mr)
 
-          false
+          [false, mr]
         end
       end
 
