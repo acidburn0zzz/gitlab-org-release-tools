@@ -30,15 +30,17 @@ module ReleaseTools
           logger.info(
             'Cherry-picked security merge request to auto-deploy',
             project: merge_request.project_id,
-            merge_request: merge_request.web_url,
-            target: @target
+            ref: merge_request.merge_commit_sha,
+            target: @target,
+            merge_request: merge_request.web_url
           )
         rescue ::Gitlab::Error::Error => ex
           logger.fatal(
             'Failed security cherry-pick to auto-deploy',
             project: merge_request.project_id,
-            merge_request: merge_request.web_url,
+            ref: merge_request.merge_commit_sha,
             target: @target,
+            merge_request: merge_request.web_url,
             error: ex.message
           )
         end
