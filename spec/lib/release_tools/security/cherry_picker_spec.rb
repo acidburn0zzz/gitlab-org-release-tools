@@ -6,11 +6,11 @@ describe ReleaseTools::Security::CherryPicker do
   let(:client) { spy }
   let(:merge_result) do
     [
-      double(project_id: 1, merge_commit_sha: 'a').as_null_object,
-      double(project_id: 1, merge_commit_sha: 'b').as_null_object,
-      double(project_id: 2, merge_commit_sha: 'c').as_null_object,
-      double(project_id: 3, merge_commit_sha: 'd').as_null_object,
-      double(project_id: 4, merge_commit_sha: 'e').as_null_object
+      double(project_id: 1, merge_commit_sha: 'a', target_branch: 'master').as_null_object,
+      double(project_id: 1, merge_commit_sha: 'b', target_branch: '12-9-stable-ee').as_null_object,
+      double(project_id: 2, merge_commit_sha: 'c', target_branch: '12-9-stable-ee').as_null_object,
+      double(project_id: 3, merge_commit_sha: 'd', target_branch: 'master').as_null_object,
+      double(project_id: 4, merge_commit_sha: 'e', target_branch: 'master').as_null_object
     ]
   end
 
@@ -33,10 +33,10 @@ describe ReleaseTools::Security::CherryPicker do
   end
 
   describe '#execute' do
-    it 'cherry-picks merge requests in projects with auto-deploy branches', :aggregate_failures do
+    it 'cherry-picks merge requests targeting `master` in projects with auto-deploy branches', :aggregate_failures do
       picker = described_class.new(merge_result)
 
-      picks, skipped = merge_result.partition { |mr| mr.project_id.even? }
+      picks, skipped = merge_result.partition { |mr| mr.project_id.even? && mr.target_branch == 'master' }
 
       picks.each do |mr|
         expect(client).to receive(:cherry_pick_commit).with(
@@ -48,7 +48,7 @@ describe ReleaseTools::Security::CherryPicker do
 
       skipped.each do |mr|
         expect(client).not_to receive(:cherry_pick_commit)
-          .with(mr.project_id, anything, anything)
+          .with(anything, mr.merge_commit_sha, anything)
       end
 
       picker.execute

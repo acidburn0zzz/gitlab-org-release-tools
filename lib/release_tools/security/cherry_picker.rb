@@ -18,6 +18,7 @@ module ReleaseTools
       def execute
         return unless Feature.enabled?(:security_cherry_picker)
 
+        filter_by_target!
         filter_by_branch!
 
         @merge_requests.each do |merge_request|
@@ -47,6 +48,11 @@ module ReleaseTools
       end
 
       private
+
+      # Remove merge requests not targeting `master`
+      def filter_by_target!
+        @merge_requests.select! { |mr| mr.target_branch == 'master' }
+      end
 
       # Remove merge requests belonging to a project with no auto-deploy branch
       def filter_by_branch!
