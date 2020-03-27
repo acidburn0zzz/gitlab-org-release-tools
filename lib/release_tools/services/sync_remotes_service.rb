@@ -19,8 +19,8 @@ module ReleaseTools
           return
         end
 
-        sync_branches(Project::GitlabEe, @version.stable_branch(ee: true))
         sync_branches(Project::GitlabCe, @version.stable_branch(ee: false))
+        sync_branches(Project::GitlabEe, @version.stable_branch(ee: true))
         sync_branches(Project::OmnibusGitlab, *[
           @omnibus.to_ee.stable_branch, @omnibus.to_ce.stable_branch
         ].uniq) # Omnibus uses a single branch post-12.2
@@ -29,8 +29,8 @@ module ReleaseTools
         sync_branches(Project::CNGImage, @version.to_ce.stable_branch, @version.to_ee.stable_branch)
         sync_branches(Project::Gitaly, @version.stable_branch(ee: false))
 
-        sync_tags(Project::GitlabEe, @version.tag(ee: true))
         sync_tags(Project::GitlabCe, @version.tag(ee: false))
+        sync_tags(Project::GitlabEe, @version.tag(ee: true))
         sync_tags(Project::OmnibusGitlab, @omnibus.to_ee.tag, @omnibus.to_ce.tag)
         sync_tags(Project::CNGImage, @version.to_ce.tag, @version.to_ee.tag, ubi_tag(@version.to_ee))
         sync_tags(Project::Gitaly, @version.tag(ee: false))

@@ -32,9 +32,9 @@ describe ReleaseTools::Services::SyncRemotesService do
         allow(service).to receive(:sync_branches).and_return(true)
 
         expect(service).to receive(:sync_tags)
-          .with(ReleaseTools::Project::GitlabEe, 'v1.2.3-ee')
-        expect(service).to receive(:sync_tags)
           .with(ReleaseTools::Project::GitlabCe, 'v1.2.3')
+        expect(service).to receive(:sync_tags)
+          .with(ReleaseTools::Project::GitlabEe, 'v1.2.3-ee')
         expect(service).to receive(:sync_tags)
           .with(ReleaseTools::Project::OmnibusGitlab, '1.2.3+ee.0', '1.2.3+ce.0')
         expect(service).to receive(:sync_tags)
@@ -51,9 +51,9 @@ describe ReleaseTools::Services::SyncRemotesService do
         allow(service).to receive(:sync_tags).and_return(true)
 
         expect(service).to receive(:sync_branches)
-          .with(ReleaseTools::Project::GitlabEe, '1-2-stable-ee')
-        expect(service).to receive(:sync_branches)
           .with(ReleaseTools::Project::GitlabCe, '1-2-stable')
+        expect(service).to receive(:sync_branches)
+          .with(ReleaseTools::Project::GitlabEe, '1-2-stable-ee')
         expect(service).to receive(:sync_branches)
           .with(ReleaseTools::Project::OmnibusGitlab, '1-2-stable-ee', '1-2-stable')
         expect(service).to receive(:sync_branches)
