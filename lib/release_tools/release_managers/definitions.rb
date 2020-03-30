@@ -42,9 +42,11 @@ module ReleaseTools
       end
 
       def sync!
-        dev_client.sync_membership(all.collect(&:dev))
-        production_client.sync_membership(all.collect(&:production))
-        ops_client.sync_membership(all.collect(&:ops))
+        release_managers = active_release_managers
+
+        dev_client.sync_membership(release_managers.collect(&:dev))
+        production_client.sync_membership(release_managers.collect(&:production))
+        ops_client.sync_membership(release_managers.collect(&:ops))
 
         ReleaseManagers::SyncResult.new([dev_client, production_client, ops_client])
       end
@@ -61,6 +63,11 @@ module ReleaseTools
 
       def ops_client
         @ops_client ||= ReleaseManagers::Client.new(:ops)
+      end
+
+      def active_release_managers
+        active = Schedule.new.active_release_managers_usernames
+        all.select { |user| active.include?(user.production)}
       end
 
       # Represents a single entry from the configuration file
