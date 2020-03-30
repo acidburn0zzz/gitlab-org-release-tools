@@ -9,9 +9,9 @@ module ReleaseTools
 
       attr_reader :merge_requests
 
-      def initialize(merge_requests)
+      def initialize(client, merge_requests)
         @merge_requests = merge_requests
-        @client = Client.new
+        @client = client
         @target = ReleaseTools::AutoDeployBranch.current
       end
 

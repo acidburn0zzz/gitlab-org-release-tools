@@ -124,4 +124,28 @@ describe ReleaseTools::Slack::ChatopsNotification do
       described_class.branch_status(project => [result])
     end
   end
+
+  describe '.security_issues_processed' do
+    it 'posts a message' do
+      result = double(:result)
+
+      allow(described_class)
+        .to receive(:channel)
+        .and_return('foo')
+
+      expect(result)
+        .to receive(:slack_attachments)
+        .and_return([])
+
+      expect(described_class)
+        .to receive(:fire_hook)
+        .with(
+          text: 'Finished processing security implementation issues',
+          channel: 'foo',
+          attachments: []
+        )
+
+      described_class.security_issues_processed(result)
+    end
+  end
 end

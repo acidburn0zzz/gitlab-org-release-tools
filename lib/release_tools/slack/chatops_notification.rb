@@ -42,6 +42,15 @@ module ReleaseTools
         )
       end
 
+      # @param [ReleaseTools::Security::IssueResult] issue_result
+      def self.security_issues_processed(result)
+        fire_hook(
+          text: 'Finished processing security implementation issues',
+          channel: channel,
+          attachments: result.slack_attachments
+        )
+      end
+
       def self.branch_status(status)
         return unless status.any?
 

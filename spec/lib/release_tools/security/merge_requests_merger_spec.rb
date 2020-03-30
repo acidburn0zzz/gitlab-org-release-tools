@@ -61,8 +61,26 @@ describe ReleaseTools::Security::MergeRequestsMerger do
         end
       end
 
-      expect(picker).to have_received(:new).with([master_mr])
+      expect(picker).to have_received(:new).with(client, [master_mr])
       expect(picker).to have_received(:execute)
+    end
+
+    context 'when merge_in_batches is enabled' do
+      it 'calls MergeRequestsBatchMerger' do
+        enable_feature(:security_merge_in_batches)
+
+        merger = described_class.new(client)
+        batch_merger_class = ReleaseTools::Security::MergeRequestsBatchMerger
+        batch_merger_instance = instance_double(batch_merger_class)
+
+        allow(batch_merger_class)
+          .to receive(:new)
+          .with(client).and_return(batch_merger_instance)
+
+        expect(batch_merger_instance).to receive(:execute).once
+
+        merger.execute
+      end
     end
   end
 

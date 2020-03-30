@@ -77,9 +77,32 @@ describe ReleaseTools::Security::ImplementationIssue do
     end
   end
 
-  describe '#merge_request_master' do
+  describe '#merge_request_targeting_master' do
     it 'returns the merge request targeting master' do
-      expect(subject.merge_request_master).to eq(mr1)
+      expect(subject.merge_request_targeting_master).to eq(mr1)
+    end
+  end
+
+  describe '#merge_requests_targeting_stable' do
+    let(:mr5) do
+      double(
+        :merge_request,
+        target_branch: '12-10-stable',
+        assignees: [release_bot]
+      )
+    end
+
+    let(:merge_requests) { [mr1, mr2, mr3, mr5] }
+
+    it 'returns merge requests targeting stable branches' do
+      merge_requests_targeting_stable_branches = [
+        mr2,
+        mr3,
+        mr5
+      ]
+
+      expect(subject.merge_requests_targeting_stable)
+        .to match_array(merge_requests_targeting_stable_branches)
     end
   end
 end
