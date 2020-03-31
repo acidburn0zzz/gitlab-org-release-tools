@@ -99,18 +99,21 @@ describe ReleaseTools::Security::IssueCrawler do
       mr1 = double(
         :merge_request,
         labels: [described_class::SECURITY_LABEL],
+        state: described_class::OPENED,
         web_url: 'https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/1'
       )
 
       mr2 = double(
         :merge_request,
         labels: [],
+        state: described_class::OPENED,
         web_url: 'https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/1'
       )
 
       mr3 = double(
         :merge_request,
         labels: [described_class::SECURITY_LABEL],
+        state: described_class::OPENED,
         web_url: 'https://gitlab.com/gitlab-org/gitlab/-/merge_requests/1'
       )
 
@@ -133,6 +136,55 @@ describe ReleaseTools::Security::IssueCrawler do
       expect(issues[0].project_id).to eq(1)
       expect(issues[0].iid).to eq(1)
       expect(issues[0].merge_requests).to eq([mr1])
+    end
+
+    it 'filters out closed merge requests' do
+      issue1 = double(
+        :issue,
+        project_id: 1,
+        iid: 1,
+        labels: [described_class::SECURITY_LABEL],
+        web_url: 'https://gitlab.com/gitlab-org/security/gitlab/issues/1'
+      )
+
+      mr1 = double(
+        :merge_request,
+        labels: [described_class::SECURITY_LABEL],
+        state: described_class::OPENED,
+        web_url: 'https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/1'
+      )
+
+      mr2 = double(
+        :merge_request,
+        labels: [described_class::SECURITY_LABEL],
+        state: 'closed',
+        web_url: 'https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/2'
+      )
+
+      mr3 = double(
+        :merge_request,
+        labels: [described_class::SECURITY_LABEL],
+        state: described_class::OPENED,
+        web_url: 'https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/3'
+      )
+
+      issue_page = Gitlab::PaginatedResponse.new([issue1])
+      mr_page = Gitlab::PaginatedResponse.new([mr1, mr2, mr3])
+
+      allow(ReleaseTools::GitlabClient.client)
+        .to receive(:issue_links)
+        .with(described_class::PUBLIC_PROJECT, 1)
+        .and_return(issue_page)
+
+      allow(ReleaseTools::GitlabClient)
+        .to receive(:related_merge_requests)
+        .with(1, 1)
+        .and_return(mr_page)
+
+      issues = described_class.new.security_issues_and_merge_requests_for(1)
+
+      expect(issues[0].merge_requests.length).to eq(2)
+      expect(issues[0].merge_requests).not_to include(mr2)
     end
   end
 end

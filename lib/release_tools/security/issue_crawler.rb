@@ -21,6 +21,9 @@ module ReleaseTools
       # The date format used by issue due dates.
       DUE_DATE_FORMAT = '%Y-%m-%d'
 
+      # The status of issues and merge requests to be considered
+      OPENED = 'opened'
+
       # A security issue and its merge requests.
       SecurityIssue = Struct.new(:project_id, :iid, :merge_requests)
 
@@ -28,7 +31,7 @@ module ReleaseTools
       # dates.
       def security_release_issues
         issues = GitlabClient
-          .issues(PUBLIC_PROJECT, labels: ROOT_ISSUE_LABEL, state: 'opened')
+          .issues(PUBLIC_PROJECT, labels: ROOT_ISSUE_LABEL, state: OPENED)
           .auto_paginate
 
         # Ignoring issues without a due date could lead to security releases
@@ -85,6 +88,7 @@ module ReleaseTools
             .auto_paginate do |mr|
               next unless mr.labels.include?(SECURITY_LABEL)
               next unless mr.web_url.include?(SECURITY_NAMESPACE)
+              next unless mr.state == OPENED
 
               mrs << mr
             end
