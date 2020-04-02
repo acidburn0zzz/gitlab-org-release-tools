@@ -33,6 +33,9 @@ module ReleaseTools
       # The label that must be applied to all security merge requests.
       SECURITY_LABEL = 'security'
 
+      # The namespace that security implementation issues must reside in.
+      SECURITY_NAMESPACE = 'gitlab-org/security'
+
       # @param [Gitlab::ObjectifiedHash] merge_request
       # @param [ReleaseTools::Security::Client] client
       def initialize(merge_request, client)
@@ -52,6 +55,7 @@ module ReleaseTools
         validate_target_branch
         validate_discussions
         validate_labels
+        validate_closing_security_issue
       end
 
       def validate_pipeline_status
@@ -183,6 +187,28 @@ module ReleaseTools
             Merge requests without this label will not be merged.
           ERROR
         end
+      end
+
+      # Validates if a merge request will automatically close the security
+      # implementation issue when merged.
+      #
+      # Closing issues automatically only works if the merge request targets
+      # the default project's branch, so we return early unless the merge request
+      # targets master
+      def validate_closing_security_issue
+        return unless @merge_request.target_branch == 'master'
+
+        issue_to_be_closed = @client
+          .merge_request_closes_issues(@merge_request.project_id, @merge_request.iid)
+          .detect { |issue| issue.web_url.match?(SECURITY_NAMESPACE) }
+
+        return unless issue_to_be_closed.nil?
+
+        error('The merge request must close the security implementation issue', <<~ERROR)
+          This merge request is targeting master and it should close the security implementation
+          issue when merged. Please add `Closes #<Security issue IID>` to the merge request
+          description.
+        ERROR
       end
 
       # @param [String] summary
