@@ -156,5 +156,26 @@ describe ReleaseTools::Deployments::MergeRequestUpdater do
 
       described_class.new([deploy]).add_label('kittens')
     end
+
+    it 'ignores Unprocessable errors' do
+      deploy = ReleaseTools::Deployments::DeploymentTracker::Deployment
+        .new(ReleaseTools::Project::GitlabEe, 1, 'success')
+
+      mr1 = double(:mr, project_id: 2, iid: 3, web_url: 'foo', labels: %w[foo])
+      page = Gitlab::PaginatedResponse.new([mr1])
+
+      expect(ReleaseTools::GitlabClient)
+        .to receive(:deployed_merge_requests)
+        .with(deploy.project.canonical_or_security_path, deploy.id)
+        .and_return(page)
+
+      expect(ReleaseTools::GitlabClient)
+        .to receive(:update_merge_request)
+        .with(2, 3, labels: 'bar,foo')
+        .and_raise(gitlab_error(:Unprocessable))
+
+      expect { described_class.new([deploy]).add_label('bar') }
+        .not_to raise_error
+    end
   end
 end
