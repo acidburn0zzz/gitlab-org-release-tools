@@ -58,11 +58,21 @@ module ReleaseTools
               labels.reject! { |l| l.start_with?("#{scope}#{SCOPE_SEPARATOR}") }
             end
 
-            GitlabClient.update_merge_request(
-              mr.project_id,
-              mr.iid,
-              labels: [label, *labels].join(',')
-            )
+            begin
+              GitlabClient.update_merge_request(
+                mr.project_id,
+                mr.iid,
+                labels: [label, *labels].join(',')
+              )
+            rescue Gitlab::Error::Unprocessable => ex
+              # In rare cases the API will produce this error but seemingly
+              # still update the merge request. To prevent such errors from
+              # causing pipeline failures we catch them here and just log them.
+              #
+              # See https://gitlab.com/gitlab-org/release-tools/-/issues/418 for
+              # more information.
+              logger.error(ex.message, merge_request: mr.web_url)
+            end
           end
         end
       end
