@@ -7,38 +7,82 @@ describe ReleaseTools::Security::MergeRequestsValidator do
   let(:validator) { described_class.new(client) }
 
   describe '#execute' do
-    it 'returns the valid merge requests' do
-      merge_request1 = double(:merge_request, web_url: 'example.com')
-      merge_request2 = double(:merge_request, web_url: 'example.com')
+    context 'when merge_in_batches is disabled' do
+      it 'returns the valid merge requests' do
+        merge_request1 = double(:merge_request, web_url: 'example.com')
+        merge_request2 = double(:merge_request, web_url: 'example.com')
 
-      allow(client)
-        .to receive(:open_security_merge_requests)
-        .with('gitlab-org/security/gitlab')
-        .and_return([merge_request1])
+        allow(client)
+          .to receive(:open_security_merge_requests)
+          .with('gitlab-org/security/gitlab')
+          .and_return([merge_request1])
 
-      allow(client)
-        .to receive(:open_security_merge_requests)
-        .with('gitlab-org/security/omnibus-gitlab')
-        .and_return([merge_request2])
+        allow(client)
+          .to receive(:open_security_merge_requests)
+          .with('gitlab-org/security/omnibus-gitlab')
+          .and_return([merge_request2])
 
-      allow(validator)
-        .to receive(:verify_merge_request)
-        .with(merge_request1)
-        .and_return([true, merge_request1])
+        allow(validator)
+          .to receive(:validate_merge_request)
+          .with(merge_request1)
+          .and_return([true, merge_request1])
 
-      allow(validator)
-        .to receive(:verify_merge_request)
-        .with(merge_request2)
-        .and_return([false, merge_request2])
+        allow(validator)
+          .to receive(:validate_merge_request)
+          .with(merge_request2)
+          .and_return([false, merge_request2])
 
-      valid, invalid = validator.execute
+        valid, invalid = validator.execute
 
-      expect(valid).to eq([merge_request1])
-      expect(invalid).to eq([merge_request2])
+        expect(valid).to eq([merge_request1])
+        expect(invalid).to eq([merge_request2])
+      end
+    end
+
+    context 'when merge_in_batches is enabled' do
+      before do
+        enable_feature(:merge_in_batches)
+      end
+
+      it 'validates merge requests passed as arguments' do
+        merge_request1 = double(:merge_request, web_url: 'example.com')
+        merge_request2 = double(:merge_request, web_url: 'example.com')
+        merge_request3 = double(:merge_request, web_url: 'example.com')
+        merge_request4 = double(:merge_request, web_url: 'example.com')
+
+        merge_requests = [merge_request1, merge_request2, merge_request3, merge_request4]
+
+        allow(validator)
+          .to receive(:validate_merge_request)
+          .with(merge_request1)
+          .and_return([true, merge_request1])
+
+        allow(validator)
+          .to receive(:validate_merge_request)
+          .with(merge_request2)
+          .and_return([false, merge_request2])
+
+        allow(validator)
+          .to receive(:validate_merge_request)
+          .with(merge_request3)
+          .and_return([true, merge_request3])
+
+        allow(validator)
+          .to receive(:validate_merge_request)
+          .with(merge_request4)
+          .and_return([false, merge_request4])
+
+        expect(client).not_to receive(:open_security_merge_requests)
+
+        valid, invalid = validator.execute(merge_requests: merge_requests)
+
+        expect(valid).to match_array([merge_request1, merge_request3])
+        expect(invalid).to match_array([merge_request2, merge_request4])
+      end
     end
   end
 
-  describe '#verify_merge_request' do
+  describe '#validate_merge_request' do
     let(:basic_merge_request) do
       double(:basic_merge_request, project_id: 1, iid: 2, web_url: 'example.com')
     end
@@ -61,7 +105,7 @@ describe ReleaseTools::Security::MergeRequestsValidator do
 
         allow(validator).to receive(:reassign_with_errors)
 
-        expect(validator.verify_merge_request(basic_merge_request))
+        expect(validator.validate_merge_request(basic_merge_request))
           .to eq([true, detailed_merge_request])
 
         expect(validator).not_to have_received(:reassign_with_errors)
@@ -87,7 +131,7 @@ describe ReleaseTools::Security::MergeRequestsValidator do
           .to receive(:reassign_with_errors)
           .with(detailed_merge_request, ['foo'])
 
-        expect(validator.verify_merge_request(basic_merge_request))
+        expect(validator.validate_merge_request(basic_merge_request))
           .to eq([false, detailed_merge_request])
 
         expect(validator).to have_received(:reassign_with_errors)

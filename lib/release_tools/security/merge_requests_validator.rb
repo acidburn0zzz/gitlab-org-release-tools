@@ -45,6 +45,8 @@ module ReleaseTools
       # @param [ReleaseTools::Security::Client|ReleaseTools::Security::DevClient] client
       def initialize(client)
         @client = client
+        @valid = []
+        @invalid = []
       end
 
       # Validates all security merge requests, returning those that were valid.
@@ -58,34 +60,22 @@ module ReleaseTools
       #       [valid_merge_request1, valid_merge_request2, ...],
       #       [invalid_merge_request1, invalid_merge_request2, ...]
       #     ]
-      def execute
-        valid = []
-        invalid = []
-
-        PROJECTS_TO_VERIFY.each do |project|
-          logger.info('Verifying security MRs', project: project)
-
-          merge_requests = @client.open_security_merge_requests(project)
-
-          validated = Parallel
-            .map(merge_requests, in_threads: Etc.nprocessors) do |mr|
-              verify_merge_request(mr)
-            end
-
-          validated.each do |(is_valid, mr)|
-            if is_valid
-              valid << mr
-            else
-              invalid << mr
-            end
-          end
+      #
+      # If merge_in_batches feature is enabled, it only validates merge requests passed
+      # as arguments, if the flag is disabled it validates merge requests associated
+      # to PROJECTS_TO_VERIFY.
+      def execute(merge_requests: [])
+        if Feature.enabled?(:merge_in_batches)
+          validate_merge_requests(merge_requests)
+        else
+          validate_per_projects
         end
 
-        [valid, invalid]
+        [@valid, @invalid]
       end
 
       # @param [Gitlab::ObjectifiedHash] basic_mr
-      def verify_merge_request(basic_mr)
+      def validate_merge_request(basic_mr)
         logger.trace(__method__, merge_request: basic_mr.web_url)
 
         # Merge requests retrieved using the MR list API do not include all data
@@ -127,6 +117,30 @@ module ReleaseTools
         )
 
         @client.update_merge_request(project_id, iid, assignee_id: mr.author.id)
+      end
+
+      private
+
+      def validate_per_projects
+        PROJECTS_TO_VERIFY.each do |project|
+          logger.info('Verifying security MRs', project: project)
+
+          merge_requests = @client.open_security_merge_requests(project)
+
+          validate_merge_requests(merge_requests)
+        end
+      end
+
+      def validate_merge_requests(merge_requests)
+        Parallel.map(merge_requests, in_threads: Etc.nprocessors) do |merge_request|
+          is_valid, mr = validate_merge_request(merge_request)
+
+          if is_valid
+            @valid << mr
+          else
+            @invalid << mr
+          end
+        end
       end
     end
   end
