@@ -144,9 +144,11 @@ module ReleaseTools
 
       versions.each_pair do |component, version|
         # If it looks like SemVer, assume it's a tag, which we prepend with `v`
-        if version.match?(/\A\d+\.\d+\.\d+(-rc\d+)?(-ee)?\z/)
-          versions[component] = "v#{version}"
-        end
+        versions[component] = if version.match?(/\A\h{40}\z/)
+                                version
+                              else
+                                "v#{version}"
+                              end
       end
 
       versions

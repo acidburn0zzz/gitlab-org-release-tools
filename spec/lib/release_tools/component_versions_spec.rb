@@ -15,7 +15,7 @@ describe ReleaseTools::ComponentVersions do
 
   describe '.get_omnibus_compat_versions' do
     it 'returns a Hash of component versions' do
-      commit_id = 'abcdefg'
+      commit_id = '4d17177c8cc3fcab1079482af15b640d99c3f068'
       file = described_class::FILES.sample
 
       expect(fake_client).to receive(:file_contents)
@@ -120,7 +120,7 @@ describe ReleaseTools::ComponentVersions do
     end
 
     it 'returns a Hash of component versions' do
-      commit_id = 'abcdefg'
+      commit_id = '4d17177c8cc3fcab1079482af15b640d99c3f068'
       file = described_class::FILES.sample
 
       expect(fake_client).to receive(:file_contents)
@@ -144,7 +144,7 @@ describe ReleaseTools::ComponentVersions do
 
   describe '.sanitize_cng_versions' do
     it 'returns a Hash of component versions' do
-      commit_id = 'abcdefg'
+      commit_id = '4d17177c8cc3fcab1079482af15b640d99c3f068'
       versions = {
         'VERSION' => commit_id,
         'GITALY_SERVER_VERSION' => '1.2.3',
