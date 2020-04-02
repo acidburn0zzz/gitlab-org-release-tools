@@ -147,7 +147,8 @@ describe ReleaseTools::ComponentVersions do
       commit_id = 'abcdefg'
       versions = {
         'VERSION' => commit_id,
-        'GITALY_SERVER_VERSION' => '1.2.3'
+        'GITALY_SERVER_VERSION' => '1.2.3',
+        'SOME_RC_COMPONENT' => '12.9.0-rc5'
       }
 
       described_class.sanitize_cng_versions(versions)
@@ -156,7 +157,8 @@ describe ReleaseTools::ComponentVersions do
         a_hash_including(
           'GITLAB_VERSION' => commit_id,
           'GITLAB_ASSETS_TAG' => commit_id,
-          'GITALY_SERVER_VERSION' => 'v1.2.3'
+          'GITALY_SERVER_VERSION' => 'v1.2.3',
+          'SOME_RC_COMPONENT' => 'v12.9.0-rc5'
         )
       )
     end
