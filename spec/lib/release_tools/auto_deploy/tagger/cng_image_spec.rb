@@ -72,9 +72,11 @@ describe ReleaseTools::AutoDeploy::Tagger::CNGImage do
     end
 
     context 'with changes' do
+      let(:fake_helm_tagger) { spy('helm_tagger') }
+
       before do
+        allow(ReleaseTools::AutoDeploy::Tagger::Helm).to receive(:new).and_return(fake_helm_tagger)
         allow(tagger).to receive(:changes?).and_return(true)
-        allow(tagger).to receive(:tag_helm!).and_return(true)
       end
 
       it 'creates a tag on the project' do
@@ -93,6 +95,7 @@ describe ReleaseTools::AutoDeploy::Tagger::CNGImage do
 
         expect(fake_client).to have_received(:create_tag)
           .with(described_class::PROJECT.path, 'tag_name', branch_head.id, anything)
+        expect(fake_helm_tagger).to have_received(:tag!).with('tag_name')
       end
 
       it 'uses the dev client in a security release' do
@@ -134,22 +137,6 @@ describe ReleaseTools::AutoDeploy::Tagger::CNGImage do
         without_dry_run do
           tagger.tag!
         end
-      end
-    end
-  end
-
-  describe '#tag_helm!' do
-    it 'tags the Helm project' do
-      tag = double(name: 'tag_name', message: 'tag_message')
-
-      expect(fake_client).to receive(:project_path)
-        .with(described_class::HELM)
-        .and_return(described_class::HELM.path)
-      expect(fake_client).to receive(:create_tag)
-        .with(described_class::HELM.path, tag.name, 'master', tag.message)
-
-      without_dry_run do
-        tagger.tag_helm!(tag)
       end
     end
   end

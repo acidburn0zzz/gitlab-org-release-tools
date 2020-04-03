@@ -21,6 +21,8 @@ module ReleaseTools
           @major, @minor = target_branch.split('-', 3).take(2)
 
           raise ArgumentError, "Unable to determine version from #{target_branch}" unless @major && @minor
+
+          @helm_tagger = ReleaseTools::AutoDeploy::Tagger::Helm.new(@target_branch, @version_map)
         end
 
         def tag_name
@@ -63,33 +65,14 @@ module ReleaseTools
             tag_message
           )
 
-          tag_helm!(tag)
+          @helm_tagger.tag!(tag_name)
+
+          tag
         rescue ::Gitlab::Error::Error => ex
           logger.fatal(
             "Failed to tag CNG",
             name: tag_name,
             target: branch_head.id,
-            error_code: ex.response_status,
-            error_message: ex.message
-          )
-        end
-
-        def tag_helm!(tag)
-          logger.info('Tagging Helm chart', name: tag.name)
-
-          return if SharedStatus.dry_run?
-
-          client.create_tag(
-            client.project_path(HELM),
-            tag.name,
-            'master',
-            tag.message
-          )
-        rescue ::Gitlab::Error::Error => ex
-          logger.fatal(
-            "Failed to tag Helm chart",
-            name: tag.name,
-            target: 'master',
             error_code: ex.response_status,
             error_message: ex.message
           )
