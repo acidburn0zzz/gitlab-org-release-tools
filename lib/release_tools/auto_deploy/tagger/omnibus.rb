@@ -5,11 +5,14 @@ module ReleaseTools
     module Tagger
       class Omnibus
         include ::SemanticLogger::Loggable
+        include ReleaseMetadataTracking
 
         PROJECT = Project::OmnibusGitlab
         DEPLOYER = Project::Deployer
 
         TAG_FORMAT = '%<major>d.%<minor>d.%<timestamp>s+%<gitlab_ref>.11s.%<packager_ref>.11s'
+
+        attr_reader :version_map, :target_branch
 
         def initialize(target_branch, version_map)
           @target_branch = target_branch
@@ -26,8 +29,8 @@ module ReleaseTools
             major: @major,
             minor: @minor,
             timestamp: timestamp(branch_head.created_at),
-            gitlab_ref: @version_map.fetch('VERSION'),
-            packager_ref: branch_head.id
+            gitlab_ref: gitlab_ref,
+            packager_ref: packager_ref
           )
         end
 
@@ -52,10 +55,12 @@ module ReleaseTools
 
           return if SharedStatus.dry_run?
 
+          upload_version_data('omnibus')
+
           tag = client.create_tag(
             client.project_path(PROJECT),
             tag_name,
-            branch_head.id,
+            packager_ref,
             tag_message
           )
 
@@ -116,6 +121,18 @@ module ReleaseTools
           else
             ReleaseTools::GitlabClient
           end
+        end
+
+        def packager_project
+          PROJECT
+        end
+
+        def gitlab_ref
+          @version_map.fetch('VERSION')
+        end
+
+        def packager_ref
+          branch_head.id
         end
       end
     end

@@ -5,11 +5,14 @@ module ReleaseTools
     module Tagger
       class CNGImage
         include ::SemanticLogger::Loggable
+        include ReleaseMetadataTracking
 
         PROJECT = Project::CNGImage
         HELM = Project::HelmGitlab
 
         TAG_FORMAT = '%<major>d.%<minor>d.%<timestamp>s+%<gitlab_ref>.11s'
+
+        attr_reader :version_map, :target_branch
 
         def initialize(target_branch, version_map)
           @target_branch = target_branch
@@ -26,7 +29,7 @@ module ReleaseTools
             major: @major,
             minor: @minor,
             timestamp: timestamp(branch_head.created_at),
-            gitlab_ref: @version_map.fetch('GITLAB_VERSION')
+            gitlab_ref: gitlab_ref
           )
         end
 
@@ -50,6 +53,8 @@ module ReleaseTools
           logger.info('Creating CNG tag', name: tag_name, target: branch_head.id)
 
           return if SharedStatus.dry_run?
+
+          upload_version_data('cng')
 
           tag = client.create_tag(
             client.project_path(PROJECT),
@@ -115,6 +120,18 @@ module ReleaseTools
           else
             ReleaseTools::GitlabClient
           end
+        end
+
+        def packager_project
+          PROJECT
+        end
+
+        def gitlab_ref
+          @version_map.fetch('GITLAB_VERSION')
+        end
+
+        def packager_ref
+          branch_head.id
         end
       end
     end
