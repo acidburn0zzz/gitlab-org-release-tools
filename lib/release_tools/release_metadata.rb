@@ -41,7 +41,7 @@ module ReleaseTools
     #    retrieved.
     AUTO_DEPLOY_COMPONENTS = [
       Project::Gitaly,
-      Project::GitlabElasticsearchIndexer,
+      # Project::GitlabElasticsearchIndexer,
       Project::GitlabPages,
       Project::GitlabShell,
       Project::GitlabWorkhorse
