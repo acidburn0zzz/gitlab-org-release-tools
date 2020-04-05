@@ -67,7 +67,7 @@ module ReleaseTools
 
       def active_release_managers
         active = Schedule.new.active_release_managers_usernames
-        all.select { |user| active.include?(user.production)}
+        all.select { |user| active.include?(user.production) }
       end
 
       # Represents a single entry from the configuration file

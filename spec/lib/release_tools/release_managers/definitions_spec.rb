@@ -53,6 +53,18 @@ describe ReleaseTools::ReleaseManagers::Definitions do
   end
 
   describe '#sync!' do
+    before do
+      schedule = instance_spy(ReleaseTools::ReleaseManagers::Schedule)
+
+      allow(ReleaseTools::ReleaseManagers::Schedule)
+        .to receive(:new)
+        .and_return(schedule)
+
+      allow(schedule)
+        .to receive(:active_release_managers_usernames)
+        .and_return(["jameslopez", "new-team-member", "rspeicher"])
+    end
+
     def client_spy(client_to_spy_on)
       client_spy = spy
 
