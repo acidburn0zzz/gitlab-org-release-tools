@@ -47,7 +47,7 @@ module ReleaseTools
     ].freeze
 
     PERMITTED_WITH_TEAM_LABELS = [
-      'Documentation'
+      'documentation'
     ].freeze
 
     UNPERMITTED_LABELS = [
