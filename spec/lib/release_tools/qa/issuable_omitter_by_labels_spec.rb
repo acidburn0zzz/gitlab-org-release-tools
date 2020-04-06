@@ -4,7 +4,7 @@ require 'spec_helper'
 
 describe ReleaseTools::Qa::IssuableOmitterByLabels do
   let(:permitted) do
-    double("permitted mr", labels: %w[devops::create Documentation bug])
+    double("permitted mr", labels: %w[devops::create documentation bug])
   end
 
   let(:unpermitted) do
@@ -12,7 +12,7 @@ describe ReleaseTools::Qa::IssuableOmitterByLabels do
   end
 
   let(:permitted_but_no_team_labels) do
-    double("documentation only mr", labels: %w[Documentation])
+    double("documentation only mr", labels: %w[documentation])
   end
 
   let(:merge_requests) do
@@ -33,7 +33,7 @@ describe ReleaseTools::Qa::IssuableOmitterByLabels do
     expect(subject).to include(permitted)
   end
 
-  it 'excludes Documentation merge requests without team labels' do
+  it 'excludes documentation merge requests without team labels' do
     expect(subject).not_to include(permitted_but_no_team_labels)
   end
 end
