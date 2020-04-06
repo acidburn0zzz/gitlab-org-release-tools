@@ -140,7 +140,7 @@ module ReleaseTools
             This merge request appears to not have been reviewed. Make sure that
             the following task is present and completed:
 
-                - [ ] Assign to a reviewer
+                - [ ] Assign to a reviewer and maintainer, per our Code Review process.
           ERROR
         end
       end
@@ -149,7 +149,7 @@ module ReleaseTools
         unless @merge_request.target_branch.match?(ALLOWED_TARGET_BRANCHES)
           error('The target branch is invalid', <<~ERROR)
             Security merge requests must target `master`, or a stable branch
-            such as 11-8-stable (or 11-8-stable-ee for Enterprise Edition).
+            such as 11-8-stable-ee.
 
             Security branches are no longer in use and should not be used as
             target branches.
