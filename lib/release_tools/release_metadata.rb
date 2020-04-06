@@ -123,7 +123,7 @@ module ReleaseTools
 
       # We use the security repositories since commits from both the canonical
       # and public repositories are available there.
-      GitlabClient.tag(path, tag: tag).commit.id
+      project.security_client.tag(path, tag: tag).commit.id
     rescue Gitlab::Error::NotFound
       raise ArgumentError, "The tag #{tag} does not exist for project #{path}"
     end

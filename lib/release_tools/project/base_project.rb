@@ -88,6 +88,10 @@ module ReleaseTools
       end
 
       private_class_method :extract_path_from_remote
+
+      def self.security_client
+        GitlabClient
+      end
     end
   end
 end

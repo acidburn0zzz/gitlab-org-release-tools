@@ -25,4 +25,11 @@ describe ReleaseTools::Project::GitlabElasticsearchIndexer do
   describe '.version_file' do
     it { expect(described_class.version_file).to eq 'GITLAB_ELASTICSEARCH_INDEXER_VERSION' }
   end
+
+  describe '.security_client' do
+    it do
+      expect(described_class.security_client)
+        .to eq(ReleaseTools::GitlabDevClient)
+    end
+  end
 end
