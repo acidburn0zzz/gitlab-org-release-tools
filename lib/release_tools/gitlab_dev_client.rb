@@ -13,11 +13,16 @@ module ReleaseTools
     end
 
     def self.client
-      @client ||= Gitlab.client(
-        endpoint: DEV_API_ENDPOINT,
-        private_token: ENV['RELEASE_BOT_DEV_TOKEN'],
-        httparty: httparty_opts
-      )
+      @client ||=
+        if Feature.enabled?(:client_wrapper)
+          ReleaseTools::ClientWrapper.dev
+        else
+          Gitlab.client(
+            endpoint: DEV_API_ENDPOINT,
+            private_token: ENV['RELEASE_BOT_DEV_TOKEN'],
+            httparty: httparty_opts
+          )
+        end
     end
   end
 end

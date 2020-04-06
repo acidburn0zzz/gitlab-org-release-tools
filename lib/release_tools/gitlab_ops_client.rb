@@ -5,11 +5,16 @@ module ReleaseTools
     OPS_API_ENDPOINT = 'https://ops.gitlab.net/api/v4'
 
     def self.client
-      @client ||= Gitlab.client(
-        endpoint: OPS_API_ENDPOINT,
-        private_token: ENV['RELEASE_BOT_OPS_TOKEN'],
-        httparty: httparty_opts
-      )
+      @client ||=
+        if Feature.enabled?(:client_wrapper)
+          ReleaseTools::ClientWrapper.ops
+        else
+          Gitlab.client(
+            endpoint: OPS_API_ENDPOINT,
+            private_token: ENV['RELEASE_BOT_OPS_TOKEN'],
+            httparty: httparty_opts
+          )
+        end
     end
   end
 end

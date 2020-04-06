@@ -356,15 +356,24 @@ module ReleaseTools
     end
 
     def self.client
-      @client ||= Gitlab.client(
-        endpoint: DEFAULT_GITLAB_API_ENDPOINT,
-        private_token: ENV['RELEASE_BOT_PRODUCTION_TOKEN'],
-        httparty: httparty_opts
-      )
+      @client ||=
+        if Feature.enabled?(:client_wrapper)
+          ReleaseTools::ClientWrapper.production
+        else
+          Gitlab.client(
+            endpoint: DEFAULT_GITLAB_API_ENDPOINT,
+            private_token: ENV['RELEASE_BOT_PRODUCTION_TOKEN'],
+            httparty: httparty_opts
+          )
+        end
     end
 
     def self.httparty_opts
-      { logger: logger, log_level: :debug }
+      if Feature.enabled?(:log_httparty)
+        { logger: logger, log_level: :debug }
+      else
+        {}
+      end
     end
 
     # Overridden by GitLabDevClient
