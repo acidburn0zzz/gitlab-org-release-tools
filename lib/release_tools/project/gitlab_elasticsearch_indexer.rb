@@ -12,6 +12,10 @@ module ReleaseTools
       def self.version_file
         'GITLAB_ELASTICSEARCH_INDEXER_VERSION'
       end
+
+      def self.security_client
+        GitlabDevClient
+      end
     end
   end
 end

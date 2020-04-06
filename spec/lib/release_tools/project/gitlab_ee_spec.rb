@@ -24,4 +24,10 @@ describe ReleaseTools::Project::GitlabEe do
   describe '.dev_group' do
     it { expect(described_class.dev_group).to eq 'gitlab' }
   end
+
+  describe '.security_client' do
+    it do
+      expect(described_class.security_client).to eq(ReleaseTools::GitlabClient)
+    end
+  end
 end
