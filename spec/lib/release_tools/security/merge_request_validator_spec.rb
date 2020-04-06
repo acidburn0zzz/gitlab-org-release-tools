@@ -22,6 +22,7 @@ describe ReleaseTools::Security::MergeRequestValidator do
         validate_target_branch
         validate_discussions
         validate_labels
+        validate_closing_security_issue
       ]
 
       validation_methods.each do |method|
@@ -347,6 +348,66 @@ describe ReleaseTools::Security::MergeRequestValidator do
       validator.validate_labels
 
       expect(validator.errors).to be_empty
+    end
+  end
+
+  describe '#validate_closing_security_issue' do
+    let(:client) { double(:client) }
+
+    context 'when the merge request is targeting master' do
+      it 'adds an error if the merge request does not close the security issue when merged' do
+        merge_request = double(:merge_request,
+                               iid: 1,
+                               project_id: 1,
+                               target_branch: 'master',
+                               description: 'Some invalid description')
+
+        allow(client)
+          .to receive(:merge_request_closes_issues)
+          .with(merge_request.project_id, merge_request.iid)
+          .and_return([])
+
+        validator = described_class.new(merge_request, client)
+        validator.validate_closing_security_issue
+
+        expect(validator.errors.first)
+          .to include('The merge request must close the security implementation issue')
+      end
+
+      it 'does not add an error if the merge request closes the security issue when merged' do
+        security_issue = double(:issue, web_url: 'gitlab-org/security/gitlab/1')
+
+        merge_request = double(:merge_request,
+                               iid: 1,
+                               project_id: 1,
+                               target_branch: 'master',
+                               description: 'Some valid description. Closes #1')
+
+        allow(client)
+          .to receive(:merge_request_closes_issues)
+          .with(merge_request.project_id, merge_request.iid)
+          .and_return([security_issue])
+
+        validator = described_class.new(merge_request, client)
+        validator.validate_closing_security_issue
+
+        expect(validator.errors).to be_empty
+      end
+    end
+
+    context 'when the merge request is not targeting master' do
+      it "does not add an error if the merge request includes 'Fixes #1' in its description" do
+        merge_request = double(:merge_request,
+                               iid: 1,
+                               project_id: 1,
+                               target_branch: '12-9-stable-ee',
+                               description: 'Some valid description. Fixes #1')
+
+        validator = described_class.new(merge_request, client)
+        validator.validate_closing_security_issue
+
+        expect(validator.errors).to be_empty
+      end
     end
   end
 end
