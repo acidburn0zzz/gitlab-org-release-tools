@@ -21,6 +21,12 @@ module ReleaseTools
         end
     end
 
+    def merge_base(other_ref)
+      return unless Feature.enabled?(:merge_base_limit)
+
+      @client.merge_base(project, [@ref, other_ref])&.id
+    end
+
     # Get the latest commit for `ref`
     def latest
       commit_list.first
@@ -31,8 +37,17 @@ module ReleaseTools
     end
 
     # Find a commit with a passing build on production that also exists on dev
-    def latest_successful_on_build
+    def latest_successful_on_build(limit: nil)
       commit_list.detect do |commit|
+        if Feature.enabled?(:merge_base_limit) && commit.id == limit
+          logger.info(
+            'Reached the limit commit without a successful build',
+            project: project,
+            limit: limit
+          )
+          return nil
+        end
+
         next unless success?(commit)
 
         begin

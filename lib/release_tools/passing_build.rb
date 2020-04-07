@@ -20,7 +20,8 @@ module ReleaseTools
           # release we'll just use the latest commit on the branch
           commits.latest
         else
-          commits.latest_successful_on_build
+          merge_base = commits.merge_base('master')
+          commits.latest_successful_on_build(limit: merge_base)
         end
 
       if commit.nil?
