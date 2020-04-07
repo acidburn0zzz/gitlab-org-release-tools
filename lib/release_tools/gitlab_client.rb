@@ -53,6 +53,10 @@ module ReleaseTools
       client.issues(project_path(project), options)
     end
 
+    def self.merge_base(project, refs)
+      client.merge_base(project_path(project), refs)
+    end
+
     def self.merge_requests(project = Project::GitlabCe, options = {})
       client.merge_requests(project_path(project), options)
     end

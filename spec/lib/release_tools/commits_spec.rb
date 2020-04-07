@@ -46,6 +46,41 @@ describe ReleaseTools::Commits do
         expect(instance.latest_successful_on_build).not_to be_nil
       end
     end
+
+    context 'when a limit is provided' do
+      it 'returns a commit found on dev' do
+        enable_feature(:merge_base_limit)
+        instance = described_class.new(project)
+
+        VCR.use_cassette('commits/list') do
+          commit = instance.latest_successful_on_build(limit: 'a5f13e591f617931434d66263418a2f26abe3abe')
+
+          expect(commit).to be_nil
+        end
+      end
+    end
+  end
+
+  describe '#merge_base' do
+    let(:project) { ReleaseTools::Project::GitlabEe }
+    let(:ref) { '12-10-auto-deploy-20200405' }
+    let(:client) { double('ReleaseTools::GitlabClient') }
+
+    subject(:commits) { described_class.new(project, client: client, ref: ref) }
+
+    it 'returns the merge-base commit id' do
+      enable_feature(:merge_base_limit)
+      merge_base = double('merge_base', id: '123abc')
+
+      expect(client).to receive(:merge_base)
+                          .with(project, [ref, 'another_ref'])
+                          .and_return(merge_base)
+                          .once
+
+      merge_base_id = commits.merge_base('another_ref')
+
+      expect(merge_base_id).to eq(merge_base.id)
+    end
   end
 
   describe '#success?' do
