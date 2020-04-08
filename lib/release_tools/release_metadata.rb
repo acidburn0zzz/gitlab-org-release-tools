@@ -95,11 +95,15 @@ module ReleaseTools
         tag = false
         ref = DEFAULT_COMPONENT_REF
         sha = nil
+        valid_major_minor = version.match?(TAG_REGEX)
 
-        if project && version.match?(TAG_REGEX)
+        if project && valid_major_minor
           tag = true
           ref = "v#{normalized_version}"
           sha = sha_of_tag(project, ref)
+        elsif valid_major_minor
+          # The version format is valid, but there is no project; just take the
+          # version as-is.
         elsif version.length == 40
           # Our SHAs are always 40 characters long, so we can just check for the
           # length instead of using a regular expression.
