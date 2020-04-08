@@ -70,6 +70,22 @@ describe ReleaseTools::ReleaseMetadata do
         expect(release.tag).to eq(true)
       end
 
+      it 'adds the release data based if there is no project' do
+        collection = described_class.new
+
+        collection.add_auto_deploy_components(
+          'KITTENS_VERSION' => '1.2.3'
+        )
+
+        release = collection.releases.first
+
+        expect(release.name).to eq('kittens')
+        expect(release.version).to eq('1.2.3')
+        expect(release.sha).to be_nil
+        expect(release.ref).to eq('master')
+        expect(release.tag).to eq(false)
+      end
+
       it 'raises an ArgumentError if the associated Git tag does not exist' do
         collection = described_class.new
 
