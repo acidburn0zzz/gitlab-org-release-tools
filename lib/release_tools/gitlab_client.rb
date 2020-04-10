@@ -49,6 +49,10 @@ module ReleaseTools
       client.edit_file(project_path(project), *args)
     end
 
+    def self.get_file(project, *args)
+      client.get_file(project_path(project), *args)
+    end
+
     def self.issues(project = Project::GitlabCe, options = {})
       client.issues(project_path(project), options)
     end
@@ -263,6 +267,10 @@ module ReleaseTools
       client.branch(project_path(project), branch_name)
     rescue Gitlab::Error::NotFound
       nil
+    end
+
+    def self.tree(project, options = {})
+      client.tree(project_path(project), options)
     end
 
     # Create a merge request in the given project based on the provided merge request
