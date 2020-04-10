@@ -25,7 +25,7 @@ module ReleaseTools
         @path = path
         @blob = blob
 
-        parse_blob(blob.content)
+        parse_blob
       end
 
       def to_s
@@ -43,7 +43,14 @@ module ReleaseTools
 
       private
 
-      def parse_blob(content)
+      def parse_blob
+        content =
+          if blob.respond_to?(:content)
+            blob.content
+          else
+            blob
+          end
+
         yaml = YAML.safe_load(content)
 
         @author = yaml['author']

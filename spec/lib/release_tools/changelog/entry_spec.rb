@@ -21,6 +21,24 @@ describe ReleaseTools::Changelog::Entry do
       end
     end
 
+    it 'parses a string' do
+      data = {
+        'title' => 'Foo',
+        'merge_request' => 1234,
+        'author' => 'Joe Smith',
+        'type' => 'added'
+      }
+
+      entry = described_class.new('foo/bar', data.to_yaml)
+
+      aggregate_failures do
+        expect(entry.title).to eq 'Foo'
+        expect(entry.id).to eq 1234
+        expect(entry.author).to eq 'Joe Smith'
+        expect(entry.type).to eq 'added'
+      end
+    end
+
     it 'handles a String-based ID' do
       entry = entry('merge_request' => '1234')
 
