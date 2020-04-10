@@ -84,7 +84,7 @@ describe ReleaseTools::Deployments::OmnibusDeploymentVersionParser do
       it 'raises ArgumentError' do
         allow(ReleaseTools::GitlabClient)
           .to receive(:tag)
-          .and_raise(gitlab_error(Gitlab::Error::NotFound))
+          .and_raise(gitlab_error(:NotFound))
 
         expect { described_class.new.parse('12.5.0-rc43.ee.0') }
           .to raise_error(ArgumentError)
