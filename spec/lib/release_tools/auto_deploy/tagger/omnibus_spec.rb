@@ -93,7 +93,7 @@ describe ReleaseTools::AutoDeploy::Tagger::Omnibus do
         end
 
         expect(fake_client).to have_received(:create_tag)
-          .with(described_class::PROJECT.path, 'tag_name', branch_head.id, anything)
+          .with(described_class::PROJECT, 'tag_name', branch_head.id, anything)
       end
 
       it 'uses the dev client in a security release' do
@@ -154,7 +154,7 @@ describe ReleaseTools::AutoDeploy::Tagger::Omnibus do
       tag = double(name: 'tag_name', message: 'tag_message')
 
       expect(fake_ops_client).to receive(:create_tag)
-        .with(described_class::DEPLOYER.path, tag.name, 'master', tag.message)
+        .with(described_class::DEPLOYER, tag.name, 'master', tag.message)
 
       without_dry_run do
         tagger.tag_deployer!(tag)

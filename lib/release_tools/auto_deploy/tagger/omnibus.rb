@@ -58,7 +58,7 @@ module ReleaseTools
           upload_version_data('omnibus')
 
           tag = client.create_tag(
-            client.project_path(PROJECT),
+            PROJECT,
             tag_name,
             packager_ref,
             tag_message
@@ -81,7 +81,7 @@ module ReleaseTools
           return if SharedStatus.dry_run?
 
           ReleaseTools::GitlabOpsClient.create_tag(
-            DEPLOYER.path,
+            DEPLOYER,
             tag.name,
             'master',
             tag.message

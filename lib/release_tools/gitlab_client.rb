@@ -21,8 +21,6 @@ module ReleaseTools
       def_delegator :client, :create_variable
       def_delegator :client, :update_variable
 
-      def_delegator :client, :create_tag
-
       def_delegator :client, :cancel_pipeline
       def_delegator :client, :version
     end
@@ -263,6 +261,19 @@ module ReleaseTools
       client.branch(project_path(project), branch_name)
     rescue Gitlab::Error::NotFound
       nil
+    end
+
+    # Find a tag in a given project
+    #
+    # Returns a Gitlab::ObjectifiedHash object, or nil
+    def self.find_tag(project, tag)
+      client.tag(project_path(project), tag)
+    rescue Gitlab::Error::NotFound
+      nil
+    end
+
+    def self.create_tag(project, tag_name, ref, message: '')
+      client.create_tag(project_path(project), tag_name, ref, message)
     end
 
     # Create a merge request in the given project based on the provided merge request
