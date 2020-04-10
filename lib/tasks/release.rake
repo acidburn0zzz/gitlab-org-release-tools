@@ -176,6 +176,15 @@ namespace :release do
     end
   end
 
+  namespace :workhorse do
+    desc 'Tag a new release'
+    task :tag, [:version] do |_, args|
+      version = get_version(args)
+
+      ReleaseTools::Release::GitlabWorkhorseRelease.new(version).execute
+    end
+  end
+
   namespace :helm do
     desc 'Tag a new release'
     task :tag, [:charts_version, :gitlab_version] do |_t, args|
