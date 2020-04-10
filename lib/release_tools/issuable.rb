@@ -13,7 +13,7 @@ module ReleaseTools
 
     def description
       ERB
-        .new(template, nil, '-') # Omit blank lines when using `<% -%>`
+        .new(template, trim_mode: '-') # Omit blank lines when using `<% -%>`
         .result(binding)
     end
 
