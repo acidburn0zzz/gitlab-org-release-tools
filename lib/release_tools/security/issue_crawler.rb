@@ -24,9 +24,6 @@ module ReleaseTools
       # The status of issues and merge requests to be considered
       OPENED = 'opened'
 
-      # A security issue and its merge requests.
-      SecurityIssue = Struct.new(:project_id, :iid, :merge_requests)
-
       # Returns all the upcoming security release issues, sorted by their due
       # dates.
       def security_release_issues
@@ -93,7 +90,7 @@ module ReleaseTools
               mrs << mr
             end
 
-          SecurityIssue.new(issue.project_id, issue.iid, mrs)
+          ReleaseTools::Security::ImplementationIssue.new(issue.project_id, issue.iid, mrs)
         end
       end
     end
