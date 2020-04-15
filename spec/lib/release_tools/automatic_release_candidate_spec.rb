@@ -52,7 +52,9 @@ describe ReleaseTools::AutomaticReleaseCandidate do
       it 'raises an error' do
         stub_release_schedule
 
-        expect { described_class.new(today) }.to raise_error(KeyError)
+        ClimateControl.modify(GITLAB_BOT_PRODUCTION_TOKEN: nil) do
+          expect { described_class.new(today) }.to raise_error(KeyError)
+        end
       end
     end
   end
