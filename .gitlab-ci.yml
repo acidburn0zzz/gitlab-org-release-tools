@@ -167,6 +167,7 @@ release:tag_scheduled_rc:
   stage: automation
   script:
     - source scripts/setup_ssh.sh
+    - source scripts/setup_git.sh
     - bundle exec rake 'release:tag_scheduled_rc'
   only:
     refs:
