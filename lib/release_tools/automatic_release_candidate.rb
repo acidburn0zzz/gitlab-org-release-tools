@@ -34,7 +34,7 @@ module ReleaseTools
       end
 
       @package_version =
-        "#{@release_version.to_minor}.0-rc#{today.strftime(RC_FORMAT)}.ee.0"
+        "#{@release_version.to_minor}.0-rc#{today.strftime(RC_FORMAT)}"
 
       @gitlab_bot_client = Gitlab::Client.new(
         endpoint: GitlabClient::DEFAULT_GITLAB_API_ENDPOINT,
