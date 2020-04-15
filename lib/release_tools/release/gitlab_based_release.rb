@@ -23,7 +23,7 @@ module ReleaseTools
         # Prepend 'v' if version is semver
         return "v#{version}" if /^\d+\.\d+\.\d+(-rc\d+)?(-ee)?$/.match?(version)
 
-        version
+        version.to_s
       end
 
       def version_string_from_file(file_name)
