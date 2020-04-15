@@ -106,7 +106,7 @@ namespace :release do
     else
       ee_version = version.to_ee
 
-      ReleaseTools.logger.info('Starting EE release')
+      ReleaseTools.logger.info('Starting EE release', version: ee_version)
       ReleaseTools::Release::GitlabEeRelease.new(ee_version).execute
     end
 
@@ -115,7 +115,7 @@ namespace :release do
     else
       ce_version = version.to_ce
 
-      ReleaseTools.logger.info('Starting CE release')
+      ReleaseTools.logger.info('Starting CE release', version: ce_version)
       ReleaseTools::Release::GitlabCeRelease.new(ce_version).execute
     end
   end
@@ -163,6 +163,8 @@ namespace :release do
     end
 
     version = ReleaseTools::AutomaticReleaseCandidate.new.prepare
+
+    ReleaseTools.logger.info('Tagging automatic RC', version: version)
 
     Rake::Task['release:tag'].invoke(version)
   end
