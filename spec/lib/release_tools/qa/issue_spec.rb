@@ -12,7 +12,7 @@ describe ReleaseTools::Qa::Issue do
       "author" => double("username" => "author"),
       "assignee" => double("username" => "assignee"),
       "labels" => [
-        "devops::create",
+        "group::access",
         "bug",
         "import",
         "project export",
@@ -62,7 +62,7 @@ describe ReleaseTools::Qa::Issue do
       end
 
       it "includes the Team label title" do
-        expect(content).to include('### devops::create')
+        expect(content).to include('### group::access')
       end
 
       it "includes the MR information" do

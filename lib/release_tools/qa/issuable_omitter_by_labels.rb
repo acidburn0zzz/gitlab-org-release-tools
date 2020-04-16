@@ -11,19 +11,18 @@ module ReleaseTools
 
       def execute
         issuables.select do |issuable|
-          no_unpermitted_labels?(issuable) && permitted_with_team_labels?(issuable)
+          no_unpermitted_labels?(issuable) && permitted_labels?(issuable)
         end
       end
 
       private
 
       def no_unpermitted_labels?(issuable)
-        (issuable.labels & UNPERMITTED_LABELS).empty?
+        (issuable.labels & SKIP_QA_ISSUER_LABELS).empty?
       end
 
-      def permitted_with_team_labels?(issuable)
-        (issuable.labels & TEAM_LABELS).any? ||
-          (issuable.labels & PERMITTED_WITH_TEAM_LABELS).empty?
+      def permitted_labels?(issuable)
+        (issuable.labels & QA_ISSUER_LABELS).any?
       end
     end
   end
