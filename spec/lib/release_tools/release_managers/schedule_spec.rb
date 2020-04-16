@@ -51,21 +51,78 @@ describe ReleaseTools::ReleaseManagers::Schedule do
   end
 
   describe '#ids_for_version' do
-    it 'returns the IDs of the release managers' do
-      allow(schedule)
-        .to receive(:authorized_manager_ids)
-        .and_return('Robert Speicher' => 1, 'Yorick Peterse' => 2)
+    context 'for authorized release managers' do
+      let(:member1) { double(:member, name: 'Robert Speicher', id: 1, username: 'rspeicher') }
+      let(:member2) { double(:member, name: 'Yorick Peterse', id: 2, username: 'yorickpeterse') }
 
-      allow(schedule)
-        .to receive(:release_manager_names_from_yaml)
-        .and_return(['Robert Speicher', 'Yorick Peterse'])
+      it 'returns an array of usernames' do
+        allow(schedule)
+          .to receive(:authorized_release_managers)
+          .and_return([member1, member2])
 
-      expect(schedule.ids_for_version(version)).to eq([1, 2])
+        expect(schedule.ids_for_version(version)).to eq([1, 2])
+      end
     end
   end
 
-  describe '#authorized_manager_ids' do
-    it 'returns a Hash mapping release manager names to their user IDs' do
+  describe '#usernames_for_version' do
+    context 'for authorized release managers' do
+      let(:member1) { double(:member, name: 'Robert Speicher', id: 1, username: 'rspeicher') }
+      let(:member2) { double(:member, name: 'Yorick Peterse', id: 2, username: 'yorickpeterse') }
+
+      it 'returns an array of usernames' do
+        allow(schedule)
+          .to receive(:authorized_release_managers)
+          .and_return([member1, member2])
+
+        expect(schedule.usernames_for_version(version)).to eq(%w(rspeicher yorickpeterse))
+      end
+    end
+  end
+
+  describe '#authorized_release_managers' do
+    context 'for authorized release managers' do
+      let(:member1) { double(:member, name: 'Robert Speicher', id: 1, username: 'rspeicher') }
+      let(:member2) { double(:member, name: 'Yorick Peterse', id: 2, username: 'yorickpeterse') }
+
+      it 'returns an array of users' do
+        allow(schedule)
+          .to receive(:schedule_yaml)
+          .and_return(YAML.safe_load(yaml))
+
+        allow(schedule)
+          .to receive(:group_members)
+          .and_return(
+            'Robert Speicher' => member1,
+            'Yorick Peterse' => member2
+          )
+
+        expect(schedule.authorized_release_managers(version)).to eq([member1, member2])
+      end
+    end
+
+    context 'when some release managers are not authorized' do
+      let(:member1) { double(:member, name: 'Robert Speicher', id: 1, username: 'rspeicher') }
+
+      it 'throws an exception' do
+        allow(schedule)
+          .to receive(:schedule_yaml)
+          .and_return(YAML.safe_load(yaml))
+
+        allow(schedule)
+          .to receive(:group_members)
+          .and_return(
+            'Robert Speicher' => member1
+          )
+
+        expect { schedule.authorized_release_managers(version) }
+          .to raise_error(KeyError, 'Yorick Peterse is not an authorized release manager')
+      end
+    end
+  end
+
+  describe '#group_members' do
+    it 'returns a Hash mapping release manager names to their user attributes' do
       client = instance_spy(ReleaseTools::ReleaseManagers::Client)
 
       allow(ReleaseTools::ReleaseManagers::Client)
@@ -75,12 +132,14 @@ describe ReleaseTools::ReleaseManagers::Schedule do
       allow(client)
         .to receive(:members)
         .and_return([
-          double(:member, name: 'Robert Speicher', id: 1),
-          double(:member, name: 'Yorick Peterse', id: 2)
+          double(:member, name: 'Robert Speicher', id: 1, username: 'rspeicher'),
+          double(:member, name: 'Yorick Peterse', id: 2, username: 'yorickpeterse')
         ])
 
-      expect(schedule.authorized_manager_ids)
-        .to eq('Robert Speicher' => 1, 'Yorick Peterse' => 2)
+      expect(schedule.group_members.fetch('Robert Speicher').id)
+        .to eq(1)
+      expect(schedule.group_members.fetch('Yorick Peterse').username)
+        .to eq('yorickpeterse')
     end
   end
 

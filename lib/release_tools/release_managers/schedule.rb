@@ -20,6 +20,14 @@ module ReleaseTools
         @schedule_yaml = nil
       end
 
+      # Returns usernames of release managers at the time of request.
+      #
+      # @return [Array<String>]
+      def active_release_managers_usernames
+        version = version_for_date(DateTime.now)
+        usernames_for_version(version)
+      end
+
       # Returns the scheduled major.minor version for the given date.
       #
       # @param [Date|Time] date
@@ -40,23 +48,39 @@ module ReleaseTools
       end
 
       # Returns the user IDs of the release managers for the current version.
+      # Used to assign to resources such as Issues.
       #
       # @param [ReleaseTools::Version] version
       # @return [Array<Integer>]
       def ids_for_version(version)
-        mapping = authorized_manager_ids
+        authorized_release_managers(version).collect(&:id)
+      end
 
+      # Returns the usernames of the release managers for the current version.
+      # Used to add/remove access to groups at various GitLab instances.
+      #
+      # @param [ReleaseTools::Version] version
+      # @return [Array<String>]
+      def usernames_for_version(version)
+        authorized_release_managers(version).collect(&:username)
+      end
+
+      # Returns an Array of users authorized for release manager tasks for current version.
+      #
+      # @param [ReleaseTools::Version] version
+      # @return [Array<Gitlab::ObjectifiedHash>]
+      def authorized_release_managers(version)
         release_manager_names_from_yaml(version).map do |name|
-          mapping.fetch(name) do |key|
+          group_members.fetch(name) do |key|
             raise KeyError, "#{key} is not an authorized release manager"
           end
         end
       end
 
-      # Returns a Hash mapping release manager names to their user IDs.
+      # Returns a Hash mapping release manager names with all their attributes.
       #
-      # @return [Hash<String, Integer>]
-      def authorized_manager_ids
+      # @return [Hash<String, Gitlab::ObjectifiedHash>]
+      def group_members
         members =
           begin
             ReleaseManagers::Client.new.members
@@ -65,7 +89,7 @@ module ReleaseTools
           end
 
         members.each_with_object({}) do |user, hash|
-          hash[user.name] = user.id
+          hash[user.name] = user
         end
       end
 
