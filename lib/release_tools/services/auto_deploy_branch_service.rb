@@ -40,6 +40,8 @@ module ReleaseTools
       end
 
       def update_auto_deploy_ci
+        return if SharedStatus.dry_run?
+
         gitlab_ops_client = ReleaseTools::GitlabOpsClient
 
         begin
