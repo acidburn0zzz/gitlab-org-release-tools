@@ -55,6 +55,7 @@ else
       url: ENV['ELASTIC_URL'],
       index: 'release_tools',
       host: ENV['CI_JOB_URL'],
+      type: '_doc',
 
       # Give ES more time to respond over HTTP
       open_timeout: 5.0,
