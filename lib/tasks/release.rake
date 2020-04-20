@@ -101,15 +101,6 @@ namespace :release do
   task :tag, [:version] do |_t, args|
     version = get_version(args)
 
-    if skip?('ee')
-      ReleaseTools.logger.warn('Skipping release for EE')
-    else
-      ee_version = version.to_ee
-
-      ReleaseTools.logger.info('Starting EE release', version: ee_version)
-      ReleaseTools::Release::GitlabEeRelease.new(ee_version).execute
-    end
-
     if skip?('ce')
       ReleaseTools.logger.warn('Skipping release for CE')
     else
@@ -117,6 +108,15 @@ namespace :release do
 
       ReleaseTools.logger.info('Starting CE release', version: ce_version)
       ReleaseTools::Release::GitlabCeRelease.new(ce_version).execute
+    end
+
+    if skip?('ee')
+      ReleaseTools.logger.warn('Skipping release for EE')
+    else
+      ee_version = version.to_ee
+
+      ReleaseTools.logger.info('Starting EE release', version: ee_version)
+      ReleaseTools::Release::GitlabEeRelease.new(ee_version).execute
     end
   end
 
