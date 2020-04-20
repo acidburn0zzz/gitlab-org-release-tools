@@ -42,13 +42,20 @@ The following steps should ideally be completed within one day.
    - Enable "Squash commits" option when merging
 <% else -%>
 - [ ] Disable omnibus nightly builds by setting the schedules to inactive https://dev.gitlab.org/gitlab/omnibus-gitlab/pipeline_schedules
-- [ ] Merge security merge requests using ChatOps:
+- [ ] Merge security merge requests targeting `master` using ChatOps:
    ```sh
    # In Slack:
    /chatops run release merge --security --master
    ```
 <% end -%>
-- [ ] Manually cherry pick EACH security fix into the CURRENT auto-deploy branch, both GitLab and Omnibus
+
+- [ ] Ensure merge requests targeting `master` were automatically picked into the current auto-deploy branch.
+If they were not picked, you can use the following script to pick them.
+
+<details>
+  <summary>Script to push to auto-deploy branch</summary>
+  <code>
+
    ```sh
    # fetch both remotes
    git fetch origin
@@ -68,6 +75,9 @@ The following steps should ideally be completed within one day.
    # push to security
    git push security
    ```
+   </code>
+</details>
+
 - [ ] Trigger an auto-deploy tagging via ChatOps:
    ```sh
    # In Slack
