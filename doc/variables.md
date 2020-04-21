@@ -31,6 +31,7 @@ authenticating over HTTPS with an access token.
 - `AUTO_DEPLOY_BRANCH` -- The current auto-deploy branch. Gets updated via API
   by auto-deploy jobs and **should not be changed manually.**
 - `OMNIBUS_BUILD_TRIGGER_TOKEN` -- Used to trigger an Omnibus build.
+- `HELM_BUILD_TRIGGER_TOKEN` -- Used to trigger an Helm charts auto-deploy tagging.
 
 ## Feature flags
 

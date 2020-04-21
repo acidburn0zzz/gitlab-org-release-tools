@@ -11,6 +11,7 @@ ENV['RELEASE_BOT_DEV_TOKEN'] = 'test'
 ENV['RELEASE_BOT_OPS_TOKEN'] = 'test'
 ENV['RELEASE_BOT_PRODUCTION_TOKEN'] = 'test'
 ENV['RELEASE_BOT_VERSION_TOKEN'] = 'test'
+ENV['HELM_BUILD_TRIGGER_TOKEN'] = 'test'
 
 # SimpleCov needs to be loaded before everything else
 require_relative 'support/simplecov'
