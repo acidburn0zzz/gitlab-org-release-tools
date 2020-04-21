@@ -13,8 +13,6 @@ module ReleaseTools
       (\.\d+)?\z
     }x.freeze
 
-    OMNIBUS_SINGLE_BRANCH_VERSION = ENV.fetch('OMNIBUS_SINGLE_BRANCH_VERSION', '12.3.0')
-
     def ee?
       edition == 'ee'
     end
@@ -42,12 +40,10 @@ module ReleaseTools
       str << '.0'
     end
 
-    # For omnibus-gitlab, we have a single stable branch starting with
-    # version specified in the env variable OMNIBUS_SINGLE_BRANCH_VERSION.
-    # So, we are stripping off `-ee` suffix.
+    # For omnibus-gitlab, we have a single stable branch.
     def stable_branch(ee: false)
       super.tap do |branch|
-        branch.chomp!('-ee') if self >= ReleaseTools::Version.new(OMNIBUS_SINGLE_BRANCH_VERSION)
+        branch.chomp!('-ee')
       end
     end
   end
