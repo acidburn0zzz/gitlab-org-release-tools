@@ -1,15 +1,19 @@
-image: "dev.gitlab.org:5005/gitlab/gitlab-build-images:release-tools"
-
 stages:
   - test
   - deploy
   - automation
   - chatops
 
-cache: &global-cache
-  key: "ruby-26"
-  paths:
-    - vendor/ruby
+default:
+  image: "dev.gitlab.org:5005/gitlab/gitlab-build-images:release-tools"
+  cache:
+    key:
+      files:
+        - .ruby-version
+    paths:
+      - vendor/ruby
+  tags:
+    - gitlab-org
 
 # templates -------------------------------------------------------------------
 
@@ -88,7 +92,6 @@ release-managers:
     variables:
       - $RELEASE_MANAGERS
   cache:
-    <<: *global-cache
     policy: pull
 
 feature-freeze:
@@ -190,5 +193,4 @@ chatops:
     variables:
       - $TASK
   cache:
-    <<: *global-cache
     policy: pull
