@@ -34,7 +34,7 @@ describe ReleaseTools::Security::CherryPicker do
 
   describe '#execute' do
     it 'cherry-picks merge requests targeting `master` in projects with auto-deploy branches', :aggregate_failures do
-      picker = described_class.new(merge_result)
+      picker = described_class.new(client, merge_result)
 
       picks, skipped = merge_result.partition { |mr| mr.project_id.even? && mr.target_branch == 'master' }
 
@@ -58,7 +58,7 @@ describe ReleaseTools::Security::CherryPicker do
       expect(client).to receive(:cherry_pick_commit)
         .and_raise(gitlab_error(:BadRequest, code: 400))
 
-      picker = described_class.new(merge_result)
+      picker = described_class.new(client, merge_result)
 
       expect { picker.execute }.not_to raise_error
     end

@@ -41,7 +41,7 @@ describe ReleaseTools::Security::MergeRequestsValidator do
 
     context 'when merge_in_batches is enabled' do
       before do
-        enable_feature(:merge_in_batches)
+        enable_feature(:security_merge_in_batches)
       end
 
       it 'validates merge requests passed as arguments' do

@@ -9,6 +9,9 @@ module ReleaseTools
       # Internal ID of GitLab Release Bot
       GITLAB_RELEASE_BOT_ID = 2_324_599
 
+      # Format of stable branches on GitLab repos
+      STABLE_BRANCH_REGEX = /^(\d+-\d+-stable(-ee)?)$/.freeze
+
       attr_reader :project_id, :iid, :merge_requests
 
       def initialize(project_id, iid, merge_requests)
@@ -22,9 +25,14 @@ module ReleaseTools
           merge_requests_assigned_to_the_bot?
       end
 
-      def merge_request_master
+      def merge_request_targeting_master
         merge_requests
           .detect { |merge_request| merge_request.target_branch == 'master' }
+      end
+
+      def merge_requests_targeting_stable
+        merge_requests
+          .select { |merge_request| merge_request.target_branch.match?(STABLE_BRANCH_REGEX) }
       end
 
       private

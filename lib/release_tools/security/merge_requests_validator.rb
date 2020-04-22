@@ -65,7 +65,7 @@ module ReleaseTools
       # as arguments, if the flag is disabled it validates merge requests associated
       # to PROJECTS_TO_VERIFY.
       def execute(merge_requests: [])
-        if Feature.enabled?(:merge_in_batches)
+        if Feature.enabled?(:security_merge_in_batches)
           validate_merge_requests(merge_requests)
         else
           validate_per_projects

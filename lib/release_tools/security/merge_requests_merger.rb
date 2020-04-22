@@ -28,15 +28,27 @@ module ReleaseTools
       end
 
       # Merges all valid security merge requests.
+      # We group MRs by target branch so we don't attempt to merge multiple
+      # MRs into the same target branch at the same time. This should lead to
+      # better concurrency, as we have to spend less time waiting for previous
+      # MRs to finish merging.
+      #
+      # It should also result in merges not happening less often, as we only
+      # merge a new MR into the target branch when the previous one finishes
+      # merging.
+      #
+      # If 'merge_in_batches' feature is enabled, calls MergeRequestsBatchMerger
       def execute
-        # We group MRs by target branch so we don't attempt to merge multiple
-        # MRs into the same target branch at the same time. This should lead to
-        # better concurrency, as we have to spend less time waiting for previous
-        # MRs to finish merging.
-        #
-        # It should also result in merges not happening less often, as we only
-        # merge a new MR into the target branch when the previous one finishes
-        # merging.
+        if Feature.enabled?(:security_merge_in_batches)
+          ReleaseTools::Security::MergeRequestsBatchMerger
+            .new(client)
+            .execute
+        else
+          validate_and_merge_by_projects
+        end
+      end
+
+      def validate_and_merge_by_projects
         valid, invalid = validated_merge_requests
         to_merge = valid.group_by(&:target_branch)
 
@@ -51,7 +63,7 @@ module ReleaseTools
 
         Slack::ChatopsNotification.merged_security_merge_requests(merge_result)
 
-        CherryPicker.new(merge_result.merged).execute if @merge_master
+        CherryPicker.new(client, merge_result.merged).execute if @merge_master
 
         merge_result
       end
