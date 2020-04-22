@@ -15,8 +15,8 @@ describe ReleaseTools::AutoDeploy::Tagger::ReleaseMetadataTracking do
         { ReleaseTools::Project::Gitaly.version_file => 'v1.2.3' }
       end
 
-      def packager_project
-        ReleaseTools::Project::OmnibusGitlab
+      def packager_name
+        'cng-ee'
       end
 
       def target_branch

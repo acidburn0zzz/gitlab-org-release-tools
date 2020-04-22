@@ -16,14 +16,14 @@ module ReleaseTools
           # branch is used) instead of relying on the component version mapping
           # Hash.
           release_metadata.add_release(
-            name: packager_project.project_name,
+            name: packager_name,
             version: packager_ref,
             sha: packager_ref,
             ref: target_branch
           )
 
           release_metadata.add_release(
-            name: Project::GitlabEe.project_name,
+            name: 'gitlab-ee',
             version: gitlab_ref,
             sha: gitlab_ref,
             ref: target_branch
@@ -44,7 +44,7 @@ module ReleaseTools
           raise NotImplementedError
         end
 
-        def packager_project
+        def packager_name
           raise NotImplementedError
         end
 

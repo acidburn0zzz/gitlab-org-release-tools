@@ -105,8 +105,8 @@ module ReleaseTools
           end
         end
 
-        def packager_project
-          PROJECT
+        def packager_name
+          'cng-ee'
         end
 
         def gitlab_ref

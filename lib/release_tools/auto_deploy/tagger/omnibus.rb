@@ -123,8 +123,8 @@ module ReleaseTools
           end
         end
 
-        def packager_project
-          PROJECT
+        def packager_name
+          'omnibus-gitlab-ee'
         end
 
         def gitlab_ref
