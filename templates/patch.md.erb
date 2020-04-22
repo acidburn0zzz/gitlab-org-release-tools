@@ -1,7 +1,7 @@
 ## Preparation
 
 - Preparation MR's should already be created
-- [ ] [Ensure any backports targeting] <%= version %> are merged to their stable counter part
+- [Ensure any backports targeting] <%= version %> are merged to their stable counter part
   - [ ] [EE Backports](https://gitlab.com/gitlab-org/gitlab/merge_requests?scope=all&utf8=%E2%9C%93&state=opened&target_branch=<%= version.stable_branch(ee: true) %>)
   - [ ] [Omnibus EE](https://gitlab.com/gitlab-org/omnibus-gitlab/merge_requests?scope=all&utf8=%E2%9C%93&state=opened&target_branch=<%= version.stable_branch(ee: true) %>)
 - [ ] Perform automated merging into the preparation branches:
@@ -22,19 +22,15 @@
 ## Packaging
 
 - [ ] Check if mirroring synced stable branches to dev. If the output is :white_check_mark: for every repo, we can proceed to tag.
-
-  ```
-  # In Slack
-  /chatops run mirror status
-  ```
-
+   ```
+   # In Slack
+   /chatops run mirror status
+   ```
 - [ ] Tag `<%= version %>`:
-
-  ```sh
-  # In Slack:
-  /chatops run release tag <%= version %>
-  ```
-
+   ```sh
+   # In Slack:
+   /chatops run release tag <%= version %>
+   ```
 - [ ] While waiting for packages to build, now is a good time to [prepare the blog post]. Look at previous MRs for examples. => BLOG_POST_MR
 - [ ] Check progress of [EE packages build](https://dev.gitlab.org/gitlab/omnibus-gitlab/commits/<%= version.to_omnibus(ee: true) %>) and [CE packages build](https://dev.gitlab.org/gitlab/omnibus-gitlab/commits/<%= version.to_omnibus(ee: false) %>).
     - This might take a while (around 80 min).
@@ -82,19 +78,18 @@ needs to be manually generated, you can do so as follows:
 ## Release
 
 - [ ] Publish the packages via ChatOps:
-  ```
-  # In Slack:
-  /chatops run publish <%= version %>
-  ```
+   ```
+   # In Slack:
+   /chatops run publish <%= version %>
+   ```
 - [ ] Verify that packages appear on `packages.gitlab.com`: [EE](https://packages.gitlab.com/gitlab/gitlab-ee) / [CE](https://packages.gitlab.com/gitlab/gitlab-ce)
 - [ ] Verify that Docker images appear on `hub.docker.com`: [EE](https://hub.docker.com/r/gitlab/gitlab-ee/tags) / [CE](https://hub.docker.com/r/gitlab/gitlab-ce/tags)
 - [ ] Create the `<%= version %>` version on [version.gitlab.com](https://version.gitlab.com/versions/new?version=<%= version %>)
 - [ ] Deploy the blog post
 - [ ] In the `#content-updates` channel, share a link to the blog post:
-
-    ```
-    :tada: GitLab <%= version %> has been released: BLOG_POST_URL
-    ```
+   ```
+   :tada: GitLab <%= version %> has been released: BLOG_POST_URL
+   ```
 
 ## References
 
