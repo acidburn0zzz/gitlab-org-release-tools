@@ -143,8 +143,6 @@ describe ReleaseTools::AutomaticReleaseCandidate do
     it 'updates the target branch using a merge request' do
       rc = stubbed_rc
       mr = double(:merge_request, web_url: 'foo', project_id: 1, iid: 2)
-      pipeline1 = double(:pipeline, id: 42, status: 'running')
-      pipeline2 = double(:pipeline, id: 43, status: 'created')
 
       expect(ReleaseTools::GitlabClient)
         .to receive(:current_user)
@@ -163,18 +161,6 @@ describe ReleaseTools::AutomaticReleaseCandidate do
           remove_source_branch: true
         )
         .and_return(mr)
-
-      expect(ReleaseTools::GitlabClient.client)
-        .to receive(:merge_request_pipelines)
-        .and_return(Gitlab::PaginatedResponse.new([pipeline1, pipeline2]))
-
-      expect(ReleaseTools::GitlabClient.client)
-        .to receive(:cancel_pipeline)
-        .with(1, 42)
-
-      expect(ReleaseTools::GitlabClient.client)
-        .to receive(:cancel_pipeline)
-        .with(1, 43)
 
       expect(rc.gitlab_bot_client).to receive(:approve_merge_request).with(1, 2)
 
