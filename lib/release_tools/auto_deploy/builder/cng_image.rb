@@ -14,7 +14,7 @@ module ReleaseTools
             .get_cng_compat_versions(@commit_id)
 
           ReleaseTools::ComponentVersions
-            .update_cng(@target_branch, version_map)
+            .update_cng(@target_branch.to_s, version_map)
 
           ReleaseTools::AutoDeploy::Tagger::CNGImage
             .new(@target_branch, version_map)

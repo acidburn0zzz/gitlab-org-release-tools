@@ -39,6 +39,8 @@ describe ReleaseTools::AutoDeploy::Version do
       expect(version.stable_branch.branch_name)
         .to eq(branch_name)
 
+      expect(version.stable_branch.version).to eq('12.1.0')
+
       version = version.to_ce
 
       expect(version.stable_branch.branch_name)

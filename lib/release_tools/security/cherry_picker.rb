@@ -12,7 +12,7 @@ module ReleaseTools
       def initialize(client, merge_requests)
         @merge_requests = merge_requests
         @client = client
-        @target = ReleaseTools::AutoDeployBranch.current
+        @target = ReleaseTools::AutoDeployBranch.current_name
       end
 
       def execute

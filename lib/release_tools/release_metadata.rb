@@ -64,7 +64,7 @@ module ReleaseTools
       @releases = {}
     end
 
-    def include?(name)
+    def tracked?(name)
       @releases.key?(name)
     end
 
@@ -99,7 +99,7 @@ module ReleaseTools
         # We ignore already tracked releases. This makes it easier for our
         # release code to add releases, without having to worry about
         # overwriting already existing data.
-        next if include?(name)
+        next if tracked?(name)
 
         normalized_version = version.start_with?('v') ? version[1..-1] : version
         tag = false

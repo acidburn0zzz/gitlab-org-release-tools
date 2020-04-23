@@ -17,18 +17,14 @@ module ReleaseTools
         def initialize(target_branch, version_map)
           @target_branch = target_branch
           @version_map = version_map
-
-          @major, @minor = target_branch.split('-', 3).take(2)
-
-          raise ArgumentError, "Unable to determine version from #{target_branch}" unless @major && @minor
         end
 
         def tag_name
           @tag_name ||= format(
             TAG_FORMAT,
-            major: @major,
-            minor: @minor,
-            timestamp: timestamp(branch_head.created_at),
+            major: @target_branch.version.major,
+            minor: @target_branch.version.minor,
+            timestamp: @target_branch.tag_timestamp,
             gitlab_ref: gitlab_ref,
             packager_ref: packager_ref
           )
@@ -109,10 +105,6 @@ module ReleaseTools
           # changes on the branch since we last tagged it, and should be
           # considered changed
           refs.none? { |ref| ref.type == 'tag' }
-        end
-
-        def timestamp(datetime)
-          Time.parse(datetime.to_s).strftime('%Y%m%d%H%M')
         end
 
         def client

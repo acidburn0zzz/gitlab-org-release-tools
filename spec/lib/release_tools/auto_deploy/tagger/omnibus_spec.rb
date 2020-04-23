@@ -5,7 +5,10 @@ require 'spec_helper'
 describe ReleaseTools::AutoDeploy::Tagger::Omnibus do
   let(:fake_client) { spy(project_path: described_class::PROJECT.path) }
 
-  let(:target_branch) { '12-9-auto-deploy-20200226' }
+  let(:target_branch) do
+    ReleaseTools::AutoDeployBranch.new('12-9-auto-deploy-20200226')
+  end
+
   let(:version_map) do
     {
       'VERSION' => SecureRandom.hex(20),
@@ -20,24 +23,14 @@ describe ReleaseTools::AutoDeploy::Tagger::Omnibus do
     enable_feature(:release_json_tracking)
   end
 
-  describe 'initialize' do
-    it 'raises an error when unable to determine version information' do
-      expect { described_class.new('some_branch', {}) }
-        .to raise_error(ArgumentError, "Unable to determine version from some_branch")
-    end
-  end
-
   describe '#tag_name' do
     it 'returns a tag name in the appropriate format' do
-      commit = double(
-        created_at: Time.new(2019, 7, 2, 10, 14),
-        id: SecureRandom.hex(20)
-      )
+      commit = double(id: SecureRandom.hex(20))
 
       allow(tagger).to receive(:branch_head).and_return(commit)
 
       expect(tagger.tag_name).to eq(
-        "12.9.201907021014+#{version_map['VERSION'][0...11]}.#{commit.id[0...11]}"
+        "12.9.#{target_branch.tag_timestamp}+#{version_map['VERSION'][0...11]}.#{commit.id[0...11]}"
       )
     end
   end

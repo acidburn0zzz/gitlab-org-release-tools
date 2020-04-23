@@ -13,17 +13,17 @@ describe ReleaseTools::ReleaseMetadata do
     end
   end
 
-  describe '#include?' do
+  describe '#tracked?' do
     it 'returns true when a release is tracked' do
       collection = described_class.new
 
       collection.add_release(name: 'test')
 
-      expect(collection).to include('test')
+      expect(collection.tracked?('test')).to eq(true)
     end
 
     it 'returns false when a release is not tracked' do
-      expect(described_class.new).not_to include('test')
+      expect(described_class.new.tracked?('test')).to eq(false)
     end
   end
 

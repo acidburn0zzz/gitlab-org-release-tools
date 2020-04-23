@@ -35,7 +35,7 @@ namespace :auto_deploy do
 
   desc 'Pick commits into the auto deploy branches'
   task pick: :check_enabled do
-    auto_deploy_branch = ReleaseTools::AutoDeployBranch.current
+    auto_deploy_branch = ReleaseTools::AutoDeployBranch.current_name
 
     version = ReleaseTools::AutoDeploy::Version
       .from_branch(auto_deploy_branch)
@@ -53,7 +53,7 @@ namespace :auto_deploy do
     branch = ReleaseTools::AutoDeployBranch.current
 
     commit = ReleaseTools::PassingBuild
-      .new(branch)
+      .new(branch.to_s)
       .execute
 
     ReleaseTools::AutoDeploy::Builder::Omnibus
