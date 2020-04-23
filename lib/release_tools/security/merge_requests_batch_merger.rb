@@ -82,6 +82,8 @@ module ReleaseTools
 
         mr_master = security_issue.merge_request_targeting_master
 
+        return if SharedStatus.dry_run?
+
         @client.create_merge_request_discussion(
           mr_master.project_id,
           mr_master.iid,
@@ -114,6 +116,8 @@ module ReleaseTools
 
         mr_targeting_master = security_issue.merge_request_targeting_master
         mrs_targeting_stable = security_issue.merge_requests_targeting_stable
+
+        return if SharedStatus.dry_run?
 
         merge_merge_request(security_issue, mr_targeting_master)
 

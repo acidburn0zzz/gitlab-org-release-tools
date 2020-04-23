@@ -150,7 +150,9 @@ describe ReleaseTools::Security::MergeRequestsBatchMerger do
             .to receive(:create_merge_request_discussion)
             .with(mr1.project_id, mr1.iid, body: an_instance_of(String))
 
-          batch_merger.execute
+          without_dry_run do
+            batch_merger.execute
+          end
         end
 
         it 'reassigns all the merge requests back to the author' do
@@ -158,7 +160,9 @@ describe ReleaseTools::Security::MergeRequestsBatchMerger do
             .to receive(:update_merge_request)
             .exactly(8).times
 
-          batch_merger.execute
+          without_dry_run do
+            batch_merger.execute
+          end
         end
 
         it 'does not pick merge request targeting master into auto deploy branch' do
@@ -222,7 +226,9 @@ describe ReleaseTools::Security::MergeRequestsBatchMerger do
               .to receive(:accept_merge_request)
               .exactly(8).times
 
-            batch_merger.execute
+            without_dry_run do
+              batch_merger.execute
+            end
           end
 
           it 'picks the merge requests targeting master into auto-deploy branch' do
@@ -230,7 +236,9 @@ describe ReleaseTools::Security::MergeRequestsBatchMerger do
               .to receive(:execute)
               .twice
 
-            batch_merger.execute
+            without_dry_run do
+              batch_merger.execute
+            end
           end
 
           it 'notifies the result' do
@@ -271,7 +279,9 @@ describe ReleaseTools::Security::MergeRequestsBatchMerger do
             expect(batch_merger)
               .not_to receive(:cherry_pick_into_auto_deploy)
 
-            batch_merger.execute
+            without_dry_run do
+              batch_merger.execute
+            end
           end
 
           it 'notifies the result' do
