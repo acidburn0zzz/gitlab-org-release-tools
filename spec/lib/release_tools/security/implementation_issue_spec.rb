@@ -3,6 +3,18 @@
 require 'spec_helper'
 
 describe ReleaseTools::Security::ImplementationIssue do
+  let(:project) do
+    double(
+      :project,
+      iid: 1,
+      name: 'GitLab'
+    )
+  end
+
+  let(:web_url) do
+    'https://gitlab.com/gitlab-org/security/gitlab/-/issues/1'
+  end
+
   let(:release_bot) do
     {
       id: described_class::GITLAB_RELEASE_BOT_ID,
@@ -44,7 +56,23 @@ describe ReleaseTools::Security::ImplementationIssue do
 
   let(:merge_requests) { [mr1, mr2, mr3, mr4] }
 
-  subject { described_class.new(1, 1, merge_requests) }
+  subject { described_class.new(1, 1, merge_requests, web_url) }
+
+  describe '#project_id' do
+    it { expect(subject.project_id).to eq(project.iid) }
+  end
+
+  describe '#iid' do
+    it { expect(subject.iid).to eq(1) }
+  end
+
+  describe '#merge_requests' do
+    it { expect(subject.merge_requests).to match_array(merge_requests) }
+  end
+
+  describe '#web_url' do
+    it { expect(subject.web_url).to eq(web_url) }
+  end
 
   describe '#merge_requests_ready?' do
     context 'with 4 or more merge requests associated and all of them assigned to GitLab bot' do

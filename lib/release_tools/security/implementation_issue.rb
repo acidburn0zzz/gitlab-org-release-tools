@@ -12,12 +12,13 @@ module ReleaseTools
       # Format of stable branches on GitLab repos
       STABLE_BRANCH_REGEX = /^(\d+-\d+-stable(-ee)?)$/.freeze
 
-      attr_reader :project_id, :iid, :merge_requests
+      attr_reader :project_id, :iid, :merge_requests, :web_url
 
-      def initialize(project_id, iid, merge_requests)
+      def initialize(project_id, iid, merge_requests, web_url)
         @project_id = project_id
         @iid = iid
         @merge_requests = merge_requests
+        @web_url = web_url
       end
 
       def merge_requests_ready?

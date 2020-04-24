@@ -90,7 +90,7 @@ module ReleaseTools
               mrs << mr
             end
 
-          ReleaseTools::Security::ImplementationIssue.new(issue.project_id, issue.iid, mrs)
+          ReleaseTools::Security::ImplementationIssue.new(issue.project_id, issue.iid, mrs, issue.web_url)
         end
       end
     end
