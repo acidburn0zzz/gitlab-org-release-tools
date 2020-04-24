@@ -99,18 +99,6 @@ module ReleaseTools
       logger
         .info('Accepting merge request', merge_request: merge_request.web_url)
 
-      # When the MR is created a new pipeline is started. Waiting for these
-      # pipelines to complete can take a while, and serves no benefit for
-      # creating RCs.
-      GitlabClient
-        .client
-        .merge_request_pipelines(merge_request.project_id, merge_request.iid)
-        .auto_paginate do |p|
-          next unless p.status == 'running' || p.status == 'created'
-
-          GitlabClient.client.cancel_pipeline(merge_request.project_id, p.id)
-        end
-
       # Approving the merge request can't be done by the author, so for
       # approving and merging we use gitlab-bot instead of the release-tools
       # bot.
