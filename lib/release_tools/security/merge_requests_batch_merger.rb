@@ -69,7 +69,7 @@ module ReleaseTools
       def validated_merge_requests(merge_requests)
         MergeRequestsValidator
           .new(@client)
-          .execute(merge_requests)
+          .execute(merge_requests: merge_requests)
       end
 
       # Re-assigns merge requests back to the author.
