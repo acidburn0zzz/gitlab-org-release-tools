@@ -52,6 +52,8 @@ describe ReleaseTools::Changelog::Manager do
       picked   = File.join(config.ce_path, 'fix-cycle-analytics-commits.yml')
       unpicked = File.join(config.ce_path, 'group-specific-lfs.yml')
 
+      picked_in_workdir = File.join(repository.workdir, picked)
+
       aggregate_failures do
         expect(master.target).to have_deleted(picked)
         expect(repository).to have_blob(unpicked).for('master')
@@ -59,6 +61,8 @@ describe ReleaseTools::Changelog::Manager do
         expect(stable.target).to have_deleted(picked)
         expect(stable.target).not_to have_deleted(unpicked)
         expect(repository).not_to have_blob(unpicked).for(version.stable_branch)
+
+        expect(File.exist?(picked_in_workdir)).to be_falsey # rubocop: disable RSpec/PredicateMatcher
       end
     end
 
