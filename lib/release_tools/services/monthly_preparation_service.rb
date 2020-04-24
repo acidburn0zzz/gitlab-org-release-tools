@@ -48,7 +48,6 @@ module ReleaseTools
         # CNG and Charts doesn't have an auto-deploy dependency, hence they
         # get created from master.
         create_branch_from_ref(Project::CNGImage, ce_branch, 'master')
-        create_branch_from_ref(Project::CNGImage, ee_branch, 'master')
 
         # Helm charts follow different branching scheme
         create_helm_branch('master')

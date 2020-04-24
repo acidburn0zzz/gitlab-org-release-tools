@@ -11,6 +11,10 @@ module ReleaseTools
         Project::CNGImage
       end
 
+      def version_class
+        ReleaseTools::CNGVersion
+      end
+
       def tag
         if options[:ubi] && ubi?(version)
           ubi_tag(version, options[:ubi_version])
