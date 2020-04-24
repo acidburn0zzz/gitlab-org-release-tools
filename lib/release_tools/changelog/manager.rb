@@ -118,7 +118,12 @@ module ReleaseTools
       def remove_processed_entries
         return if unreleased_entries.empty?
 
-        index.remove_all(unreleased_entries.collect(&:path))
+        paths = unreleased_entries.collect(&:path)
+        index.remove_all(paths)
+
+        Dir.chdir(repository.workdir) do
+          FileUtils.rm_f(paths)
+        end
       end
 
       def create_commit
