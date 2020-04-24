@@ -100,6 +100,7 @@ namespace :release do
   desc 'Tag a new release'
   task :tag, [:version] do |_t, args|
     version = get_version(args)
+    metadata = ReleaseTools::ReleaseMetadata.new
 
     if skip?('ce')
       ReleaseTools.logger.warn('Skipping release for CE')
@@ -107,7 +108,10 @@ namespace :release do
       ce_version = version.to_ce
 
       ReleaseTools.logger.info('Starting CE release', version: ce_version)
-      ReleaseTools::Release::GitlabCeRelease.new(ce_version).execute
+
+      ReleaseTools::Release::GitlabCeRelease
+        .new(ce_version, release_metadata: metadata)
+        .execute
     end
 
     if skip?('ee')
@@ -116,7 +120,21 @@ namespace :release do
       ee_version = version.to_ee
 
       ReleaseTools.logger.info('Starting EE release', version: ee_version)
-      ReleaseTools::Release::GitlabEeRelease.new(ee_version).execute
+
+      ReleaseTools::Release::GitlabEeRelease
+        .new(ee_version, release_metadata: metadata)
+        .execute
+    end
+
+    if !dry_run? && Feature.enabled?(:release_json_tracking)
+      file_name =
+        if version.rc?
+          version.to_rc(version.rc)
+        else
+          version.to_patch
+        end
+
+      ReleaseTools::ReleaseMetadataUploader.new.upload(file_name, metadata)
     end
   end
 

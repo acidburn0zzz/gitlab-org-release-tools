@@ -13,7 +13,7 @@ module ReleaseTools
 
       def initialize(version, opts = {})
         @version = version_class.new(version)
-        @options = opts
+        @options = with_default_release_metadata(opts)
       end
 
       def execute
@@ -26,8 +26,30 @@ module ReleaseTools
 
       private
 
+      def with_default_release_metadata(options)
+        if options[:release_metadata]
+          options
+        else
+          # Child classes may pass the options to other release classes. Using
+          # this pattern ensures we automatically pass a ReleaseMetadata object
+          # around, without having to change many release classes.
+          #
+          # We use merge() here so that the input hash is not modified, which
+          # could lead to unexpected behaviour.
+          options.merge(release_metadata: ReleaseMetadata.new)
+        end
+      end
+
+      def release_metadata
+        @options[:release_metadata]
+      end
+
       # Overridable
       def project
+        raise NotImplementedError
+      end
+
+      def release_name
         raise NotImplementedError
       end
 
@@ -74,7 +96,19 @@ module ReleaseTools
         create_tag(tag)
         push_ref('tag', tag)
 
+        add_tagged_release_data(tag)
+
         Slack::TagNotification.release(project, version) unless SharedStatus.dry_run?
+      end
+
+      def add_tagged_release_data(tag_name)
+        release_metadata.add_release(
+          name: release_name,
+          version: version.to_patch,
+          sha: repository.sha_of_tag(tag_name),
+          ref: tag_name,
+          tag: true
+        )
       end
 
       def master_branch

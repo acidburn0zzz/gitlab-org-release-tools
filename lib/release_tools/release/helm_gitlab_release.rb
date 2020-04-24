@@ -8,7 +8,7 @@ module ReleaseTools
       def initialize(version, gitlab_version = nil, opts = {})
         @version = version_class.new(version) if version
         @gitlab_version = HelmGitlabVersion.new(gitlab_version) if gitlab_version
-        @options = opts
+        @options = with_default_release_metadata(opts)
       end
 
       def version_class
@@ -17,6 +17,10 @@ module ReleaseTools
 
       def project
         Project::HelmGitlab
+      end
+
+      def release_name
+        'helm-gitlab'
       end
 
       def version_manager
@@ -53,6 +57,7 @@ module ReleaseTools
         unless version_manager.parse_chart_file.app_version.rc?
           create_tag(tag, message: "Version #{tag} - contains GitLab EE #{gitlab_version}")
           push_ref('tag', tag)
+          add_tagged_release_data(tag)
         end
       end
 

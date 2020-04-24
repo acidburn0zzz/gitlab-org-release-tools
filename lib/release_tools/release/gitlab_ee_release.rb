@@ -9,6 +9,10 @@ module ReleaseTools
         Project::GitlabEe
       end
 
+      def release_name
+        'gitlab-ee'
+      end
+
       def after_execute_hook
         super
 

@@ -55,11 +55,18 @@ describe ReleaseTools::Release::GitlabEeRelease, :slow do
 
       it 'triggers CNG release for both standard and UBI-based CNG images' do
         cng_spy = spy
+        meta = ReleaseTools::ReleaseMetadata.new
+
+        allow(meta)
+          .to receive(:add_auto_deploy_components)
+          .with(an_instance_of(Hash))
+
         stub_const('ReleaseTools::Release::CNGImageRelease', cng_spy)
 
-        described_class.new(version).execute
+        described_class.new(version, release_metadata: meta).execute
 
         expect(cng_spy).to have_received(:execute).twice
+        expect(meta).to have_received(:add_auto_deploy_components)
       end
     end
   end

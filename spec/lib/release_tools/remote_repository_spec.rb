@@ -200,6 +200,25 @@ describe ReleaseTools::RemoteRepository do
     end
   end
 
+  describe '#sha_of_tag' do
+    let(:repo) { described_class.get(repo_remotes) }
+
+    context 'when the tag does not exist' do
+      it 'raises a GitCommandError' do
+        expect { repo.sha_of_tag('foo') }
+          .to raise_error(described_class::GitCommandError)
+      end
+    end
+
+    context 'when the tag exists' do
+      it 'returns the SHA of the tagged commit' do
+        repo.create_tag('v42')
+
+        expect(repo.sha_of_tag('v42')).to eq(rugged_repo.tags['v42'].target.oid)
+      end
+    end
+  end
+
   describe '#write_file' do
     subject { described_class.get(repo_remotes) }
 

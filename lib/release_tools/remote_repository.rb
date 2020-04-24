@@ -86,6 +86,19 @@ module ReleaseTools
       status.success? || raise(CannotCreateTagError.new(tag, output))
     end
 
+    def sha_of_tag(tag)
+      output, status = run_git("rev-parse #{tag}^{}")
+
+      unless status.success?
+        raise(
+          GitCommandError
+            .new("Failed to get the SHA of the commit tagged by #{tag}", output)
+        )
+      end
+
+      output.strip
+    end
+
     def write_file(file, content)
       in_path { File.write(file, content) }
     end

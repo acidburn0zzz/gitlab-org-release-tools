@@ -8,10 +8,10 @@ module ReleaseTools
     # The name of the branch to create the release files on.
     BRANCH = 'master'
 
-    def upload(category, name, data)
+    def upload(name, data)
       json = JSON.pretty_generate(format_release_metadata(data))
       message = "Add release data for #{name}"
-      path = file_path_for(category, name)
+      path = file_path_for(name)
 
       begin
         GitlabOpsClient.create_file(PROJECT, path, BRANCH, json, message)
@@ -26,13 +26,13 @@ module ReleaseTools
 
     private
 
-    def file_path_for(category, name)
+    def file_path_for(name)
       prefix = name.split('.').first
 
       # To reduce the number of files per directory, we create a new directory
       # for every major version. Even at 4 entries per day, this translates to
       # only 1460 files per directory.
-      "releases/#{category}/#{prefix}/#{name}.json"
+      "releases/#{prefix}/#{name}.json"
     end
 
     def format_release_metadata(data)

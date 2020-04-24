@@ -12,11 +12,12 @@ module ReleaseTools
 
         TAG_FORMAT = '%<major>d.%<minor>d.%<timestamp>s+%<gitlab_ref>.11s'
 
-        attr_reader :version_map, :target_branch
+        attr_reader :version_map, :target_branch, :release_metadata
 
-        def initialize(target_branch, version_map)
+        def initialize(target_branch, version_map, release_metadata = ReleaseMetadata.new)
           @target_branch = target_branch
           @version_map = version_map
+          @release_metadata = release_metadata
           @helm_tagger = ReleaseTools::AutoDeploy::Tagger::Helm
             .new(@target_branch.to_s, @version_map)
         end
@@ -50,9 +51,9 @@ module ReleaseTools
 
           logger.info('Creating CNG tag', name: tag_name, target: branch_head.id)
 
-          return if SharedStatus.dry_run?
+          add_release_data
 
-          upload_version_data('cng')
+          return if SharedStatus.dry_run?
 
           tag = client.create_tag(
             client.project_path(PROJECT),

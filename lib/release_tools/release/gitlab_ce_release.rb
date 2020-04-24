@@ -9,6 +9,10 @@ module ReleaseTools
         Project::GitlabCe
       end
 
+      def release_name
+        'gitlab-ce'
+      end
+
       def before_execute_hook
         tag_gitaly if ReleaseTools::Feature.enabled?(:gitaly_tagging)
         compile_changelog

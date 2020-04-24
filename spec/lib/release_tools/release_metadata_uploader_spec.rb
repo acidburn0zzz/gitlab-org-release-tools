@@ -49,13 +49,13 @@ describe ReleaseTools::ReleaseMetadataUploader do
         .to receive(:create_file)
         .with(
           described_class::PROJECT,
-          'releases/cng/1/1.2.3.json',
+          'releases/1/1.2.3.json',
           'master',
           json,
           'Add release data for 1.2.3'
         )
 
-      uploader.upload('cng', '1.2.3', data)
+      uploader.upload('1.2.3', data)
     end
 
     it 'overwrites existing data when it already exists' do
@@ -63,7 +63,7 @@ describe ReleaseTools::ReleaseMetadataUploader do
         .to receive(:create_file)
         .with(
           described_class::PROJECT,
-          'releases/cng/1/1.2.3.json',
+          'releases/1/1.2.3.json',
           'master',
           json,
           'Add release data for 1.2.3'
@@ -74,13 +74,13 @@ describe ReleaseTools::ReleaseMetadataUploader do
         .to receive(:edit_file)
         .with(
           described_class::PROJECT,
-          'releases/cng/1/1.2.3.json',
+          'releases/1/1.2.3.json',
           'master',
           json,
           'Add release data for 1.2.3'
         )
 
-      uploader.upload('cng', '1.2.3', data)
+      uploader.upload('1.2.3', data)
     end
   end
 end

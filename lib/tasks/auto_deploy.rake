@@ -51,19 +51,25 @@ namespace :auto_deploy do
   desc "Tag the auto-deploy branches from the latest passing builds"
   task tag: :check_enabled do
     branch = ReleaseTools::AutoDeployBranch.current
+    version = "#{branch.to_minor}.#{branch.tag_timestamp}"
+    metadata = ReleaseTools::ReleaseMetadata.new
 
     commit = ReleaseTools::PassingBuild
       .new(branch.to_s)
       .execute
 
     ReleaseTools::AutoDeploy::Builder::Omnibus
-      .new(branch, commit.id)
+      .new(branch, commit.id, metadata)
       .execute
 
     ReleaseTools::AutoDeploy::Builder::CNGImage
-      .new(branch, commit.id)
+      .new(branch, commit.id, metadata)
       .execute
 
     ReleaseTools::Deployments::SentryTracker.new(commit.id).execute if ReleaseTools::Feature.enabled?(:sentry_tracking)
+
+    if !dry_run? && Feature.enabled?(:release_json_tracking)
+      ReleaseTools::ReleaseMetadataUploader.new.upload(version, metadata)
+    end
   end
 end
