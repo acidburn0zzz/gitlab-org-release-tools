@@ -90,13 +90,11 @@ describe ReleaseTools::Services::MonthlyPreparationService do
         .with('12-1-stable', 'master', ReleaseTools::Project::OmnibusGitlab)
     end
 
-    it 'creates the CNG stable branches' do
+    it 'creates the CNG stable branch' do
       without_dry_run do
         service.create_stable_branches
       end
 
-      expect(internal_client).to have_received(:create_branch)
-        .with('12-1-stable-ee', 'master', ReleaseTools::Project::CNGImage)
       expect(internal_client).to have_received(:create_branch)
         .with('12-1-stable', 'master', ReleaseTools::Project::CNGImage)
     end
