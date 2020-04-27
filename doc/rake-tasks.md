@@ -151,12 +151,9 @@ ChatOps command to create a critical security release:
 This task is executed via CI schedule. It validates security merge requests
 on Build (dev.gitlab.org) and Security mirrors.
 
-### `security:merge[merge_master]`
+### `security:merge`
 
-Merge validated merge requests in the security repositories for GitLab projects.
-
-If `merge_master` is truthy, it will also merge security MRs targeting `master`
-(default: `false`).
+Validates and merges validated merge requests in the security repositories for GitLab projects.
 
 ChatOps command:
 
