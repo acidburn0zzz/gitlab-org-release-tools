@@ -165,13 +165,6 @@ describe ReleaseTools::Security::MergeRequestsBatchMerger do
           end
         end
 
-        it 'does not pick merge request targeting master into auto deploy branch' do
-          expect(batch_merger)
-            .not_to receive(:cherry_pick_into_auto_deploy)
-
-          batch_merger.execute
-        end
-
         it 'notifies the results' do
           expect(ReleaseTools::Slack::ChatopsNotification)
             .to receive(:security_issues_processed)
@@ -218,23 +211,9 @@ describe ReleaseTools::Security::MergeRequestsBatchMerger do
           end
 
           it 'merges the merge requests in batch' do
-            expect(issue_result)
-              .to receive(:pending)
-              .twice
-
             expect(client)
               .to receive(:accept_merge_request)
               .exactly(8).times
-
-            without_dry_run do
-              batch_merger.execute
-            end
-          end
-
-          it 'picks the merge requests targeting master into auto-deploy branch' do
-            expect(cherry_picker)
-              .to receive(:execute)
-              .twice
 
             without_dry_run do
               batch_merger.execute
@@ -269,19 +248,6 @@ describe ReleaseTools::Security::MergeRequestsBatchMerger do
             allow(client)
               .to receive(:accept_merge_request)
               .and_return(mr_without_commit_sha)
-          end
-
-          it 'does not pick the merge request targeting master to auto-deploy branch' do
-            expect(issue_result)
-              .to receive(:pending)
-              .exactly(5).times
-
-            expect(batch_merger)
-              .not_to receive(:cherry_pick_into_auto_deploy)
-
-            without_dry_run do
-              batch_merger.execute
-            end
           end
 
           it 'notifies the result' do
