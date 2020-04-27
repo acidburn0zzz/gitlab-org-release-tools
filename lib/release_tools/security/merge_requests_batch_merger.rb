@@ -124,8 +124,6 @@ module ReleaseTools
         mrs_targeting_stable.each do |merge_request|
           merge_merge_request(security_issue, merge_request)
         end
-
-        cherry_pick_into_auto_deploy(security_issue) unless @result.pending.key?(security_issue.iid)
       end
 
       def merge_merge_request(security_issue, merge_request)
@@ -143,12 +141,6 @@ module ReleaseTools
           logger.fatal("Merge request #{merge_request.web_url} couldn't be merged")
           @result.pending[security_issue.iid] << merge_request
         end
-      end
-
-      def cherry_pick_into_auto_deploy(security_issue)
-        ReleaseTools::Security::CherryPicker
-          .new(@client, security_issue.merge_requests)
-          .execute
       end
 
       def notify_result
