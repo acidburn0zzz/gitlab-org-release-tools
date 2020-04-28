@@ -9,7 +9,7 @@ module ReleaseTools
       ERROR_BATCH_TEMPLATE = <<~ERROR.strip
         @%<author_username>s
 
-        Some of the merge requests associated with #%<security_issue> are not ready
+        Some of the merge requests associated with #%<security_issue_iid>s are not ready
         to be merged. Please review them, fix any problems reported and resolve all
         merge conflicts (in case there are any).
 
@@ -89,7 +89,7 @@ module ReleaseTools
           mr_master.iid,
           body: format(
             ERROR_BATCH_TEMPLATE,
-            security_issue: security_issue.iid,
+            security_issue_iid: security_issue.iid,
             author_username: mr_master.author.username
           )
         )

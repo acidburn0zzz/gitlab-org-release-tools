@@ -146,9 +146,22 @@ describe ReleaseTools::Security::MergeRequestsBatchMerger do
         end
 
         it 'creates a discussion on the merge request targeting master' do
+          discussion = <<~ERROR.strip
+            @joe
+
+            Some of the merge requests associated with #1 are not ready
+            to be merged. Please review them, fix any problems reported and resolve all
+            merge conflicts (in case there are any).
+
+            Once resolved and the pipelines have passed, assign all merge
+            requests back to me and mark this discussion as resolved.
+
+            #{ReleaseTools::Security::MergeRequestsValidator::ERROR_FOOTNOTE}
+          ERROR
+
           expect(client)
             .to receive(:create_merge_request_discussion)
-            .with(mr1.project_id, mr1.iid, body: an_instance_of(String))
+            .with(mr1.project_id, mr1.iid, body: discussion)
 
           without_dry_run do
             batch_merger.execute
