@@ -68,27 +68,21 @@ The following steps should ideally be completed within one day.
    # push to security
    git push security
    ```
-- [ ] Trigger an auto-deploy tagging via ChatOps:
+- [ ] Tag a new auto-deploy version via ChatOps (no need to wait for green build), to create a deployer pipeline that will deploy to staging and create a QA issue:
    ```sh
    # In Slack
    /chatops run auto_deploy tag --security
    ```
 
-   - This will trigger a deployer pipeline that automatically deploys to
-     staging. If successful this will also create a QA issue.
-
 ## QA
 
-- [ ] On the deployer pipeline, manually cancel the `gprd-cny-warmup` from the deployer pipeline. This will prevent the automatic promotion to Canary.
+- [ ] On the deployer pipeline, manually cancel the `gprd-cny-change-lock` from the deployer pipeline. This will prevent the automatic promotion to Canary.
 
 - [ ] Once the deploy to staging is completed, notify the `@appsec-team` member so they can validate the security fixes on staging.
 
-- [ ] Once the security fixes been validated on staging, manually promote to Canary.
+- [ ] Once the security fixes been validated on staging, retry the  `gprd-cny-change-lock` job to  promote to Canary.
 
-- [ ] Once the deploy to canary is completed, notify the `@appsec-team` member so they can validate the security fixes on canary.
-  - It's recommended to wait for this confirmation, but not a strict requirement to continue the process.
-
-- [ ] If there are no objections, proceed to push this to production.
+- [ ] If there are no issues reported on canary, proceed to promote the deployment to production.
 
 ## Packaging
 
