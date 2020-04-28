@@ -2,14 +2,9 @@
 
 module ReleaseTools
   module Security
-    # Validating of multiple security merge requests across different projects.
+    # Validating of multiple security merge requests in batches
     class MergeRequestsValidator
       include ::SemanticLogger::Loggable
-
-      PROJECTS_TO_VERIFY = %w[
-        gitlab-org/security/gitlab
-        gitlab-org/security/omnibus-gitlab
-      ].freeze
 
       ERROR_FOOTNOTE = <<~FOOTNOTE.strip
         <hr>
@@ -61,15 +56,8 @@ module ReleaseTools
       #       [invalid_merge_request1, invalid_merge_request2, ...]
       #     ]
       #
-      # If merge_in_batches feature is enabled, it only validates merge requests passed
-      # as arguments, if the flag is disabled it validates merge requests associated
-      # to PROJECTS_TO_VERIFY.
       def execute(merge_requests: [])
-        if Feature.enabled?(:security_merge_in_batches)
-          validate_merge_requests(merge_requests)
-        else
-          validate_per_projects
-        end
+        validate_merge_requests(merge_requests)
 
         [@valid, @invalid]
       end
@@ -120,16 +108,6 @@ module ReleaseTools
       end
 
       private
-
-      def validate_per_projects
-        PROJECTS_TO_VERIFY.each do |project|
-          logger.info('Verifying security MRs', project: project)
-
-          merge_requests = @client.open_security_merge_requests(project)
-
-          validate_merge_requests(merge_requests)
-        end
-      end
 
       def validate_merge_requests(merge_requests)
         Parallel.map(merge_requests, in_threads: Etc.nprocessors) do |merge_request|

@@ -65,9 +65,9 @@ namespace :security do
     Rake::Task['release:tag'].invoke(*args)
   end
 
-  desc 'Validates security merge requests'
+  desc 'Validates merge requests in security projects'
   task validate: :force_security do
-    ReleaseTools::Security::MergeRequestsValidator
+    ReleaseTools::Security::ProjectsValidator
       .new(ReleaseTools::Security::Client.new)
       .execute
   end
