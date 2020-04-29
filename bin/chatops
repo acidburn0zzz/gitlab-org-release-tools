@@ -74,7 +74,7 @@ case $1 in
     ;;
   "security:merge")
     # Explicitly does not require a version
-    auth_rake "$1[$MERGE_MASTER_SECURITY_MERGE_REQUESTS]"
+    auth_rake "$1"
     ;;
   "security:prepare")
     # Explicitly does not require a version

@@ -14,20 +14,13 @@ namespace :security do
   end
 
   desc 'Merges valid security merge requests'
-  task :merge, [:merge_master] => :force_security do |_t, args|
-    merge_master =
-      if args[:merge_master] && !args[:merge_master].empty?
-        true
-      else
-        false
-      end
-
+  task merge: :force_security do |_t, _args|
     if ReleaseTools::Feature.enabled?(:security_mirror_toggle)
       ReleaseTools::Security::Mirrors.disable
     end
 
     ReleaseTools::Security::MergeRequestsMerger
-      .new(ReleaseTools::Security::Client.new, merge_master: merge_master)
+      .new(ReleaseTools::Security::Client.new)
       .execute
   end
 
