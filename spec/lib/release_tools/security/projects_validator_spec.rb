@@ -4,7 +4,8 @@ require 'spec_helper'
 
 describe ReleaseTools::Security::ProjectsValidator do
   let(:client) { double(:client) }
-  let(:validator) { described_class.new(client) }
+  let(:merge_requests_validator) { double(:merge_request_validator) }
+  let(:projects_validator) { described_class.new(client) }
 
   describe '#execute' do
     let(:merge_request1) { double(:merge_request) }
@@ -23,19 +24,24 @@ describe ReleaseTools::Security::ProjectsValidator do
         .with('gitlab-org/security/omnibus-gitlab')
         .and_return([merge_request3, merge_request4])
 
-      allow(validator)
-        .to receive(:validate_merge_requests)
+      allow(ReleaseTools::Security::MergeRequestsValidator)
+        .to receive(:new)
+        .with(client)
+        .and_return(merge_requests_validator)
+
+      allow(merge_requests_validator)
+        .to receive(:execute)
         .and_return(nil)
 
-      expect(validator)
+      expect(projects_validator)
         .to receive(:validate_merge_requests)
         .with([merge_request1, merge_request2])
 
-      expect(validator)
+      expect(projects_validator)
         .to receive(:validate_merge_requests)
         .with([merge_request3, merge_request4])
 
-      validator.execute
+      projects_validator.execute
     end
   end
 end
