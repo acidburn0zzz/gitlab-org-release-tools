@@ -14,6 +14,18 @@ describe ReleaseTools::ReleaseManagers::Schedule do
           - Robert Speicher
         manager_apac_emea:
           - Yorick Peterse
+      - version: '11.9'
+        date: March 22nd, 2019
+        manager_americas:
+          - Robert Speicher
+        manager_apac_emea:
+          - Yorick Peterse
+      - version: '11.10'
+        date: January 22nd, 2020
+        manager_americas:
+          - Robert Speicher
+        manager_apac_emea:
+          - Yorick Peterse
     YAML
   end
 
@@ -22,7 +34,7 @@ describe ReleaseTools::ReleaseManagers::Schedule do
     stub_const("#{described_class}::RETRY_INTERVAL", 0)
   end
 
-  describe '#version_for_month' do
+  describe '#version_for_date' do
     context 'when there are releases scheduled' do
       before do
         allow(schedule)
@@ -32,6 +44,14 @@ describe ReleaseTools::ReleaseManagers::Schedule do
 
       it 'returns the version for the date' do
         expect(schedule.version_for_date(Date.new(2019, 2, 2))).to eq(version)
+      end
+
+      it 'returns the version for the next month when the date is after the 22nd' do
+        expect(schedule.version_for_date(Date.new(2019, 2, 23)))
+          .to eq(ReleaseTools::Version.new('11.9'))
+
+        expect(schedule.version_for_date(Date.new(2019, 12, 23)))
+          .to eq(ReleaseTools::Version.new('11.10'))
       end
 
       it 'returns nil when there is no matching release' do
@@ -176,7 +196,7 @@ describe ReleaseTools::ReleaseManagers::Schedule do
           .to receive(:get)
           .and_return(response)
 
-        expect(schedule.schedule_yaml.length).to eq(1)
+        expect(schedule.schedule_yaml.length).to eq(3)
       end
     end
 

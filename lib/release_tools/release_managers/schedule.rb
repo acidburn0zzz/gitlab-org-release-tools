@@ -33,6 +33,20 @@ module ReleaseTools
       # @param [Date|Time] date
       # @return [ReleaseTools::Version|NilClass]
       def version_for_date(date)
+        # The release month ends at the 22nd, so for any date after that we want
+        # the version for the month _after_ it; not the current month. Take this
+        # schedule for example:
+        #
+        # | Month    | Version |
+        # |:---------|:--------|
+        # | January  | 12.0    |
+        # | February | 12.1    |
+        #
+        # On January 21st, the next scheduled version is 12.0. On January 23rd
+        # we already released 12.0, so the next scheduled version is 12.1; not
+        # 12.0.
+        date = date.next_month if date.day > 22
+
         # We process the schedule in reverse order (newer to older), as it's
         # more likely we are interested in a more recent/future date compared to
         # an older one.
