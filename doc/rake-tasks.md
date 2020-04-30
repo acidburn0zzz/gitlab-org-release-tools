@@ -149,7 +149,7 @@ ChatOps command to create a critical security release:
 ### `security:validate`
 
 This task is executed via CI schedule. It validates security merge requests
-on Build (dev.gitlab.org) and Security mirrors.
+on Security projects.
 
 ### `security:merge`
 
