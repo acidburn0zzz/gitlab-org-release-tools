@@ -29,7 +29,7 @@ module ReleaseTools
 
       def validate_merge_requests(merge_requests)
         MergeRequestsValidator
-          .new(client)
+          .new(@client)
           .execute(merge_requests: merge_requests)
       end
     end
