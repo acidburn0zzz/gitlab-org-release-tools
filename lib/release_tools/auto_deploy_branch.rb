@@ -7,13 +7,20 @@ module ReleaseTools
     attr_reader :branch_name
 
     # Return the current auto-deploy branch name from environment variable
-    def self.current
+    def self.current_name
       ENV.fetch('AUTO_DEPLOY_BRANCH')
     end
 
-    def initialize(version, branch_name)
-      @version = version
-      @branch_name = branch_name
+    def self.current
+      new(current_name)
+    end
+
+    def initialize(name)
+      major, minor = name.split('-', 3).take(2)
+
+      @version = Version.new("#{major}.#{minor}")
+      @branch_name = name
+      @time = Time.now.utc
     end
 
     def exists?
@@ -31,6 +38,13 @@ module ReleaseTools
 
     def release_issue
       ReleaseTools::MonthlyIssue.new(version: version)
+    end
+
+    # Returns a timestamp to use for auto-deploy tag names. This is decoupled
+    # from any branch creation times so that we can use the same timestamp for
+    # all packagers (CNG, Omnibus, etc).
+    def tag_timestamp
+      @time.strftime('%Y%m%d%H%M')
     end
   end
 end

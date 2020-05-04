@@ -14,7 +14,7 @@ module ReleaseTools
             .get_omnibus_compat_versions(@commit_id)
 
           ReleaseTools::ComponentVersions
-            .update_omnibus(@target_branch, version_map)
+            .update_omnibus(@target_branch.to_s, version_map)
 
           ReleaseTools::AutoDeploy::Tagger::Omnibus
             .new(@target_branch, version_map)

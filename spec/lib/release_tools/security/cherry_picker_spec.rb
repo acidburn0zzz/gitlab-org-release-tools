@@ -19,7 +19,7 @@ describe ReleaseTools::Security::CherryPicker do
 
     stub_const('ReleaseTools::Security::Client', client)
 
-    allow(ReleaseTools::AutoDeployBranch).to receive(:current)
+    allow(ReleaseTools::AutoDeployBranch).to receive(:current_name)
       .and_return('X-Y-auto-deploy-YYYYMMDD')
 
     # Odd-numbered projects have no auto-deploy branch
@@ -42,7 +42,7 @@ describe ReleaseTools::Security::CherryPicker do
         expect(client).to receive(:cherry_pick_commit).with(
           mr.project_id,
           mr.merge_commit_sha,
-          ::ReleaseTools::AutoDeployBranch.current
+          ::ReleaseTools::AutoDeployBranch.current_name
         )
       end
 

@@ -9,7 +9,21 @@ describe ReleaseTools::ReleaseMetadata do
 
       collection.add_release(name: 'test')
 
-      expect(collection.releases.first.name).to eq('test')
+      expect(collection.releases.values.first.name).to eq('test')
+    end
+  end
+
+  describe '#tracked?' do
+    it 'returns true when a release is tracked' do
+      collection = described_class.new
+
+      collection.add_release(name: 'test')
+
+      expect(collection.tracked?('test')).to eq(true)
+    end
+
+    it 'returns false when a release is not tracked' do
+      expect(described_class.new.tracked?('test')).to eq(false)
     end
   end
 
@@ -27,6 +41,20 @@ describe ReleaseTools::ReleaseMetadata do
       end
     end
 
+    context 'when using an already tracked component' do
+      it 'does not overwrite the existing data' do
+        collection = described_class.new
+        project = ReleaseTools::Project::Gitaly
+
+        collection.add_release(name: project.project_name, version: 'a')
+        collection.add_auto_deploy_components(
+          ReleaseTools::Project::Gitaly.version_file => 'a' * 40
+        )
+
+        expect(collection.releases.values.first.version).to eq('a')
+      end
+    end
+
     context 'when using a SHA as the component version' do
       it 'adds the release using the SHA as the commit and version' do
         collection = described_class.new
@@ -36,7 +64,7 @@ describe ReleaseTools::ReleaseMetadata do
           ReleaseTools::Project::Gitaly.version_file => sha
         )
 
-        release = collection.releases.first
+        release = collection.releases.values.first
 
         expect(release.name).to eq('gitaly')
         expect(release.version).to eq(sha)
@@ -61,7 +89,7 @@ describe ReleaseTools::ReleaseMetadata do
           ReleaseTools::Project::Gitaly.version_file => '1.2.3'
         )
 
-        release = collection.releases.first
+        release = collection.releases.values.first
 
         expect(release.name).to eq('gitaly')
         expect(release.version).to eq('1.2.3')
@@ -77,7 +105,7 @@ describe ReleaseTools::ReleaseMetadata do
           'KITTENS_VERSION' => '1.2.3'
         )
 
-        release = collection.releases.first
+        release = collection.releases.values.first
 
         expect(release.name).to eq('kittens')
         expect(release.version).to eq('1.2.3')
@@ -117,7 +145,7 @@ describe ReleaseTools::ReleaseMetadata do
           ReleaseTools::Project::Gitaly.version_file => 'v1.2.3'
         )
 
-        release = collection.releases.first
+        release = collection.releases.values.first
 
         expect(release.name).to eq('gitaly')
         expect(release.version).to eq('1.2.3')
@@ -134,7 +162,7 @@ describe ReleaseTools::ReleaseMetadata do
 
         collection.add_auto_deploy_components('FOO_VERSION' => sha)
 
-        release = collection.releases.first
+        release = collection.releases.values.first
 
         expect(release.name).to eq('foo')
         expect(release.version).to eq(sha)

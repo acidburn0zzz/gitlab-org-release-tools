@@ -21,7 +21,7 @@ module ReleaseTools
       end
 
       def stable_branch=(value)
-        @stable_branch = ReleaseTools::AutoDeployBranch.new(self, value.to_s)
+        @stable_branch = ReleaseTools::AutoDeployBranch.new(value.to_s)
       end
 
       alias auto_deploy_branch stable_branch

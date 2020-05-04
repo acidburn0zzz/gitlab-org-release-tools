@@ -61,11 +61,15 @@ module ReleaseTools
     attr_reader :releases
 
     def initialize
-      @releases = []
+      @releases = {}
     end
 
-    def add_release(**kwargs)
-      @releases.push(Release.new(**kwargs))
+    def tracked?(name)
+      @releases.key?(name)
+    end
+
+    def add_release(name:, **kwargs)
+      @releases[name] = Release.new(name: name, **kwargs)
     end
 
     # Adds the version data for all components included in a GitLab auto-deploy.
@@ -75,6 +79,7 @@ module ReleaseTools
     # For example:
     #
     #     { 'GITALY_SERVER_VERSION' => '456abc' }
+    # rubocop: disable Metrics/MethodLength
     def add_auto_deploy_components(mapping)
       mapping.each do |version_file, version|
         next if IGNORED_AUTO_DEPLOY_COMPONENTS.include?(version_file)
@@ -90,6 +95,11 @@ module ReleaseTools
             # version data as-is.
             version_file.downcase.gsub('_version', '')
           end
+
+        # We ignore already tracked releases. This makes it easier for our
+        # release code to add releases, without having to worry about
+        # overwriting already existing data.
+        next if tracked?(name)
 
         normalized_version = version.start_with?('v') ? version[1..-1] : version
         tag = false
@@ -121,6 +131,7 @@ module ReleaseTools
         )
       end
     end
+    # rubocop: enable Metrics/MethodLength
 
     def sha_of_tag(project, tag)
       path = project.security_path

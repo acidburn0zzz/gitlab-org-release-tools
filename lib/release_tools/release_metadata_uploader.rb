@@ -38,7 +38,7 @@ module ReleaseTools
     def format_release_metadata(data)
       {
         security: SharedStatus.security_release?,
-        releases: data.releases.each_with_object({}) do |obj, hash|
+        releases: data.releases.each_with_object({}) do |(_, obj), hash|
           hash[obj.name.to_sym] = {
             version: obj.version,
             sha: obj.sha,
