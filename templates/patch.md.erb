@@ -3,7 +3,7 @@
 - Preparation MR's should already be created
 - [Ensure any backports targeting] <%= version %> are merged to their stable counter part
   - [ ] [EE Backports](https://gitlab.com/gitlab-org/gitlab/merge_requests?scope=all&utf8=%E2%9C%93&state=opened&target_branch=<%= version.stable_branch(ee: true) %>)
-  - [ ] [Omnibus EE](https://gitlab.com/gitlab-org/omnibus-gitlab/merge_requests?scope=all&utf8=%E2%9C%93&state=opened&target_branch=<%= version.stable_branch(ee: true) %>)
+  - [ ] [Omnibus EE](https://gitlab.com/gitlab-org/omnibus-gitlab/merge_requests?scope=all&utf8=%E2%9C%93&state=opened&target_branch=<%= version.stable_branch(ee: false) %>)
 - [ ] Perform automated merging into the preparation branches:
     ```sh
     # In Slack
