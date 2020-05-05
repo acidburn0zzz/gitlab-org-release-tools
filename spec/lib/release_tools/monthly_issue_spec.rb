@@ -27,7 +27,7 @@ describe ReleaseTools::MonthlyIssue do
 
       content = issue.description
 
-      expect(content).to include('`#f_release_8_3`')
+      expect(content).to include('`#f_upcoming_release`')
     end
   end
 

@@ -88,13 +88,13 @@ No new code can be added to the release that was not included in the final RC.
     ```
   - [ ] Check progress of [EE packages build](https://dev.gitlab.org/gitlab/omnibus-gitlab/commits/<%= version.to_omnibus(ee: true) %>) and [CE packages build](https://dev.gitlab.org/gitlab/omnibus-gitlab/commits/<%= version.to_omnibus(ee: false) %>)
 - At 12:00 UTC:
-  - [ ] Post an update about the package building status in `<%= Slack::Channel.for(version) %>`
+  - [ ] Post an update about the package building status in `#f_upcoming_release`
   - [ ] If `<%= version.to_patch %>` has not been deployed to the [preprod environment](https://pre.gitlab.com/help) already, deploy it manually with the following ChatOps command:
       ```sh
       # In Slack:
       /chatops run deploy <%= version.to_patch %>-ee.0 --pre
       ```
-- [ ] At 13:00 UTC, post an update about the package building status in `<%= Slack::Channel.for(version) %>`
+- [ ] At 13:00 UTC, post an update about the package building status in `#f_upcoming_release`
 - At 13:30 UTC:
   - :warning: **Make sure that neither packages nor the blog post get published earlier than 13:30UTC
     without approval by the
@@ -112,7 +112,7 @@ No new code can be added to the release that was not included in the final RC.
   - [ ] Verify that packages appear on `packages.gitlab.com`: [EE](https://packages.gitlab.com/app/gitlab/gitlab-ee/search?q=<%= version.to_patch %>) / [CE](https://packages.gitlab.com/app/gitlab/gitlab-ce/search?q=<%= version.to_patch %>)
   - [ ] Verify that Docker images appear on `hub.docker.com`: [EE](https://hub.docker.com/r/gitlab/gitlab-ee/tags) / [CE](https://hub.docker.com/r/gitlab/gitlab-ce/tags)
   - [ ] Create the `<%= version.to_patch %>` version on [version.gitlab.com](https://version.gitlab.com/versions/new?version=<%= version.to_patch %>)
-  - [ ] Post an update about the status in `<%= Slack::Channel.for(version) %>`
+  - [ ] Post an update about the status in `#f_upcoming_release`
   - [ ] Once all packages are available publicly and GitLab.com is up and running on the release version,
   ping the [release post manager](https://about.gitlab.com/handbook/marketing/blog/release-posts/managers/)
   on Slack ([#release-post channel]) to give them a go to merge the release post at ~14:20 UTC, so that it will be live at 15:00 UTC
