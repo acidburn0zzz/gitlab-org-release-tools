@@ -19,7 +19,7 @@ namespace :security do
       ReleaseTools::Security::Mirrors.disable
     end
 
-    ReleaseTools::Security::MergeRequestsMerger
+    ReleaseTools::Security::MergeRequestsBatchMerger
       .new(ReleaseTools::Security::Client.new)
       .execute
   end
