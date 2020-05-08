@@ -63,5 +63,7 @@ namespace :auto_deploy do
     ReleaseTools::AutoDeploy::Builder::CNGImage
       .new(branch, commit.id)
       .execute
+
+    ReleaseTools::Deployments::SentryTracker.new(commit.id).execute if ReleaseTools::Feature.enabled?(:sentry_tracking)
   end
 end
