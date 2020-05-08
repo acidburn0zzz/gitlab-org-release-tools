@@ -32,6 +32,7 @@ authenticating over HTTPS with an access token.
   by auto-deploy jobs and **should not be changed manually.**
 - `OMNIBUS_BUILD_TRIGGER_TOKEN` -- Used to trigger an Omnibus build.
 - `HELM_BUILD_TRIGGER_TOKEN` -- Used to trigger an Helm charts auto-deploy tagging.
+- `SENTRY_AUTH_TOKEN` -- Used to associate commits to sentry releases, it requires the `project:releases` scope.
 
 ## Feature flags
 
