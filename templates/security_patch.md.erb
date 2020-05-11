@@ -39,7 +39,9 @@ The following steps should ideally be completed within one day.
 - [ ] Disable omnibus nightly builds by setting the schedules to inactive https://dev.gitlab.org/gitlab/omnibus-gitlab/pipeline_schedules
 <% end -%>
 
-- [ ] Manually cherry pick EACH security fix into the CURRENT auto-deploy branch, both GitLab and Omnibus. You can use the following script:
+- Ensure security fixes are included in the auto-deploy branch. Fixes are automatically cherry-picked into the auto-deploy branch after they're merged. If they were not chery-picked, you can use the below script to do it manually.
+  - [ ] For GitLab
+  - [ ] For Omnibus GitLab
 
 <details>
   <summary>Script to push to auto-deploy branch</summary>
