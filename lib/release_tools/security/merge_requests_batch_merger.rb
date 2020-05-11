@@ -129,18 +129,27 @@ module ReleaseTools
       def merge_merge_request(security_issue, merge_request)
         logger.trace(__method__, merge_request: merge_request.web_url)
 
-        merged_mr = @client.accept_merge_request(
+        merged_result = @client.accept_merge_request(
           merge_request.project_id,
           merge_request.iid,
           squash: true
         )
 
-        if merged_mr.respond_to?(:merge_commit_sha) && merged_mr.merge_commit_sha.present?
-          logger.info("Merged security merge request", url: merged_mr.web_url)
+        if merged_result.respond_to?(:merge_commit_sha) && merged_result.merge_commit_sha.present?
+          logger.info("Merged security merge request", url: merge_request.web_url)
+
+          cherry_pick_into_auto_deploy(merged_result) if merge_request.target_branch == 'master'
         else
           logger.fatal("Merge request #{merge_request.web_url} couldn't be merged")
+
           @result.pending[security_issue.iid] << merge_request
         end
+      end
+
+      def cherry_pick_into_auto_deploy(merge_request)
+        ReleaseTools::Security::CherryPicker
+          .new(@client, merge_request)
+          .execute
       end
 
       def notify_result
