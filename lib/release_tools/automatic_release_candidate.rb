@@ -25,6 +25,10 @@ module ReleaseTools
     # The environment used for recording production deployments.
     PRODUCTION = 'gprd'
 
+    # The protected branch pattern to look for when checking if GitLab Bot can
+    # merge merge requests.
+    PROTECTED_BRANCH_PATTERN = '*-stable-ee'
+
     def initialize(today = Time.now.utc)
       @release_version =
         ReleaseTools::ReleaseManagers::Schedule.new.version_for_date(today)
@@ -50,6 +54,12 @@ module ReleaseTools
         )
 
         return package_version
+      end
+
+      unless can_merge_into_protected_branch?
+        raise 'GitLab Bot is not allowed to merge merge requests into stable ' \
+          'branches. Please double chech the protected branch rules to make ' \
+          'sure GitLab Bot can merge into these branches.'
       end
 
       return if SharedStatus.dry_run?
@@ -161,6 +171,17 @@ module ReleaseTools
 
     def target_branch
       @release_version.stable_branch(ee: true)
+    end
+
+    def can_merge_into_protected_branch?
+      id = gitlab_bot_client.user.id
+      rule = gitlab_bot_client
+        .protected_branches(PROJECT)
+        .find { |branch| branch.name == PROTECTED_BRANCH_PATTERN }
+
+      return true unless rule
+
+      rule.merge_access_levels.any? { |level| level['user_id'] == id }
     end
   end
 end
