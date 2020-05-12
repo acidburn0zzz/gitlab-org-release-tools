@@ -68,7 +68,7 @@ namespace :auto_deploy do
 
     ReleaseTools::Deployments::SentryTracker.new(commit.id).execute if ReleaseTools::Feature.enabled?(:sentry_tracking)
 
-    if !dry_run? && Feature.enabled?(:release_json_tracking)
+    if !dry_run? && ReleaseTools::Feature.enabled?(:release_json_tracking)
       ReleaseTools::ReleaseMetadataUploader.new.upload(version, metadata)
     end
   end
