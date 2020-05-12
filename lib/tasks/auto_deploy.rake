@@ -51,7 +51,7 @@ namespace :auto_deploy do
   desc "Tag the auto-deploy branches from the latest passing builds"
   task tag: :check_enabled do
     branch = ReleaseTools::AutoDeployBranch.current
-    version = "#{branch.to_minor}.#{branch.tag_timestamp}"
+    version = "#{branch.version.to_minor}.#{branch.tag_timestamp}"
     metadata = ReleaseTools::ReleaseMetadata.new
 
     commit = ReleaseTools::PassingBuild
