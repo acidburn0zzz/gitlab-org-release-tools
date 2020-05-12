@@ -88,9 +88,30 @@ describe ReleaseTools::AutomaticReleaseCandidate do
         expect(rc).not_to receive(:create_source_branch)
         expect(rc).not_to receive(:update_target_branch)
 
+        allow(rc)
+          .to receive(:can_merge_into_protected_branch?)
+          .and_return(true)
+
         ClimateControl.modify(TEST: 'true') do
           rc.prepare
         end
+      end
+    end
+
+    context 'when GitLab Bot is not allowed to merge into stable branches' do
+      it 'raises an error' do
+        rc = stubbed_rc
+
+        allow(rc)
+          .to receive(:branch_exists?)
+          .with('12-9-stable-ee')
+          .and_return(true)
+
+        allow(rc)
+          .to receive(:can_merge_into_protected_branch?)
+          .and_return(false)
+
+        expect { rc.prepare }.to raise_error(RuntimeError)
       end
     end
 
@@ -107,6 +128,10 @@ describe ReleaseTools::AutomaticReleaseCandidate do
           .to receive(:compare)
           .with(described_class::PROJECT, '12-9-stable-ee', rc.source_branch)
           .and_return(double(:response, commits: []))
+
+        allow(rc)
+          .to receive(:can_merge_into_protected_branch?)
+          .and_return(true)
 
         expect(rc).to receive(:create_source_branch)
         expect(rc).to receive(:delete_source_branch)
@@ -131,6 +156,10 @@ describe ReleaseTools::AutomaticReleaseCandidate do
           .to receive(:compare)
           .with(described_class::PROJECT, '12-9-stable-ee', rc.source_branch)
           .and_return(double(:response, commits: [double(:commit)]))
+
+        allow(rc)
+          .to receive(:can_merge_into_protected_branch?)
+          .and_return(true)
 
         expect(rc).to receive(:update_target_branch)
 
@@ -251,6 +280,61 @@ describe ReleaseTools::AutomaticReleaseCandidate do
   describe '#target_branch' do
     it 'returns the name of the stable branch to merge into' do
       expect(stubbed_rc.target_branch).to eq('12-9-stable-ee')
+    end
+  end
+
+  describe '#can_merge_into_protected_branch?' do
+    let(:rc) { stubbed_rc }
+
+    before do
+      allow(rc.gitlab_bot_client)
+        .to receive(:user)
+        .and_return(double(:user, id: 42))
+    end
+
+    context 'when there are not protected branch rules' do
+      it 'returns true' do
+        allow(rc.gitlab_bot_client)
+          .to receive(:protected_branches)
+          .with(described_class::PROJECT)
+          .and_return([])
+
+        expect(rc.can_merge_into_protected_branch?).to eq(true)
+      end
+    end
+
+    context 'when no rules allow GitLab Bot to merge' do
+      it 'returns false' do
+        rule = double(
+          :rule,
+          name: described_class::PROTECTED_BRANCH_PATTERN,
+          merge_access_levels: [{ 'user_id' => 1 }]
+        )
+
+        allow(rc.gitlab_bot_client)
+          .to receive(:protected_branches)
+          .with(described_class::PROJECT)
+          .and_return([rule])
+
+        expect(rc.can_merge_into_protected_branch?).to eq(false)
+      end
+    end
+
+    context 'when a rule allows GitLab Bot to merge' do
+      it 'returns true' do
+        rule = double(
+          :rule,
+          name: described_class::PROTECTED_BRANCH_PATTERN,
+          merge_access_levels: [{ 'user_id' => rc.gitlab_bot_client.user.id }]
+        )
+
+        allow(rc.gitlab_bot_client)
+          .to receive(:protected_branches)
+          .with(described_class::PROJECT)
+          .and_return([rule])
+
+        expect(rc.can_merge_into_protected_branch?).to eq(true)
+      end
     end
   end
 end
