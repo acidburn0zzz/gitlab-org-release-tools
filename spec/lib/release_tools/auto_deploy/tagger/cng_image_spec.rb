@@ -77,7 +77,6 @@ describe ReleaseTools::AutoDeploy::Tagger::CNGImage do
 
         allow(tagger).to receive(:branch_head).and_return(branch_head)
         allow(tagger).to receive(:tag_name).and_return('tag_name')
-        allow(tagger).to receive(:upload_version_data).with('cng')
 
         without_dry_run do
           tagger.tag!
@@ -93,7 +92,6 @@ describe ReleaseTools::AutoDeploy::Tagger::CNGImage do
 
         allow(tagger).to receive(:branch_head).and_return(spy)
         allow(tagger).to receive(:tag_name).and_return('tag_name')
-        allow(tagger).to receive(:upload_version_data).with('cng')
         allow(ReleaseTools::SharedStatus).to receive(:security_release?)
           .and_return(true)
 
@@ -105,28 +103,20 @@ describe ReleaseTools::AutoDeploy::Tagger::CNGImage do
         expect(fake_client).not_to have_received(:create_tag)
       end
 
-      it 'uploads the version data' do
+      it 'adds the version data' do
         branch_head = double(
           created_at: Time.new(2019, 7, 2, 10, 14),
           id: 'foo'
         )
 
-        uploader = instance_spy(ReleaseTools::ReleaseMetadataUploader)
-
         allow(tagger).to receive(:branch_head).and_return(branch_head)
         allow(tagger).to receive(:tag_name).and_return('12.1.3')
-
-        allow(ReleaseTools::ReleaseMetadataUploader)
-          .to receive(:new)
-          .and_return(uploader)
-
-        expect(uploader)
-          .to receive(:upload)
-          .with('cng', '12.1.3', an_instance_of(ReleaseTools::ReleaseMetadata))
 
         without_dry_run do
           tagger.tag!
         end
+
+        expect(tagger.release_metadata.releases).not_to be_empty
       end
     end
   end

@@ -79,7 +79,6 @@ describe ReleaseTools::AutoDeploy::Tagger::Omnibus do
 
         allow(tagger).to receive(:branch_head).and_return(branch_head)
         allow(tagger).to receive(:tag_name).and_return('tag_name')
-        allow(tagger).to receive(:upload_version_data).with('omnibus')
 
         without_dry_run do
           tagger.tag!
@@ -94,7 +93,6 @@ describe ReleaseTools::AutoDeploy::Tagger::Omnibus do
 
         allow(tagger).to receive(:branch_head).and_return(spy)
         allow(tagger).to receive(:tag_name).and_return('tag_name')
-        allow(tagger).to receive(:upload_version_data).with('omnibus')
         allow(ReleaseTools::SharedStatus).to receive(:security_release?)
           .and_return(true)
 
@@ -112,26 +110,14 @@ describe ReleaseTools::AutoDeploy::Tagger::Omnibus do
           id: 'foo'
         )
 
-        uploader = instance_spy(ReleaseTools::ReleaseMetadataUploader)
-
         allow(tagger).to receive(:branch_head).and_return(branch_head)
         allow(tagger).to receive(:tag_name).and_return('12.1.3')
-
-        allow(ReleaseTools::ReleaseMetadataUploader)
-          .to receive(:new)
-          .and_return(uploader)
-
-        expect(uploader)
-          .to receive(:upload)
-          .with(
-            'omnibus',
-            '12.1.3',
-            an_instance_of(ReleaseTools::ReleaseMetadata)
-          )
 
         without_dry_run do
           tagger.tag!
         end
+
+        expect(tagger.release_metadata.releases).not_to be_empty
       end
     end
   end

@@ -15,6 +15,16 @@ module ReleaseTools
         ReleaseTools::CNGVersion
       end
 
+      def release_name
+        if version.ee? && options[:ubi]
+          'cng-ee-ubi'
+        elsif version.ee?
+          'cng-ee'
+        else
+          'cng-ce'
+        end
+      end
+
       def tag
         if options[:ubi] && ubi?(version)
           ubi_tag(version, options[:ubi_version])
@@ -34,9 +44,12 @@ module ReleaseTools
       def bump_versions
         logger.trace('bump versions')
         target_file = File.join(repository.path, 'ci_files/variables.yml')
+        versions = component_versions
+
+        release_metadata.add_auto_deploy_components(versions)
 
         yaml_contents = YAML.load_file(target_file)
-        yaml_contents['variables'].merge!(component_versions)
+        yaml_contents['variables'].merge!(versions)
 
         File.open(target_file, 'w') do |f|
           f.write(YAML.dump(yaml_contents))

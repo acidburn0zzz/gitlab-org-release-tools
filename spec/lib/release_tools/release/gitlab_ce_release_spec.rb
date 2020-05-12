@@ -77,11 +77,18 @@ describe ReleaseTools::Release::GitlabCeRelease, :slow do
 
   def execute(version, branch)
     cng_spy = spy
+    meta = ReleaseTools::ReleaseMetadata.new
+
+    allow(meta)
+      .to receive(:add_auto_deploy_components)
+      .with(an_instance_of(Hash))
+
     stub_const('ReleaseTools::Release::CNGImageRelease', cng_spy)
 
-    described_class.new(version).execute
+    described_class.new(version, release_metadata: meta).execute
 
     expect(cng_spy).to have_received(:execute)
+    expect(meta).to have_received(:add_auto_deploy_components)
 
     repository.checkout(branch)
     ob_repository.checkout(branch)

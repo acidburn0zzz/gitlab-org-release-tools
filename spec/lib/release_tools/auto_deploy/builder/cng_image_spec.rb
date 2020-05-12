@@ -26,7 +26,10 @@ describe ReleaseTools::AutoDeploy::Builder::CNGImage do
         .to receive(:update_cng)
         .with(target_branch, version_map)
 
-      expect(tagger).to receive(:new).with(target_branch, version_map)
+      expect(tagger)
+        .to receive(:new)
+        .with(target_branch, version_map, an_instance_of(ReleaseTools::ReleaseMetadata))
+
       expect(tagger).to receive(:tag!)
 
       builder = described_class.new(target_branch, fake_commit.id)

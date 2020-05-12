@@ -4,9 +4,10 @@ module ReleaseTools
   module AutoDeploy
     module Builder
       class CNGImage
-        def initialize(target_branch, commit_id)
+        def initialize(target_branch, commit_id, release_metadata = ReleaseTools::ReleaseMetadata.new)
           @target_branch = target_branch
           @commit_id = commit_id
+          @release_metadata = release_metadata
         end
 
         def execute
@@ -17,7 +18,7 @@ module ReleaseTools
             .update_cng(@target_branch.to_s, version_map)
 
           ReleaseTools::AutoDeploy::Tagger::CNGImage
-            .new(@target_branch, version_map)
+            .new(@target_branch, version_map, @release_metadata)
             .tag!
         end
       end

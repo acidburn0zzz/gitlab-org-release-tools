@@ -4,11 +4,7 @@ module ReleaseTools
   module AutoDeploy
     module Tagger
       module ReleaseMetadataTracking
-        # Uploads the release data of an auto-deploy.
-        #
-        # The `category` arguments describes the "category" of the release, such
-        # as "cng" for CNG releases and "omnibus" for Omnibus releases.
-        def upload_version_data(category, release_metadata = ReleaseMetadata.new)
+        def add_release_data
           return unless Feature.enabled?(:release_json_tracking)
 
           # The packager (e.g. Omnibus) and GitLab EE are released from an
@@ -30,10 +26,10 @@ module ReleaseTools
           )
 
           release_metadata.add_auto_deploy_components(version_map)
+        end
 
-          ReleaseMetadataUploader
-            .new
-            .upload(category, tag_name, release_metadata)
+        def release_metadata
+          raise NotImplementedError
         end
 
         def tag_name

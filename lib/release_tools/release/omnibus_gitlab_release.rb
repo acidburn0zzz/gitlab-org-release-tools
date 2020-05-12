@@ -39,17 +39,29 @@ module ReleaseTools
         ReleaseTools::Project::OmnibusGitlab
       end
 
+      def release_name
+        version.ee? ? 'omnibus-gitlab-ee' : 'omnibus-gitlab-ce'
+      end
+
       def version_class
         ReleaseTools::OmnibusGitlabVersion
       end
 
       def bump_versions
+        mapping = {}
+
         version_files.each do |file|
           file_path = File.join(repository.path, file)
+
           ensure_version_file_exists!(file_path)
 
-          bump_version(file, read_file_from_gitlab_repo(file))
+          version = read_file_from_gitlab_repo(file)
+          mapping[file] = version
+
+          bump_version(file, version)
         end
+
+        release_metadata.add_auto_deploy_components(mapping)
       end
 
       def version_files

@@ -9,6 +9,10 @@ module ReleaseTools
         Project::Gitaly
       end
 
+      def release_name
+        'gitaly'
+      end
+
       def bump_versions
         super
 
