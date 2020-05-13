@@ -126,7 +126,7 @@ namespace :release do
         .execute
     end
 
-    if !dry_run? && Feature.enabled?(:release_json_tracking)
+    if !dry_run? && ReleaseTools::Feature.enabled?(:release_json_tracking)
       file_name =
         if version.rc?
           version.to_rc(version.rc)
