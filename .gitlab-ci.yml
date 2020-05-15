@@ -29,8 +29,8 @@ default:
 # test ------------------------------------------------------------------------
 
 include:
-  - template: Dependency-Scanning.gitlab-ci.yml
-  - template: SAST.gitlab-ci.yml
+  - remote: 'https://gitlab.com/gitlab-org/gitlab/-/raw/12-10-stable-ee/lib/gitlab/ci/templates/Security/Dependency-Scanning.gitlab-ci.yml'
+  - remote: 'https://gitlab.com/gitlab-org/gitlab/-/raw/12-10-stable-ee/lib/gitlab/ci/templates/Security/SAST.gitlab-ci.yml'
 
 sast:
   <<: *except-automation
