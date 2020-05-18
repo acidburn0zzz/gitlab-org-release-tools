@@ -2,7 +2,7 @@
 
 module ReleaseTools
   module Security
-    class IssueResult
+    class BatchMergerResult
       attr_reader :processed, :pending, :invalid
 
       # Builds slack attachments based on Security::ImplementationIssues

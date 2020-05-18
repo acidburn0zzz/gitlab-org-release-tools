@@ -22,7 +22,7 @@ module ReleaseTools
       # @param [ReleaseTools::Security::Client] client
       def initialize(client)
         @client = client
-        @result = IssueResult.new
+        @result = BatchMergerResult.new
       end
 
       # Merges valid security merge requests in batches:
@@ -35,9 +35,9 @@ module ReleaseTools
       # security implementation issue.
       # 4. If all of the merge requests are valid, merges them.
       def execute
-        return if security_issues.empty?
+        security_issues = prepare_security_issues
 
-        logger.info("Validating #{security_issues.count} security issues")
+        return if security_issues.empty?
 
         security_issues.each do |security_issue|
           @result.processed << security_issue
@@ -57,6 +57,12 @@ module ReleaseTools
       end
 
       private
+
+      def prepare_security_issues
+        security_issues = Security::IssuesValidator
+          .new
+          .execute
+      end
 
       def security_issues
         @security_issues ||=
