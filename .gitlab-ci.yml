@@ -22,6 +22,12 @@ default:
     - schedules
     - triggers
 
+.except-automation-rules: &except-automation-rules
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule" || $CI_PIPELINE_SOURCE == "trigger"
+      when: never
+    - when: on_success
+
 .with-bundle: &with-bundle
   before_script:
     - bundle install --jobs=$(nproc) --retry=3 --path=vendor
@@ -33,10 +39,12 @@ include:
   - template: SAST.gitlab-ci.yml
 
 sast:
+  <<: *except-automation-rules
   variables:
     SAST_EXCLUDED_PATHS: 'vendor/**'
 
 dependency_scanning:
+  <<: *except-automation-rules
   variables:
     DS_EXCLUDED_PATHS: "spec/fixtures/**/*"
 
