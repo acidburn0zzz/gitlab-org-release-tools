@@ -9,6 +9,7 @@ module ReleaseTools
       PROJECTS_TO_VERIFY = %w[
         gitlab-org/security/gitlab
         gitlab-org/security/omnibus-gitlab
+        gitlab-org/security/gitlab-pages
       ].freeze
 
       def initialize(client)
