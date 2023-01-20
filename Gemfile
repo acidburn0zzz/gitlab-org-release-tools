@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-gem 'activesupport', '~> 5.1.0'
+gem 'activesupport', '~> 6.1.7'
 gem 'colorize'
 gem 'gitlab', '~> 4.13'
 gem 'http', '~> 4.1.0'
